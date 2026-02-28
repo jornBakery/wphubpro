@@ -1,79 +1,22 @@
 /**
- * Dashboard page based on soft layouts/pages/projects/general
- * - Earnings card → Subscription details
- * - Statistics → Limits (sites, library, storage)
- * - Recommendation card → User info
- * - To do list → Sites list
- * - Tasks → Plugin/theme/site notifications
- * - Projects card → Site monitoring (health status)
+ * Dashboard page - User dashboard
+ * Left 65%: Sites list
+ * Right 35%: User details, Subscription details, Sites Monitor
  */
 import React from 'react';
 import Grid from '@mui/material/Grid';
 
 import SoftBox from 'components/SoftBox';
-import AnimatedStatisticsCard from 'examples/Cards/StatisticsCards/AnimatedStatisticsCard';
-import MiniStatisticsCard from 'examples/Cards/StatisticsCards/MiniStatisticsCard';
-import AnnouncementCard from 'examples/Cards/AnnouncementCard';
-import ProgressLineChart from 'examples/Charts/LineCharts/ProgressLineChart';
-import ProgressDoughnutChart from 'examples/Charts/DoughnutCharts/ProgressDoughnutChart';
 import Footer from 'examples/Footer';
 
 import { useAuth } from '../contexts/AuthContext';
 import { useSubscription, useUsage } from '../hooks/useSubscription';
 import { useSites } from '../hooks/useSites';
-import { Site } from '../types';
 
-// Dashboard-specific components
-import SitesTodoList from '../components/dashboard/SitesTodoList';
-
-const getSiteMonitoringChartData = (sites: Site[] | undefined) => {
-  const healthy = sites?.filter((s) => s.healthStatus === 'healthy').length ?? 0;
-  const bad = sites?.filter((s) => s.healthStatus === 'bad').length ?? 0;
-  const labels: string[] = [];
-  const data: number[] = [];
-  const colors: string[] = [];
-  if (healthy > 0) {
-    labels.push('Healthy');
-    data.push(healthy);
-    colors.push('success');
-  }
-  if (bad > 0) {
-    labels.push('Bad');
-    data.push(bad);
-    colors.push('error');
-  }
-  if (labels.length === 0) {
-    labels.push('No sites');
-    data.push(1);
-    colors.push('secondary');
-  }
-  return {
-    labels,
-    datasets: { label: 'Sites', backgroundColors: colors, data },
-  };
-};
-
-const getNotificationChartData = (sites: Site[] | undefined) => {
-  // Aggregate action_log entries across sites for notifications
-  const notifications: { month: string; count: number }[] = [];
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'];
-  months.forEach((m, i) => {
-    let count = 0;
-    sites?.forEach((site) => {
-      const entries = site.action_log?.filter((e) => {
-        const t = typeof e.timestamp === 'number' ? e.timestamp : new Date(e.timestamp).getTime();
-        const d = new Date(t);
-        return d.getMonth() === i;
-      }) ?? [];
-      count += entries.length;
-    });
-    notifications.push({ month: m, count });
-  });
-  return {
-    labels: months,
-    data: notifications.map((n) => n.count),
-  };
-};
+import DashboardSitesTable from '../components/dashboard/DashboardSitesTable';
+import DashboardUserCard from '../components/dashboard/DashboardUserCard';
+import DashboardSubscriptionCard from '../components/dashboard/DashboardSubscriptionCard';
+import DashboardSitesMonitor from '../components/dashboard/DashboardSitesMonitor';
 
 const DashboardPage: React.FC = () => {
   const { user } = useAuth();
@@ -81,134 +24,33 @@ const DashboardPage: React.FC = () => {
   const { data: usage } = useUsage();
   const { data: sites } = useSites();
 
-  const sub = subscription;
-  const u = usage ?? { sitesUsed: 0, libraryUsed: 0, storageUsed: 0 };
-  const monitoringChart = getSiteMonitoringChartData(sites);
-  const notificationChart = getNotificationChartData(sites);
-  const totalNotifications = notificationChart.data.reduce((a, b) => a + b, 0);
-
   return (
     <>
       <SoftBox mt={3}>
         <Grid container spacing={3}>
-          {/* Left column */}
+          {/* Left column ~65% (8/12) - Sites list */}
           <Grid item xs={12} lg={8}>
-            <Grid container spacing={3}>
-              {/* Earnings card → Subscription details */}
-              <Grid item xs={12} lg={4}>
-                <AnimatedStatisticsCard
-                  title="Abonnement"
-                  count={subLoading ? '...' : sub?.planId ?? 'FREE'}
-                  percentage={{
-                    color: sub?.status === 'active' ? 'success' : 'warning',
-                    label: sub?.status === 'active' ? 'Actief' : sub?.status ?? '-',
-                  }}
-                  action={{
-                    type: 'internal',
-                    route: '/subscription',
-                    label: 'beheer',
-                  }}
-                />
-              </Grid>
-
-              {/* Statistics → Limits (sites, library, storage) */}
-              <Grid item xs={12} md={6} lg={4}>
-                <SoftBox mb={3}>
-                  <MiniStatisticsCard
-                    title={{ fontWeight: 'medium', text: 'Sites' }}
-                    count={`${u.sitesUsed} / ${sub?.sitesLimit ?? '-'}`}
-                    icon={{ color: 'info', component: 'public' }}
-                    direction="left"
-                    percentage={{ color: 'success', text: '' }}
-                  />
-                </SoftBox>
-                <MiniStatisticsCard
-                  title={{ fontWeight: 'medium', text: 'Bibliotheek' }}
-                  count={`${u.libraryUsed} / ${sub?.libraryLimit ?? '-'}`}
-                  icon={{ color: 'info', component: 'folder' }}
-                  direction="left"
-                  percentage={{ color: 'success', text: '' }}
-                />
-              </Grid>
-              <Grid item xs={12} md={6} lg={4}>
-                <SoftBox mb={3}>
-                  <MiniStatisticsCard
-                    title={{ fontWeight: 'medium', text: 'Opslag' }}
-                    count={`${u.storageUsed} / ${sub?.storageLimit ?? '-'}`}
-                    icon={{ color: 'info', component: 'storage' }}
-                    direction="left"
-                    percentage={{ color: 'success', text: '' }}
-                  />
-                </SoftBox>
-                <MiniStatisticsCard
-                  title={{ fontWeight: 'medium', text: 'Periode' }}
-                  count={
-                    sub?.currentPeriodEnd
-                      ? new Date(sub.currentPeriodEnd * 1000).toLocaleDateString('nl-NL', {
-                          month: 'short',
-                          year: 'numeric',
-                        })
-                      : '-'
-                  }
-                  icon={{ color: 'info', component: 'event' }}
-                  direction="left"
-                  percentage={{ color: 'success', text: '' }}
-                />
-              </Grid>
-            </Grid>
-
-            {/* To do list → Sites list */}
-            <Grid item xs={12}>
-              <SoftBox my={3}>
-                <SitesTodoList sites={sites ?? []} />
-              </SoftBox>
-            </Grid>
+            <DashboardSitesTable sites={sites ?? []} />
           </Grid>
 
-          {/* Right column */}
+          {/* Right column ~35% (4/12) */}
           <Grid item xs={12} lg={4}>
             <Grid container spacing={3}>
-              {/* Recommendation card → User info */}
               <Grid item xs={12}>
-                <AnnouncementCard
-                  by={{
-                    name: user?.name ?? user?.email ?? 'Gebruiker',
-                    date: user?.email ?? '',
-                  }}
-                  badge={{ color: 'info', label: 'account' }}
-                  title={user?.name ?? 'Welkom'}
-                  description={
-                    user?.email
-                      ? `Ingelogd als ${user.email}`
-                      : 'Uw accountinformatie wordt hier getoond.'
-                  }
-                  value={{}}
-                  action={{
-                    type: 'internal',
-                    route: '/subscription',
-                    label: 'abonnement',
-                  }}
+                <DashboardUserCard user={user} />
+              </Grid>
+              <Grid item xs={12}>
+                <DashboardSubscriptionCard
+                  subscription={subscription}
+                  usage={usage}
+                  isLoading={subLoading}
                 />
               </Grid>
-
-              {/* Tasks → Plugin/theme/site notifications */}
               <Grid item xs={12}>
-                <ProgressLineChart
-                  icon="notifications"
-                  title="Notificaties"
-                  count={totalNotifications}
-                  progress={Math.min(100, totalNotifications * 5)}
-                  chart={notificationChart}
-                />
-              </Grid>
-
-              {/* Projects card → Site monitoring */}
-              <Grid item xs={12}>
-                <ProgressDoughnutChart
-                  icon="monitor_heart"
-                  title="Site Monitoring"
-                  count={sites?.length ?? 0}
-                  chart={monitoringChart}
+                <DashboardSitesMonitor
+                  sites={sites ?? []}
+                  pluginUpdatesCount={0}
+                  themeUpdatesCount={0}
                 />
               </Grid>
             </Grid>
