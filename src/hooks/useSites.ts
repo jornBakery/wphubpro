@@ -23,13 +23,17 @@ export const useSites = () => {
       // Map de database resultaten naar het Site type
       return response.documents.map((doc: any) => {
         const hasCredentials = !!(doc.api_key || doc.apiKey || doc.password);
-        const healthStatus = (doc.health_status === 'good' || doc.health_status === 'warning' || doc.health_status === 'error')
+        const status: 'connected' | 'disconnected' = (doc.status === 'connected' || doc.status === 'disconnected')
+          ? doc.status
+          : (hasCredentials ? 'connected' : 'disconnected');
+        const healthStatus: 'healthy' | 'bad' = (doc.health_status === 'healthy' || doc.health_status === 'bad')
           ? doc.health_status
-          : (hasCredentials ? 'good' : 'error');
+          : (hasCredentials ? 'healthy' : 'bad'); // fallback voor oude data
         return {
           ...doc,
           siteName: doc.site_name || '',
           siteUrl: doc.site_url || '',
+          status,
           healthStatus,
           lastChecked: doc.last_checked || doc.lastChecked || '',
         };
@@ -61,13 +65,17 @@ export const useSite = (siteId: string | undefined) => {
             // Map snake_case naar camelCase zodat de UI de data vindt
             const doc = document as any;
             const hasCredentials = !!(doc.api_key || doc.apiKey || doc.password);
-            const healthStatus = (doc.health_status === 'good' || doc.health_status === 'warning' || doc.health_status === 'error')
+            const status: 'connected' | 'disconnected' = (doc.status === 'connected' || doc.status === 'disconnected')
+                ? doc.status
+                : (hasCredentials ? 'connected' : 'disconnected');
+            const healthStatus: 'healthy' | 'bad' = (doc.health_status === 'healthy' || doc.health_status === 'bad')
                 ? doc.health_status
-                : (hasCredentials ? 'good' : 'error');
+                : (hasCredentials ? 'healthy' : 'bad');
             return {
                 ...document,
                 siteName: doc.site_name,
                 siteUrl: doc.site_url,
+                status,
                 healthStatus,
                 lastChecked: doc.last_checked || doc.lastChecked || '',
             } as unknown as Site;
@@ -141,7 +149,7 @@ export const useUpdateSite = () => {
     const { user } = useAuth();
     const { toast } = useToast();
 
-    return useMutation<any, Error, { siteId: string; username?: string; password?: string; api_key?: string; apiKey?: string; siteName?: string; siteUrl?: string; health_status?: 'good' | 'warning' | 'error'; last_checked?: string }>({
+    return useMutation<any, Error, { siteId: string; username?: string; password?: string; api_key?: string; apiKey?: string; siteName?: string; siteUrl?: string; status?: 'connected' | 'disconnected'; health_status?: 'healthy' | 'bad'; last_checked?: string }>({
         mutationFn: async ({ siteId, ...updates }) => {
             if (!user) throw new Error('User not authenticated.');
 
@@ -154,6 +162,7 @@ export const useUpdateSite = () => {
                 const dbUpdates: any = {};
                 if (updates.siteName) dbUpdates.site_name = updates.siteName;
                 if (updates.siteUrl) dbUpdates.site_url = updates.siteUrl;
+                if (updates.status) dbUpdates.status = updates.status;
                 if (updates.health_status) dbUpdates.health_status = updates.health_status;
                 if (updates.last_checked) dbUpdates.last_checked = updates.last_checked;
                 // If there are no dbUpdates, avoid calling updateDocument with empty payload
@@ -207,7 +216,7 @@ export const useCheckSiteHealth = (siteId: string | undefined) => {
             const status = exec.responseStatusCode || 0;
             const success = exec.status === 'completed' && status >= 200 && status < 400;
             await databases.updateDocument(DATABASE_ID, SITES_COLLECTION_ID, siteId, {
-                health_status: success ? 'good' : 'error',
+                health_status: success ? 'healthy' : 'bad',
                 last_checked: new Date().toISOString(),
             });
             if (!success) {

@@ -19,10 +19,9 @@ interface SitesTodoListProps {
 
 const SitesTodoList: React.FC<SitesTodoListProps> = ({ sites }) => {
   const getHealthColor = (
-    status: Site['healthStatus']
+    healthStatus: Site['healthStatus']
   ): 'success' | 'warning' | 'error' | 'info' => {
-    if (status === 'good') return 'success';
-    if (status === 'warning') return 'warning';
+    if (healthStatus === 'healthy') return 'success';
     return 'error';
   };
 
@@ -56,7 +55,7 @@ const SitesTodoList: React.FC<SitesTodoListProps> = ({ sites }) => {
                 project={site.siteUrl}
                 company={`WP ${site.wpVersion ?? '-'}`}
                 color={getHealthColor(site.healthStatus)}
-                defaultChecked={site.healthStatus === 'good'}
+                defaultChecked={site.healthStatus === 'healthy'}
                 noDivider={index === Math.min(4, sites.length - 1)}
                 to={`/sites/${site.$id}`}
               />

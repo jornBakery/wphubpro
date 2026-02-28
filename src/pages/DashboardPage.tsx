@@ -27,25 +27,19 @@ import { Site } from '../types';
 import SitesTodoList from '../components/dashboard/SitesTodoList';
 
 const getSiteMonitoringChartData = (sites: Site[] | undefined) => {
-  const good = sites?.filter((s) => s.healthStatus === 'good').length ?? 0;
-  const warning = sites?.filter((s) => s.healthStatus === 'warning').length ?? 0;
-  const error = sites?.filter((s) => s.healthStatus === 'error').length ?? 0;
+  const healthy = sites?.filter((s) => s.healthStatus === 'healthy').length ?? 0;
+  const bad = sites?.filter((s) => s.healthStatus === 'bad').length ?? 0;
   const labels: string[] = [];
   const data: number[] = [];
   const colors: string[] = [];
-  if (good > 0) {
+  if (healthy > 0) {
     labels.push('Healthy');
-    data.push(good);
+    data.push(healthy);
     colors.push('success');
   }
-  if (warning > 0) {
-    labels.push('Warning');
-    data.push(warning);
-    colors.push('warning');
-  }
-  if (error > 0) {
-    labels.push('Error');
-    data.push(error);
+  if (bad > 0) {
+    labels.push('Bad');
+    data.push(bad);
     colors.push('error');
   }
   if (labels.length === 0) {

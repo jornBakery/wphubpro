@@ -879,12 +879,21 @@
                     "encrypt": false
                 },
                 {
+                    "key": "status",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 32,
+                    "default": "disconnected",
+                    "encrypt": false
+                },
+                {
                     "key": "health_status",
                     "type": "string",
                     "required": false,
                     "array": false,
                     "size": 32,
-                    "default": "error",
+                    "default": "bad",
                     "encrypt": false
                 },
                 {

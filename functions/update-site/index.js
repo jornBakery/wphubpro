@@ -91,17 +91,20 @@ module.exports = async ({ req, res, log, error }) => {
     const disableEnc = disableEncEnv || disableEncFlag;
     if (rawKey === '' || rawKey === null) {
       finalUpdates.api_key = '';
-      finalUpdates.health_status = 'error';
+      finalUpdates.status = 'disconnected';
+      finalUpdates.health_status = 'bad';
     } else if (disableEnc) {
       finalUpdates.api_key = rawKey;
-      finalUpdates.health_status = 'good';
+      finalUpdates.status = 'connected';
+      finalUpdates.health_status = 'healthy';
       finalUpdates.last_checked = new Date().toISOString();
     } else {
       if (!ENCRYPTION_KEY) {
         return res.json({ success: false, message: 'ENCRYPTION_KEY not configured' }, 500);
       }
       finalUpdates.api_key = encrypt(rawKey, ENCRYPTION_KEY);
-      finalUpdates.health_status = 'good';
+      finalUpdates.status = 'connected';
+      finalUpdates.health_status = 'healthy';
       finalUpdates.last_checked = new Date().toISOString();
     }
   }

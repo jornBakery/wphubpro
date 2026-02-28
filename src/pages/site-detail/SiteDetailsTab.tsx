@@ -12,7 +12,6 @@ import Card from '@mui/material/Card';
 import DefaultCounterCard from 'examples/Cards/CounterCards/DefaultCounterCard';
 import { useSite, useDeleteSite, useCheckSiteHealth } from '../../hooks/useSites';
 import { usePlugins, useThemes } from '../../hooks/useWordPress';
-import { Site } from '../../types';
 
 interface SiteDetailsTabProps {
   siteId: string;
@@ -27,8 +26,7 @@ const SiteDetailsTab: React.FC<SiteDetailsTabProps> = ({ siteId, onEdit, onRemov
   const deleteSite = useDeleteSite();
   const checkHealth = useCheckSiteHealth(siteId);
 
-  const isConnected = !!(site as any)?.api_key || !!(site as any)?.password;
-  const activePlugins = plugins?.filter((p) => p.status === 'active').length ?? 0;
+  const activePlugins = plugins?.filter((p: { status: string }) => p.status === 'active').length ?? 0;
   const installedPlugins = plugins?.length ?? 0;
   const installedThemes = themes?.length ?? 0;
 
@@ -38,12 +36,16 @@ const SiteDetailsTab: React.FC<SiteDetailsTabProps> = ({ siteId, onEdit, onRemov
 
   if (!site) return null;
 
-  const statusConfig: Record<string, { color: 'success' | 'warning' | 'error'; label: string }> = {
-    good: { color: 'success', label: 'Healthy' },
-    warning: { color: 'warning', label: 'Warning' },
-    error: { color: 'error', label: 'Error' },
+  const statusConfig: Record<string, { color: 'success' | 'error'; label: string }> = {
+    connected: { color: 'success', label: 'Verbonden' },
+    disconnected: { color: 'error', label: 'Losgekoppeld' },
   };
-  const sc = statusConfig[site.healthStatus || 'error'] || statusConfig.error;
+  const healthConfig: Record<string, { color: 'success' | 'error'; label: string }> = {
+    healthy: { color: 'success', label: 'Healthy' },
+    bad: { color: 'error', label: 'Bad' },
+  };
+  const sc = statusConfig[site.status || 'disconnected'] || statusConfig.disconnected;
+  const hc = healthConfig[site.healthStatus || 'bad'] || healthConfig.bad;
 
   return (
     <SoftBox>
@@ -83,6 +85,10 @@ const SiteDetailsTab: React.FC<SiteDetailsTabProps> = ({ siteId, onEdit, onRemov
                 <SoftBox display="flex" justifyContent="space-between" py={1} borderBottom="1px solid" borderColor="grey-200">
                   <SoftTypography variant="caption" color="secondary">Status</SoftTypography>
                   <SoftBadge variant="contained" color={sc.color} size="xs" badgeContent={sc.label} container />
+                </SoftBox>
+                <SoftBox display="flex" justifyContent="space-between" py={1} borderBottom="1px solid" borderColor="grey-200">
+                  <SoftTypography variant="caption" color="secondary">Gezondheid</SoftTypography>
+                  <SoftBadge variant="contained" color={hc.color} size="xs" badgeContent={hc.label} container />
                 </SoftBox>
                 <SoftBox display="flex" justifyContent="space-between" py={1} borderBottom="1px solid" borderColor="grey-200">
                   <SoftTypography variant="caption" color="secondary">Aangemaakt</SoftTypography>

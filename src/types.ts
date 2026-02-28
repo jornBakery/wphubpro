@@ -90,7 +90,8 @@ export interface Site {
   username?: string;
   password?: string;
   // No legacy WP credential field; use top-level `username` and `password` fields
-  healthStatus: 'good' | 'warning' | 'error';
+  status: 'connected' | 'disconnected';
+  healthStatus: 'healthy' | 'bad';
   lastChecked: string;
   wpVersion: string;
   phpVersion: string;

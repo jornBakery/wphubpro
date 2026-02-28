@@ -32,13 +32,21 @@ const SiteCell: React.FC<{ value: [string, { url: string }] }> = ({ value: [name
   </SoftBox>
 );
 
-const StatusBadge: React.FC<{ value: Site['healthStatus'] }> = ({ value }) => {
-  const config: Record<string, { color: 'success' | 'warning' | 'error'; label: string }> = {
-    good: { color: 'success', label: 'Healthy' },
-    warning: { color: 'warning', label: 'Warning' },
-    error: { color: 'error', label: 'Error' },
+const StatusBadge: React.FC<{ value: Site['status'] }> = ({ value }) => {
+  const config: Record<string, { color: 'success' | 'error'; label: string }> = {
+    connected: { color: 'success', label: 'Verbonden' },
+    disconnected: { color: 'error', label: 'Losgekoppeld' },
   };
-  const c = config[value] || config.error;
+  const c = config[value] || config.disconnected;
+  return <SoftBadge variant="contained" color={c.color} size="xs" badgeContent={c.label} container />;
+};
+
+const HealthBadge: React.FC<{ value: Site['healthStatus'] }> = ({ value }) => {
+  const config: Record<string, { color: 'success' | 'error'; label: string }> = {
+    healthy: { color: 'success', label: 'Healthy' },
+    bad: { color: 'error', label: 'Bad' },
+  };
+  const c = config[value] || config.bad;
   return <SoftBadge variant="contained" color={c.color} size="xs" badgeContent={c.label} container />;
 };
 
@@ -75,7 +83,8 @@ const SitesPage: React.FC = () => {
   const dataTableData = useMemo(() => {
     const rows = (sites || []).map((site) => ({
       site: [site.siteName || site.siteUrl || 'Untitled', { url: site.siteUrl || '-' }],
-      status: site.healthStatus,
+      status: site.status,
+      health: site.healthStatus,
       url: site.siteUrl || '-',
       lastChecked: site.lastChecked ? new Date(site.lastChecked).toLocaleDateString('nl-NL') : '-',
       action: <ActionCell siteId={site.$id} siteUrl={site.siteUrl || '#'} />,
@@ -85,17 +94,22 @@ const SitesPage: React.FC = () => {
         {
           Header: 'Site',
           accessor: 'site',
-          width: '40%',
+          width: '35%',
           Cell: ({ value }: { value: [string, { url: string }] }) => <SiteCell value={value} />,
         },
-        { Header: 'URL', accessor: 'url', width: '25%' },
+        { Header: 'URL', accessor: 'url', width: '20%' },
         {
           Header: 'Status',
           accessor: 'status',
-          Cell: ({ value }: { value: Site['healthStatus'] }) => <StatusBadge value={value} />,
+          Cell: ({ value }: { value: Site['status'] }) => <StatusBadge value={value} />,
         },
-        { Header: 'Laatst gecontroleerd', accessor: 'lastChecked', width: '15%' },
-        { Header: 'Acties', accessor: 'action', width: '15%' },
+        {
+          Header: 'Gezondheid',
+          accessor: 'health',
+          Cell: ({ value }: { value: Site['healthStatus'] }) => <HealthBadge value={value} />,
+        },
+        { Header: 'Laatst gecontroleerd', accessor: 'lastChecked', width: '12%' },
+        { Header: 'Acties', accessor: 'action', width: '12%' },
       ],
       rows,
     };

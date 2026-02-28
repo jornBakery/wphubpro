@@ -77,13 +77,15 @@ module.exports = async ({ req, res, log, error }) => {
       }
     }
 
+    const hasCreds = !!(encryptedApiKey || encryptedPassword);
     const document = {
       user_id: user_id,
       site_url: site_url,
       site_name: site_name,
       username: username || "",
       password: encryptedPassword,
-      ...(encryptedApiKey ? { api_key: encryptedApiKey, health_status: 'good', last_checked: new Date().toISOString() } : {})
+      ...(encryptedApiKey ? { api_key: encryptedApiKey } : {}),
+      ...(hasCreds ? { status: 'connected', health_status: 'healthy', last_checked: new Date().toISOString() } : {})
     };
 
     const created = await databases.createDocument('platform_db', 'sites', sdk.ID.unique(), document);
