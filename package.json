@@ -1,0 +1,52 @@
+{
+  "name": "wphubpro",
+  "private": true,
+  "version": "2.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@emotion/cache": "^11.13.1",
+    "@emotion/react": "^11.13.0",
+    "@emotion/styled": "^11.13.0",
+    "@mui/icons-material": "^5.16.7",
+    "@mui/material": "^5.15.11",
+    "@mui/styled-engine": "^5.15.11",
+    "@tailwindcss/vite": "^4.0.14",
+    "@tanstack/react-query": "^5.66.0",
+    "appwrite": "^17.0.0",
+    "chart.js": "3.9.1",
+    "chroma-js": "2.4.2",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.475.0",
+    "prop-types": "^15.8.1",
+    "react": "^19.2.4",
+    "react-chartjs-2": "3.0.5",
+    "react-countup": "6.5.3",
+    "react-dom": "^19.2.4",
+    "react-dropzone": "^14.3.5",
+    "react-router-dom": "^7.0.0",
+    "react-select": "^5.8.0",
+    "react-table": "7.8.0",
+    "recharts": "^2.15.0",
+    "stylis-plugin-rtl": "^2.1.1",
+    "tailwind-merge": "^2.6.0",
+    "tailwindcss": "^4.0.14",
+    "vanilla-tilt": "1.8.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.0",
+    "@types/react": "^19.2.4",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.14",
+    "eslint": "^9.39.2",
+    "postcss": "^8.4.24",
+    "typescript": "~5.7.3",
+    "vite": "^6.1.0"
+  }
+}
