@@ -133,13 +133,13 @@ class WPHubPro_Bridge {
 	public function handle_connect() {
 		$api_key = wp_generate_password(32, false);
 		update_option('wphubpro_api_key', $api_key);
-		$platform_url = 'https://wphub.pro/connect-success';
 		$params = [
 			'site_url'   => get_site_url(),
 			'user_login' => wp_get_current_user()->user_login,
 			'api_key'    => $api_key,
 		];
-		return ['redirect' => add_query_arg($params, $platform_url)];
+		$redirect = 'https://wphub.pro/#' . add_query_arg($params, '/connect-success');
+		return ['redirect' => $redirect];
 	}
 
 	// --- PLUGIN ACTIONS ---

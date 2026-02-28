@@ -10,7 +10,7 @@ import SoftButton from 'components/SoftButton';
 import SoftBadge from 'components/SoftBadge';
 import Card from '@mui/material/Card';
 import DefaultCounterCard from 'examples/Cards/CounterCards/DefaultCounterCard';
-import { useSite, useUpdateSite, useDeleteSite } from '../../hooks/useSites';
+import { useSite, useDeleteSite, useCheckSiteHealth } from '../../hooks/useSites';
 import { usePlugins, useThemes } from '../../hooks/useWordPress';
 import { Site } from '../../types';
 
@@ -24,8 +24,8 @@ const SiteDetailsTab: React.FC<SiteDetailsTabProps> = ({ siteId, onEdit, onRemov
   const { data: site } = useSite(siteId);
   const { data: plugins } = usePlugins(siteId);
   const { data: themes } = useThemes(siteId);
-  const updateSite = useUpdateSite();
   const deleteSite = useDeleteSite();
+  const checkHealth = useCheckSiteHealth(siteId);
 
   const isConnected = !!(site as any)?.api_key || !!(site as any)?.password;
   const activePlugins = plugins?.filter((p) => p.status === 'active').length ?? 0;
@@ -33,8 +33,7 @@ const SiteDetailsTab: React.FC<SiteDetailsTabProps> = ({ siteId, onEdit, onRemov
   const installedThemes = themes?.length ?? 0;
 
   const handleCheckConnection = () => {
-    // Trigger refetch of site/plugins - if they load, connection is OK
-    updateSite.mutate({ siteId }, { onSuccess: () => {} });
+    checkHealth.mutate();
   };
 
   if (!site) return null;
@@ -60,9 +59,9 @@ const SiteDetailsTab: React.FC<SiteDetailsTabProps> = ({ siteId, onEdit, onRemov
           <Icon sx={{ mr: 0.5, fontSize: 18 }}>edit</Icon>
           Naam/URL bewerken
         </SoftButton>
-        <SoftButton variant="gradient" color="success" size="small" onClick={handleCheckConnection} disabled={updateSite.isPending}>
+        <SoftButton variant="gradient" color="success" size="small" onClick={handleCheckConnection} disabled={checkHealth.isPending}>
           <Icon sx={{ mr: 0.5, fontSize: 18 }}>sync</Icon>
-          {updateSite.isPending ? 'Controleren...' : 'Verbinding controleren'}
+          {checkHealth.isPending ? 'Controleren...' : 'Verbinding controleren'}
         </SoftButton>
       </SoftBox>
 

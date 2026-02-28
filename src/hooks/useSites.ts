@@ -21,11 +21,19 @@ export const useSites = () => {
         [Query.equal('user_id', user.$id)]
       );
       // Map de database resultaten naar het Site type
-      return response.documents.map(doc => ({
-        ...doc,
-        siteName: (doc as any).site_name || '',
-        siteUrl: (doc as any).site_url || '',
-      })) as unknown as Site[];
+      return response.documents.map((doc: any) => {
+        const hasCredentials = !!(doc.api_key || doc.apiKey || doc.password);
+        const healthStatus = (doc.health_status === 'good' || doc.health_status === 'warning' || doc.health_status === 'error')
+          ? doc.health_status
+          : (hasCredentials ? 'good' : 'error');
+        return {
+          ...doc,
+          siteName: doc.site_name || '',
+          siteUrl: doc.site_url || '',
+          healthStatus,
+          lastChecked: doc.last_checked || doc.lastChecked || '',
+        };
+      }) as unknown as Site[];
     },
     enabled: !!user?.$id,
   });
@@ -51,10 +59,17 @@ export const useSite = (siteId: string | undefined) => {
             }
             
             // Map snake_case naar camelCase zodat de UI de data vindt
+            const doc = document as any;
+            const hasCredentials = !!(doc.api_key || doc.apiKey || doc.password);
+            const healthStatus = (doc.health_status === 'good' || doc.health_status === 'warning' || doc.health_status === 'error')
+                ? doc.health_status
+                : (hasCredentials ? 'good' : 'error');
             return {
                 ...document,
-                siteName: (document as any).site_name,
-                siteUrl: (document as any).site_url,
+                siteName: doc.site_name,
+                siteUrl: doc.site_url,
+                healthStatus,
+                lastChecked: doc.last_checked || doc.lastChecked || '',
             } as unknown as Site;
         },
         enabled: !!siteId && !!user,
@@ -126,7 +141,7 @@ export const useUpdateSite = () => {
     const { user } = useAuth();
     const { toast } = useToast();
 
-    return useMutation<any, Error, { siteId: string; username?: string; password?: string; api_key?: string; apiKey?: string; siteName?: string; siteUrl?: string }>({
+    return useMutation<any, Error, { siteId: string; username?: string; password?: string; api_key?: string; apiKey?: string; siteName?: string; siteUrl?: string; health_status?: 'good' | 'warning' | 'error'; last_checked?: string }>({
         mutationFn: async ({ siteId, ...updates }) => {
             if (!user) throw new Error('User not authenticated.');
 
@@ -139,6 +154,8 @@ export const useUpdateSite = () => {
                 const dbUpdates: any = {};
                 if (updates.siteName) dbUpdates.site_name = updates.siteName;
                 if (updates.siteUrl) dbUpdates.site_url = updates.siteUrl;
+                if (updates.health_status) dbUpdates.health_status = updates.health_status;
+                if (updates.last_checked) dbUpdates.last_checked = updates.last_checked;
                 // If there are no dbUpdates, avoid calling updateDocument with empty payload
                 if (Object.keys(dbUpdates).length === 0) {
                     throw new Error('No fields to update.');
@@ -173,6 +190,44 @@ export const useUpdateSite = () => {
         onError: (err) => {
             toast({ title: 'Update mislukt', description: err.message, variant: 'destructive' });
         }
+    });
+};
+
+export const useCheckSiteHealth = (siteId: string | undefined) => {
+    const queryClient = useQueryClient();
+    const { user } = useAuth();
+    const { toast } = useToast();
+
+    return useMutation<void, Error, void>({
+        mutationFn: async () => {
+            if (!siteId || !user) throw new Error('Site ID required.');
+            // Probeer de plugins endpoint via wp-proxy
+            const path = `/?siteId=${siteId}&endpoint=wphubpro/v1/plugins&userId=${user.$id}&useApiKey=1`;
+            const exec = await functions.createExecution('wp-proxy', undefined, false, path);
+            const status = exec.responseStatusCode || 0;
+            const success = exec.status === 'completed' && status >= 200 && status < 400;
+            await databases.updateDocument(DATABASE_ID, SITES_COLLECTION_ID, siteId, {
+                health_status: success ? 'good' : 'error',
+                last_checked: new Date().toISOString(),
+            });
+            if (!success) {
+                const body = exec.responseBody || '';
+                let parsed: any = null;
+                try { parsed = body ? JSON.parse(body) : null; } catch { parsed = body; }
+                const msg = (parsed && parsed.message) ? parsed.message : 'Verbinding mislukt';
+                throw new Error(msg);
+            }
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['sites', user?.$id] });
+            queryClient.invalidateQueries({ queryKey: ['site', siteId] });
+            toast({ title: 'Verbinding OK', description: 'De site reageert correct.', variant: 'success' });
+        },
+        onError: (err) => {
+            queryClient.invalidateQueries({ queryKey: ['sites', user?.$id] });
+            queryClient.invalidateQueries({ queryKey: ['site', siteId] });
+            toast({ title: 'Verbinding mislukt', description: err.message, variant: 'destructive' });
+        },
     });
 };
 
