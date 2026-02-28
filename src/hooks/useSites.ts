@@ -198,7 +198,7 @@ export const useCheckSiteHealth = (siteId: string | undefined) => {
     const { user } = useAuth();
     const { toast } = useToast();
 
-    return useMutation<void, Error, void>({
+    return useMutation<void, Error, { silent?: boolean } | void>({
         mutationFn: async () => {
             if (!siteId || !user) throw new Error('Site ID required.');
             // Probeer de plugins endpoint via wp-proxy
@@ -218,15 +218,17 @@ export const useCheckSiteHealth = (siteId: string | undefined) => {
                 throw new Error(msg);
             }
         },
-        onSuccess: () => {
+        onSuccess: (_data, variables) => {
             queryClient.invalidateQueries({ queryKey: ['sites', user?.$id] });
             queryClient.invalidateQueries({ queryKey: ['site', siteId] });
-            toast({ title: 'Verbinding OK', description: 'De site reageert correct.', variant: 'success' });
+            const silent = typeof variables === 'object' && variables?.silent;
+            if (!silent) toast({ title: 'Verbinding OK', description: 'De site reageert correct.', variant: 'success' });
         },
-        onError: (err) => {
+        onError: (err, _variables) => {
             queryClient.invalidateQueries({ queryKey: ['sites', user?.$id] });
             queryClient.invalidateQueries({ queryKey: ['site', siteId] });
-            toast({ title: 'Verbinding mislukt', description: err.message, variant: 'destructive' });
+            const silent = typeof _variables === 'object' && _variables?.silent;
+            if (!silent) toast({ title: 'Verbinding mislukt', description: err.message, variant: 'destructive' });
         },
     });
 };

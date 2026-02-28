@@ -2,7 +2,7 @@
  * Site Detail page - based on soft layouts/dashboards/smart-home
  * Tabs: Site Details, Plugins, Themes, Site Health
  */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
@@ -13,7 +13,7 @@ import SoftTypography from 'components/SoftTypography';
 import SoftButton from 'components/SoftButton';
 import Footer from 'examples/Footer';
 
-import { useSite, useDeleteSite } from '../hooks/useSites';
+import { useSite, useDeleteSite, useCheckSiteHealth } from '../hooks/useSites';
 
 import SiteDetailsTab from './site-detail/SiteDetailsTab';
 import PluginsTab from './site-detail/PluginsTab';
@@ -41,6 +41,13 @@ const SiteDetailPage: React.FC = () => {
 
   const { data: site, isLoading, isError, error } = useSite(id);
   const deleteSite = useDeleteSite();
+  const checkHealth = useCheckSiteHealth(id);
+
+  // Bij laden: API-verbinding testen en health_status in database bijwerken
+  useEffect(() => {
+    if (!id || !site) return;
+    checkHealth.mutate({ silent: true });
+  }, [id, site?.$id]);
 
   const handleRemove = () => {
     if (!id) return;
