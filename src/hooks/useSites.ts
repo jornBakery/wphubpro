@@ -72,19 +72,21 @@ export const useAddSite = () => {
         siteUrl: string;
         username: string;
         password?: string;
+        api_key?: string;
     }
 
     return useMutation<Site, Error, NewSiteInput>({
         mutationFn: async (newSiteData) => {
             if (!user) throw new Error("User not authenticated.");
             
-            const payload = {
+            const payload: Record<string, unknown> = {
                 site_url: newSiteData.siteUrl,
                 site_name: newSiteData.siteName,
                 username: newSiteData.username,
                 password: newSiteData.password || '',
                 userId: user.$id,
             };
+            if (newSiteData.api_key) payload.api_key = newSiteData.api_key;
 
             const path = `/?userId=${user.$id}`;
             const exec = await functions.createExecution('create-site', JSON.stringify(payload), false, path);

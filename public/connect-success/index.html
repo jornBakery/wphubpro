@@ -11,11 +11,11 @@
     (function () {
       try {
         var qs = window.location.search || '';
-        var target = window.location.origin + '/#/dashboard' + qs;
+        var target = window.location.origin + '/#/connect-success' + qs;
         window.location.replace(target);
       } catch (e) {
         var a = document.createElement('a');
-        a.href = '/#/dashboard' + (window.location.search || '');
+        a.href = '/#/connect-success' + (window.location.search || '');
         a.textContent = 'Open app';
         document.body.appendChild(a);
       }

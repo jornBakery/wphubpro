@@ -24,14 +24,8 @@ import RegisterPage from './pages/auth/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import SitesPage from './pages/SitesPage';
 import SiteDetailPage from './pages/SiteDetailPage';
+import ConnectSuccessPage from './pages/ConnectSuccessPage';
 import NotFoundPage from './pages/NotFoundPage';
-
-const RedirectToConnectSuccess: React.FC = () => {
-  React.useEffect(() => {
-    window.location.replace(`/connect-success/${window.location.search}`);
-  }, []);
-  return null;
-};
 
 const PlaceholderPage: React.FC<{ name: string }> = ({ name }) => (
   <div className="p-6 text-lg">Pagina: {name} — wordt per stap gebouwd.</div>
@@ -52,7 +46,7 @@ const AppRoutes: React.FC = () => {
     <Routes>
       <Route path="/login" element={user ? <Navigate to="/dashboard" replace /> : <LoginPage />} />
       <Route path="/register" element={user ? <Navigate to="/dashboard" replace /> : <RegisterPage />} />
-      <Route path="/connect-success" element={<RedirectToConnectSuccess />} />
+      <Route path="/connect-success" element={<ConnectSuccessPage />} />
 
       <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
