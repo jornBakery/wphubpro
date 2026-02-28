@@ -40,53 +40,34 @@ const DashboardUserCard: React.FC<DashboardUserCardProps> = ({ user }) => {
 
   return (
     <Card>
-      <SoftBox p={3}>
-        <SoftTypography variant="h6" fontWeight="medium" mb={2}>
-          Account
-        </SoftTypography>
-        <SoftBox display="flex" flexDirection="column" alignItems="center" mb={2}>
+      <SoftBox p={2}>
+        <SoftBox display="flex" alignItems="center" gap={1.5} mb={1.5}>
           <SoftAvatar
             src={avatarUrl}
             alt={user?.name || 'avatar'}
-            size="xl"
+            size="md"
             variant="rounded"
-            shadow="md"
           />
-          <SoftBox mt={2} textAlign="center">
-            <SoftTypography variant="h6" fontWeight="medium">
+          <SoftBox flex={1} minWidth={0}>
+            <SoftTypography variant="button" fontWeight="medium" noWrap>
               {user?.name || user?.email || 'Gebruiker'}
             </SoftTypography>
-            <SoftTypography variant="caption" color="secondary" display="block">
+            <SoftTypography variant="caption" color="secondary" display="block" noWrap>
               {user?.email || '-'}
             </SoftTypography>
-            <SoftTypography variant="caption" color="secondary" display="block">
-              {role}
-            </SoftTypography>
-            <SoftTypography variant="caption" color="secondary" display="block">
-              Lid sinds {memberSince}
+            <SoftTypography variant="caption" color="secondary">
+              {role} · Lid sinds {memberSince}
             </SoftTypography>
           </SoftBox>
         </SoftBox>
-        <SoftBox display="flex" flexDirection="column" gap={1}>
-          <SoftButton
-            variant="gradient"
-            color="info"
-            size="small"
-            component={Link}
-            to="/subscription"
-          >
-            <Icon sx={{ mr: 0.5, fontSize: 18 }}>person</Icon>
-            Profiel bekijken
+        <SoftBox display="flex" gap={1}>
+          <SoftButton variant="gradient" color="info" size="small" component={Link} to="/subscription">
+            <Icon sx={{ mr: 0.5, fontSize: 16 }}>person</Icon>
+            Profiel
           </SoftButton>
-          <SoftButton
-            variant="outlined"
-            color="info"
-            size="small"
-            component={Link}
-            to="/subscription"
-          >
-            <Icon sx={{ mr: 0.5, fontSize: 18 }}>edit</Icon>
-            Account bewerken
+          <SoftButton variant="outlined" color="info" size="small" component={Link} to="/subscription">
+            <Icon sx={{ mr: 0.5, fontSize: 16 }}>edit</Icon>
+            Bewerken
           </SoftButton>
         </SoftBox>
       </SoftBox>

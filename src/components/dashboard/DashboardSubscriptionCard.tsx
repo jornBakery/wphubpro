@@ -40,77 +40,46 @@ const DashboardSubscriptionCard: React.FC<DashboardSubscriptionCardProps> = ({
 
   return (
     <Card>
-      <SoftBox p={3}>
-        <SoftTypography variant="h6" fontWeight="medium" mb={2}>
-          Abonnement
-        </SoftTypography>
-        {isLoading ? (
-          <SoftTypography variant="caption" color="secondary">
-            Laden...
+      <SoftBox p={2}>
+        <SoftBox display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+          <SoftTypography variant="button" fontWeight="medium">
+            {sub?.planId ?? 'FREE'}
           </SoftTypography>
+          {periodStart && (
+            <SoftTypography variant="caption" color="secondary">
+              {periodStart.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })} – {periodEnd?.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' }) ?? '-'}
+            </SoftTypography>
+          )}
+        </SoftBox>
+        {isLoading ? (
+          <SoftTypography variant="caption" color="secondary">Laden...</SoftTypography>
         ) : (
           <>
-            <SoftBox mb={2}>
-              <SoftTypography variant="caption" color="secondary">Plan</SoftTypography>
-              <SoftTypography variant="button" fontWeight="medium" display="block">
-                {sub?.planId ?? 'FREE'}
-              </SoftTypography>
-            </SoftBox>
-            <SoftBox mb={2}>
-              <SoftTypography variant="caption" color="secondary">Facturatie</SoftTypography>
-              <SoftTypography variant="caption" display="block">{billingPeriod}</SoftTypography>
-              {periodStart && (
-                <SoftTypography variant="caption" color="secondary">
-                  {periodStart.toLocaleDateString('nl-NL')} – {periodEnd?.toLocaleDateString('nl-NL') ?? '-'}
-                </SoftTypography>
-              )}
-            </SoftBox>
-            <SoftBox mb={2}>
-              <SoftBox display="flex" justifyContent="space-between" mb={0.5}>
+            <SoftTypography variant="caption" color="secondary" display="block" mb={1}>{billingPeriod}</SoftTypography>
+            <SoftBox mb={1}>
+              <SoftBox display="flex" justifyContent="space-between" mb={0.25}>
                 <SoftTypography variant="caption">Sites</SoftTypography>
-                <SoftTypography variant="caption">{u.sitesUsed} / {sitesLimit}</SoftTypography>
+                <SoftTypography variant="caption">{u.sitesUsed}/{sitesLimit}</SoftTypography>
               </SoftBox>
-              <LinearProgress
-                variant="determinate"
-                value={sitesPct}
-                color={sitesPct >= 100 ? 'error' : 'info'}
-                sx={{ height: 6, borderRadius: 1 }}
-              />
+              <LinearProgress variant="determinate" value={sitesPct} color={sitesPct >= 100 ? 'error' : 'info'} sx={{ height: 4, borderRadius: 1 }} />
             </SoftBox>
-            <SoftBox mb={2}>
-              <SoftBox display="flex" justifyContent="space-between" mb={0.5}>
+            <SoftBox mb={1}>
+              <SoftBox display="flex" justifyContent="space-between" mb={0.25}>
                 <SoftTypography variant="caption">Bibliotheek</SoftTypography>
-                <SoftTypography variant="caption">{u.libraryUsed} / {libraryLimit}</SoftTypography>
+                <SoftTypography variant="caption">{u.libraryUsed}/{libraryLimit}</SoftTypography>
               </SoftBox>
-              <LinearProgress
-                variant="determinate"
-                value={libraryPct}
-                color={libraryPct >= 100 ? 'error' : 'info'}
-                sx={{ height: 6, borderRadius: 1 }}
-              />
+              <LinearProgress variant="determinate" value={libraryPct} color={libraryPct >= 100 ? 'error' : 'info'} sx={{ height: 4, borderRadius: 1 }} />
             </SoftBox>
-            <SoftBox mb={2}>
-              <SoftBox display="flex" justifyContent="space-between" mb={0.5}>
+            <SoftBox mb={1.5}>
+              <SoftBox display="flex" justifyContent="space-between" mb={0.25}>
                 <SoftTypography variant="caption">Opslag</SoftTypography>
-                <SoftTypography variant="caption">{u.storageUsed} / {storageLimit}</SoftTypography>
+                <SoftTypography variant="caption">{u.storageUsed}/{storageLimit}</SoftTypography>
               </SoftBox>
-              <LinearProgress
-                variant="determinate"
-                value={storagePct}
-                color={storagePct >= 100 ? 'error' : 'info'}
-                sx={{ height: 6, borderRadius: 1 }}
-              />
+              <LinearProgress variant="determinate" value={storagePct} color={storagePct >= 100 ? 'error' : 'info'} sx={{ height: 4, borderRadius: 1 }} />
             </SoftBox>
-            <SoftButton
-              variant="gradient"
-              color="info"
-              size="small"
-              component={Link}
-              to="/subscription"
-              fullWidth
-            >
-              <Icon sx={{ mr: 0.5, fontSize: 18 }}>credit_card</Icon>
-              Abonnement beheren
+            <SoftButton variant="gradient" color="info" size="small" component={Link} to="/subscription" fullWidth>
+              <Icon sx={{ mr: 0.5, fontSize: 16 }}>credit_card</Icon>
+              Beheren
             </SoftButton>
           </>
         )}
