@@ -214,8 +214,7 @@ function Sidenav({ color = "info", brand = "", brandName, routes, ...rest }) {
 
   return (
     <SidenavRoot {...rest} variant="permanent" ownerState={{ transparentSidenav, miniSidenav }}>
-      <SoftBox sx={{ display: "flex", flexDirection: "column", height: "100%", overflow: "hidden" }}>
-        <SoftBox pt={3} pb={1} px={2} display="flex" alignItems="center" justifyContent="space-between" gap={1} flexShrink={0}>
+      <SoftBox pt={3} pb={1} px={2} display="flex" alignItems="center" justifyContent="space-between" gap={1}>
         <SoftBox
           component={NavLink}
           to="/"
@@ -245,9 +244,7 @@ function Sidenav({ color = "info", brand = "", brandName, routes, ...rest }) {
         </SoftBox>
       </SoftBox>
       <Divider />
-      <List sx={{ flex: 1, overflow: "auto", minHeight: 0 }}>{renderRoutes}</List>
-      <SidenavUserCard />
-      </SoftBox>
+      <List>{renderRoutes}</List>
     </SidenavRoot>
   );
 }
