@@ -30,6 +30,8 @@ export default defineConfig({
       examples: path.resolve(__dirname, './src/examples'),
       layouts: path.resolve(__dirname, './src/layouts'),
       context: path.resolve(__dirname, './src/context'),
+      contexts: path.resolve(__dirname, './src/contexts'),
+      services: path.resolve(__dirname, './src/services'),
     },
   },
   build: {

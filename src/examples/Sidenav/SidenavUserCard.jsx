@@ -10,9 +10,10 @@ import Icon from "@mui/material/Icon";
 import { useSoftUIController } from "context";
 import { useAuth } from "contexts/AuthContext";
 import { avatars } from "services/appwrite";
+import colors from "assets/theme/base/colors";
 
 const infoGradient = "linear-gradient(310deg, #4F5482, #7a8ef0)";
-const orangeMain = "#ea580c";
+const orangeMain = colors.gradients.success.main;
 
 function getAvatarUrl(user) {
   if (!user?.$id) return undefined;
@@ -31,8 +32,9 @@ function ActionButton({ icon, title, to, onClick }) {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        width: 32,
-        height: 32,
+        width: 24,
+        height: 24,
+        p: 0.5,
         borderRadius: "50%",
         background: "white",
         color: `${orangeMain} !important`,
@@ -41,7 +43,7 @@ function ActionButton({ icon, title, to, onClick }) {
       }}
       title={title}
     >
-      <Icon sx={{ fontSize: 18 }}>{icon}</Icon>
+      <Icon sx={{ fontSize: 12 }}>{icon}</Icon>
     </SoftBox>
   );
 
@@ -98,15 +100,39 @@ function SidenavUserCard() {
   const avatarUrl = getAvatarUrl(user);
 
   return (
-    <SoftBox pt={2} my={1} mx={2} sx={{ flexShrink: 0 }}>
+    <SoftBox pt={2} my={1} mx={2} mr={4} sx={{ flexShrink: 0 }}>
       <SoftBox
         sx={{
           background: infoGradient,
           borderRadius: 2,
           p: 2,
+          pr: 3,
           color: "white",
         }}
       >
+        <SoftBox display="flex" justifyContent="space-between" alignItems="flex-start" mb={1.5}>
+          <SoftTypography
+            variant="caption"
+            sx={{
+              display: "inline-block",
+              px: 1,
+              py: 0.25,
+              borderRadius: 1,
+              bgcolor: orangeMain,
+              color: "white !important",
+              fontSize: 11,
+              fontWeight: 600,
+              letterSpacing: "0.02em",
+            }}
+          >
+            {isAdmin ? "Admin" : "Platform Member"}
+          </SoftTypography>
+          <SoftBox display="flex" gap={0.5}>
+            <ActionButton icon="person" title="View profile" to="/subscription" />
+            <ActionButton icon="settings" title="Settings" to={isAdmin ? "/admin/settings" : "/subscription"} />
+            <ActionButton icon="logout" title="Logout" onClick={handleLogout} />
+          </SoftBox>
+        </SoftBox>
         <SoftBox display="flex" flexDirection={miniSidenav ? "column" : "row"} alignItems="center" gap={1.5}>
           <SoftAvatar
             src={avatarUrl}
@@ -124,19 +150,16 @@ function SidenavUserCard() {
               <SoftTypography variant="button" fontWeight="bold" color="white" noWrap>
                 {user.name || "Gebruiker"}
               </SoftTypography>
-              <SoftTypography variant="caption" color="white" sx={{ opacity: 0.9 }} noWrap display="block">
+              <SoftTypography
+                variant="caption"
+                color="white"
+                sx={{ opacity: 0.9, fontSize: 10 }}
+                display="block"
+              >
                 {user.email || ""}
-              </SoftTypography>
-              <SoftTypography variant="caption" color="white" sx={{ opacity: 0.8 }}>
-                {isAdmin ? "Administrator" : "Platform Member"}
               </SoftTypography>
             </SoftBox>
           )}
-        </SoftBox>
-        <SoftBox display="flex" justifyContent="center" gap={1} mt={1.5}>
-          <ActionButton icon="person" title="View profile" to="/subscription" />
-          <ActionButton icon="settings" title="Settings" to={isAdmin ? "/admin/settings" : "/subscription"} />
-          <ActionButton icon="logout" title="Logout" onClick={handleLogout} />
         </SoftBox>
       </SoftBox>
     </SoftBox>

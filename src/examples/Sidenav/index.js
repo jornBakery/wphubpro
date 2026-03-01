@@ -246,7 +246,7 @@ function Sidenav({ color = "info", brand = "", brandName, routes, ...rest }) {
       </SoftBox>
       <Divider />
       <SoftBox display="flex" flexDirection="column" sx={{ flex: 1, minHeight: 0, overflow: "hidden" }}>
-        <List sx={{ flex: 1, overflow: "auto", minHeight: 0 }}>{renderRoutes}</List>
+        <List className="sidenav-scroll" sx={{ flex: 1, overflow: "auto", minHeight: 0 }}>{renderRoutes}</List>
         <SidenavUserCard />
       </SoftBox>
     </SidenavRoot>
