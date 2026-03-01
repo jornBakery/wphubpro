@@ -55,16 +55,19 @@ function collapseIconBox(theme, ownerState) {
   const { active, transparentSidenav, sidenavColor } = ownerState;
 
   const { white, info, light, gradients } = palette;
+  const { linearGradient } = functions;
   const { md } = boxShadows;
   const { borderRadius } = borders;
   const { pxToRem } = functions;
 
+  const getActiveBg = () => {
+    // Active menu item icon: orange (success gradient)
+    return linearGradient(gradients.success.main, gradients.success.state);
+  };
+
   return {
     background: () => {
-      if (active) {
-        return sidenavColor === "default" ? info.main : palette[sidenavColor].main;
-      }
-
+      if (active) return getActiveBg();
       return light.main;
     },
     minWidth: pxToRem(32),
@@ -80,19 +83,8 @@ function collapseIconBox(theme, ownerState) {
 
     [breakpoints.up("xl")]: {
       background: () => {
-        let background;
-
-        if (!active) {
-          background = transparentSidenav ? white.main : light.main;
-        } else if (sidenavColor === "default") {
-          background = info.main;
-        } else if (sidenavColor === "warning") {
-          background = gradients.warning.main;
-        } else {
-          background = palette[sidenavColor].main;
-        }
-
-        return background;
+        if (!active) return transparentSidenav ? white.main : light.main;
+        return getActiveBg();
       },
     },
 
@@ -102,9 +94,23 @@ function collapseIconBox(theme, ownerState) {
   };
 }
 
-const collapseIcon = ({ palette: { white, gradients } }, { active }) => ({
-  color: active ? white.main : gradients.dark.state,
-});
+function collapseIcon(theme, ownerState) {
+  const { functions, palette } = theme;
+  const { active } = ownerState;
+
+  const { linearGradient } = functions;
+  const { white, gradients, transparent } = palette;
+
+  // Active: white icon on gradient box. Inactive: same gradient as star (background-clip: text)
+  if (active) {
+    return { color: white.main };
+  }
+  return {
+    backgroundImage: linearGradient(gradients.info.main, gradients.info.state),
+    WebkitBackgroundClip: "text",
+    WebkitTextFillColor: transparent.main,
+  };
+}
 
 function collapseText(theme, ownerState) {
   const { typography, transitions, breakpoints, functions } = theme;

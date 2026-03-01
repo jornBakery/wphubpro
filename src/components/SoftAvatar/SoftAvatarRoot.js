@@ -21,7 +21,7 @@ export default styled(Avatar)(({ theme, ownerState }) => {
   const { palette, functions, typography, boxShadows } = theme;
   const { shadow, bgColor, size } = ownerState;
 
-  const { gradients, transparent } = palette;
+  const { gradients, transparent, white } = palette;
   const { pxToRem, linearGradient } = functions;
   const { size: fontSize, fontWeightBold } = typography;
 
@@ -81,6 +81,7 @@ export default styled(Avatar)(({ theme, ownerState }) => {
 
   return {
     background: backgroundValue,
+    color: bgColor !== "transparent" ? white.main : undefined,
     fontWeight: fontWeightBold,
     boxShadow: boxShadows[shadow],
     ...sizeValue,

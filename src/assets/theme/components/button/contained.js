@@ -20,8 +20,9 @@ import boxShadows from "assets/theme/base/boxShadows";
 
 // Soft UI Dashboard PRO React Helper Functions
 import pxToRem from "assets/theme/functions/pxToRem";
+import linearGradient from "assets/theme/functions/linearGradient";
 
-const { white, text, info, secondary } = colors;
+const { white, text, info, secondary, gradients } = colors;
 const { size } = typography;
 const { buttonBoxShadow } = boxShadows;
 
@@ -77,27 +78,31 @@ const contained = {
   },
 
   primary: {
-    backgroundColor: info.main,
+    background: linearGradient(gradients.info.main, gradients.info.state),
+    color: white.main,
 
     "&:hover": {
-      backgroundColor: info.main,
+      background: linearGradient(gradients.info.main, gradients.info.state),
+      opacity: 0.9,
     },
 
     "&:focus:not(:hover)": {
-      backgroundColor: info.focus,
+      background: linearGradient(gradients.info.main, gradients.info.state),
       boxShadow: buttonBoxShadow.stateOfNotHover,
     },
   },
 
   secondary: {
-    backgroundColor: secondary.main,
+    background: linearGradient(gradients.secondary.main, gradients.secondary.state),
+    color: white.main,
 
     "&:hover": {
-      backgroundColor: secondary.main,
+      background: linearGradient(gradients.secondary.main, gradients.secondary.state),
+      opacity: 0.9,
     },
 
     "&:focus:not(:hover)": {
-      backgroundColor: secondary.focus,
+      background: linearGradient(gradients.secondary.main, gradients.secondary.state),
       boxShadow: buttonBoxShadow.stateOfNotHover,
     },
   },

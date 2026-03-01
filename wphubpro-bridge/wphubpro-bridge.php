@@ -21,6 +21,12 @@ if (!defined('WPHUBPRO_BRIDGE_ABSPATH')) {
 
 // Autoload includes
 foreach ([
+	'class-wphubpro-bridge-logger.php',
+	'class-wphubpro-bridge-connect.php',
+	'class-wphubpro-bridge-plugins.php',
+	'class-wphubpro-bridge-themes.php',
+	'class-wphubpro-bridge-health.php',
+	'class-wphubpro-bridge-debug.php',
 	'class-wphubpro-bridge.php',
 	'class-wphubpro-bridge-admin.php',
 	'class-wphubpro-bridge-ajax.php',

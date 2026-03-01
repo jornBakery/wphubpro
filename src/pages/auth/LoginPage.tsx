@@ -1,13 +1,15 @@
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import Card from '@mui/material/Card';
+import Icon from '@mui/material/Icon';
+import CircularProgress from '@mui/material/CircularProgress';
 import { useAuth } from '../../contexts/AuthContext';
-import Button from '../../components/ui/Button';
 import { usePlatformSettings } from '../../hooks/usePlatformSettings';
-import Card, { CardHeader, CardTitle, CardDescription, CardContent } from '../../components/ui/Card';
-import Input from '../../components/ui/Input';
-import Label from '../../components/ui/Label';
-import { Loader2, AlertCircle } from 'lucide-react';
+import SoftBox from 'components/SoftBox';
+import SoftTypography from 'components/SoftTypography';
+import SoftInput from 'components/SoftInput';
+import SoftButton from 'components/SoftButton';
+import { AlertCircle } from 'lucide-react';
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -15,6 +17,7 @@ const LoginPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
+  const { data: details } = usePlatformSettings('details');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,100 +25,145 @@ const LoginPage: React.FC = () => {
     setIsLoading(true);
     try {
       await login(email, password);
-      // Navigation handled automatically by App.tsx route when user state updates
-    } catch (err: any) {
-      setError(err.message || 'Invalid email or password. Please try again.');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Invalid email or password. Please try again.');
       setIsLoading(false);
     }
   };
 
-  const { data: details } = usePlatformSettings('details');
-
-  const PlatformBrandLogin: React.FC = () => {
-    const name = details?.name || 'The Platform';
-    const logo = details?.logoUrl || details?.logoDataUrl || null;
-    return (
-      <div className="flex items-center space-x-2">
-        {logo ? (
-          <img src={logo} alt="Logo" className="w-10 h-10 object-contain" />
-        ) : (
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-10 h-10 text-primary">
-            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
-          </svg>
-        )}
-        <span className="text-2xl font-bold text-foreground">{name}</span>
-      </div>
-    );
-  };
+  const platformName = details?.name || 'WPHub.PRO';
+  const logoUrl = details?.logoUrl || details?.logoDataUrl;
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-secondary p-4">
-      <div className="w-full max-w-sm">
-        <div className="flex justify-center mb-8">
-          <PlatformBrandLogin />
-        </div>
-        <Card>
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl">Welcome Back</CardTitle>
-            <CardDescription>Enter your credentials to access your account.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+    <SoftBox
+      minHeight="100vh"
+      display="flex"
+      flexDirection="column"
+      alignItems="center"
+      justifyContent="center"
+      sx={{
+        backgroundColor: 'background.default',
+        py: 4,
+        px: 2,
+      }}
+    >
+      <SoftBox width="100%" maxWidth={420} mx="auto">
+        {/* Brand */}
+        <SoftBox display="flex" justifyContent="center" alignItems="center" gap={1.5} mb={3}>
+          {logoUrl ? (
+            <SoftBox component="img" src={logoUrl} alt="Logo" width={48} height={48} sx={{ objectFit: 'contain' }} />
+          ) : (
+            <SoftBox
+              width={48}
+              height={48}
+              borderRadius="lg"
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              sx={{ background: 'linear-gradient(310deg, #4F5482, #7a8ef0)' }}
+            >
+              <Icon sx={{ color: 'white', fontSize: 28 }}>layers</Icon>
+            </SoftBox>
+          )}
+          <SoftTypography variant="h4" fontWeight="bold" color="dark">
+            {platformName}
+          </SoftTypography>
+        </SoftBox>
+
+        {/* Card */}
+        <Card sx={{ boxShadow: '0 4px 20px rgba(0,0,0,0.08)', borderRadius: 2 }}>
+          <SoftBox p={3}>
+            <SoftBox textAlign="center" mb={3}>
+              <SoftTypography variant="h5" fontWeight="bold" color="dark" gutterBottom>
+                Welcome Back
+              </SoftTypography>
+              <SoftTypography variant="body2" color="text">
+                Enter your credentials to access your account.
+              </SoftTypography>
+            </SoftBox>
+
+            <SoftBox component="form" onSubmit={handleSubmit}>
               {error && (
-                <div className="flex items-center p-3 text-sm text-destructive bg-destructive/10 rounded-md border border-destructive/20">
-                  <AlertCircle className="w-5 h-5 mr-2 shrink-0" />
-                  <p>{error}</p>
-                </div>
+                <SoftBox
+                  mb={2}
+                  p={2}
+                  borderRadius={1}
+                  display="flex"
+                  alignItems="center"
+                  gap={1}
+                  sx={{ bgcolor: 'error.main', color: 'white', fontSize: 14 }}
+                >
+                  <AlertCircle size={20} style={{ flexShrink: 0 }} />
+                  <span>{error}</span>
+                </SoftBox>
               )}
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input 
-                  id="email" 
-                  type="email" 
+
+              <SoftBox mb={2}>
+                <SoftTypography variant="caption" fontWeight="medium" color="text" display="block" mb={0.5}>
+                  Email
+                </SoftTypography>
+                <SoftInput
+                  type="email"
                   placeholder="name@example.com"
-                  value={email} 
-                  onChange={(e) => setEmail(e.target.value)} 
-                  required 
-                  autoComplete="email"
+                  value={email}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
+                  required
+                  fullWidth
                 />
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="password">Password</Label>
-                  <Link to="/forgot-password" title="Coming Soon" className="text-xs text-primary hover:underline">
+              </SoftBox>
+
+              <SoftBox mb={3}>
+                <SoftBox display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
+                  <SoftTypography variant="caption" fontWeight="medium" color="text">
+                    Password
+                  </SoftTypography>
+                  <Link
+                    to="/forgot-password"
+                    title="Coming Soon"
+                    style={{ fontSize: 12, color: '#f97316', textDecoration: 'none', fontWeight: 600 }}
+                  >
                     Forgot password?
                   </Link>
-                </div>
-                <Input 
-                  id="password" 
-                  type="password" 
-                  value={password} 
-                  onChange={(e) => setPassword(e.target.value)} 
-                  required 
-                  autoComplete="current-password"
+                </SoftBox>
+                <SoftInput
+                  type="password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
+                  required
+                  fullWidth
                 />
-              </div>
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              </SoftBox>
+
+              <SoftButton
+                type="submit"
+                variant="gradient"
+                color="info"
+                fullWidth
+                disabled={isLoading}
+                sx={{ py: 1.5, mb: 2 }}
+              >
                 {isLoading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Logging in...
-                  </>
+                  <SoftBox display="flex" alignItems="center" justifyContent="center" gap={1}>
+                    <CircularProgress size={18} sx={{ color: 'white' }} />
+                    <span>Logging in...</span>
+                  </SoftBox>
                 ) : (
                   'Log In'
                 )}
-              </Button>
-            </form>
-            <p className="mt-6 text-center text-sm text-muted-foreground">
-              Don't have an account?{' '}
-              <Link to="/register" className="font-medium text-primary hover:underline">
-                Sign up
-              </Link>
-            </p>
-          </CardContent>
+              </SoftButton>
+
+              <SoftTypography variant="caption" textAlign="center" color="text" display="block">
+                Don&apos;t have an account?{' '}
+                <Link to="/register" style={{ color: '#f97316', fontWeight: 600, textDecoration: 'none' }}>
+                  Sign up
+                </Link>
+              </SoftTypography>
+            </SoftBox>
+          </SoftBox>
         </Card>
-      </div>
-    </div>
+      </SoftBox>
+    </SoftBox>
   );
 };
 

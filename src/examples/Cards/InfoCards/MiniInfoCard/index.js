@@ -40,7 +40,7 @@ function MiniInfoCard({ color = "info", icon, title, description }) {
           borderRadius="lg"
           variant="gradient"
         >
-          <Icon fontSize="default">{icon}</Icon>
+          <Icon fontSize="default" sx={{ color: "white" }}>{icon}</Icon>
         </SoftBox>
         <SoftBox mt={2}>
           <SoftTypography variant="h5" fontWeight="medium" textTransform="capitalize">

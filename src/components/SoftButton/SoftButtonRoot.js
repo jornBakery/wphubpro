@@ -27,8 +27,13 @@ export default styled(Button)(({ theme, ownerState }) => {
 
   // styles for the button with variant="contained"
   const containedStyles = () => {
-    // background color value
-    const backgroundValue = palette[color] ? palette[color].main : white.main;
+    // background: gradient for info/primary/secondary (same as star icon)
+    const useGradient = ["info", "primary", "secondary"].includes(color) && gradients[color];
+    const backgroundValue = useGradient
+      ? linearGradient(gradients[color].main, gradients[color].state)
+      : palette[color]
+        ? palette[color].main
+        : white.main;
 
     // backgroundColor value when button is focused
     const focusedBackgroundValue = palette[color] ? palette[color].focus : white.focus;
@@ -59,82 +64,75 @@ export default styled(Button)(({ theme, ownerState }) => {
     return {
       background: backgroundValue,
       color: colorValue,
-
+      "& .material-icons-round, & .material-icons, & .MuiIcon-root, & .MuiSvgIcon-root, & svg": {
+        color: `${colorValue} !important`,
+      },
       "&:hover": {
-        backgroundColor: backgroundValue,
+        background: useGradient ? backgroundValue : undefined,
+        backgroundColor: useGradient ? undefined : backgroundValue,
+        opacity: useGradient ? 0.9 : undefined,
       },
 
       "&:focus:not(:hover)": {
-        backgroundColor: focusedBackgroundValue,
+        background: useGradient ? backgroundValue : undefined,
+        backgroundColor: useGradient ? undefined : focusedBackgroundValue,
         boxShadow: boxShadowValue,
       },
 
       "&:disabled": {
-        backgroundColor: backgroundValue,
+        background: backgroundValue,
         color: focusedColorValue,
       },
     };
   };
 
-  // styles for the button with variant="outlined"
+  // styles for the button with variant="outlined" (reversed buttons: orange background, white text)
   const outliedStyles = () => {
-    // background color value
-    const backgroundValue = color === "white" ? rgba(white.main, 0.1) : transparent.main;
-
-    // color value
-    const colorValue = palette[color] ? palette[color].main : white.main;
-
-    // boxShadow value
-    const boxShadowValue = palette[color]
-      ? boxShadow([0, 0], [0, 3.2], palette[color].main, 0.5)
-      : boxShadow([0, 0], [0, 3.2], white.main, 0.5);
-
-    // border color value
-    let borderColorValue = palette[color] ? palette[color].main : rgba(white.main, 0.75);
-
-    if (color === "white") {
-      borderColorValue = rgba(white.main, 0.75);
-    }
+    const success = palette.success;
+    const successBg = linearGradient(gradients.success.main, gradients.success.state);
+    const boxShadowValue = boxShadow([0, 0], [0, 3.2], success.main, 0.5);
 
     return {
-      background: backgroundValue,
-      color: colorValue,
-      borderColor: borderColorValue,
-
+      background: successBg,
+      color: white.main,
+      borderColor: success.main,
+      "& .material-icons-round, & .material-icons, & .MuiIcon-root, & .MuiSvgIcon-root, & svg": {
+        color: `${white.main} !important`,
+      },
       "&:hover": {
-        background: transparent.main,
-        borderColor: colorValue,
+        background: successBg,
+        borderColor: success.focus,
+        opacity: 0.9,
       },
 
       "&:focus:not(:hover)": {
-        background: transparent.main,
+        background: successBg,
         boxShadow: boxShadowValue,
       },
 
       "&:active:not(:hover)": {
-        backgroundColor: colorValue,
+        background: successBg,
         color: white.main,
         opacity: 0.85,
       },
 
       "&:disabled": {
-        color: colorValue,
-        borderColor: colorValue,
+        background: successBg,
+        color: white.main,
+        borderColor: success.main,
+        opacity: 0.65,
       },
     };
   };
 
   // styles for the button with variant="gradient"
   const gradientStyles = () => {
-    // background value
     const backgroundValue =
       color === "white" || !gradients[color]
         ? white.main
         : linearGradient(gradients[color].main, gradients[color].state);
 
-    // color value
     let colorValue = white.main;
-
     if (color === "white") {
       colorValue = text.main;
     } else if (color === "light") {
@@ -144,15 +142,11 @@ export default styled(Button)(({ theme, ownerState }) => {
     return {
       background: backgroundValue,
       color: colorValue,
-
-      "&:focus:not(:hover)": {
-        boxShadow: "none",
+      "& .material-icons-round, & .material-icons, & .MuiIcon-root, & .MuiSvgIcon-root, & svg": {
+        color: `${colorValue} !important`,
       },
-
-      "&:disabled": {
-        background: backgroundValue,
-        color: colorValue,
-      },
+      "&:focus:not(:hover)": { boxShadow: "none" },
+      "&:disabled": { background: backgroundValue, color: colorValue },
     };
   };
 

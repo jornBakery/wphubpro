@@ -45,6 +45,7 @@ const DashboardUserCard: React.FC<DashboardUserCardProps> = ({ user }) => {
           <SoftAvatar
             src={avatarUrl}
             alt={user?.name || 'avatar'}
+            bgColor="info"
             size="md"
             variant="rounded"
           />

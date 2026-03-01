@@ -88,10 +88,12 @@ export default styled(Box)(({ theme, ownerState }) => {
     backgroundValue = bgColor;
   }
 
-  // color value
+  // color value - white icons on colored gradient backgrounds
   let colorValue = color;
-
-  if (validColors.find((el) => el === color)) {
+  const coloredGradients = ["primary", "secondary", "info", "success", "warning", "error", "dark"];
+  if (variant === "gradient" && coloredGradients.includes(bgColor)) {
+    colorValue = white.main;
+  } else if (validColors.find((el) => el === color)) {
     colorValue = palette[color] ? palette[color].main : greyColors[color];
   }
 

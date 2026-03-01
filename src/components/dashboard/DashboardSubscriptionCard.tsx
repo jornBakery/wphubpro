@@ -61,21 +61,21 @@ const DashboardSubscriptionCard: React.FC<DashboardSubscriptionCardProps> = ({
                 <SoftTypography variant="caption">Sites</SoftTypography>
                 <SoftTypography variant="caption">{u.sitesUsed}/{sitesLimit}</SoftTypography>
               </SoftBox>
-              <LinearProgress variant="determinate" value={sitesPct} color={sitesPct >= 100 ? 'error' : 'info'} sx={{ height: 4, borderRadius: 1 }} />
+              <LinearProgress variant="determinate" value={sitesPct} color={sitesPct >= 100 ? 'error' : 'success'} sx={{ height: 4, borderRadius: 1 }} />
             </SoftBox>
             <SoftBox mb={1}>
               <SoftBox display="flex" justifyContent="space-between" mb={0.25}>
                 <SoftTypography variant="caption">Bibliotheek</SoftTypography>
                 <SoftTypography variant="caption">{u.libraryUsed}/{libraryLimit}</SoftTypography>
               </SoftBox>
-              <LinearProgress variant="determinate" value={libraryPct} color={libraryPct >= 100 ? 'error' : 'info'} sx={{ height: 4, borderRadius: 1 }} />
+              <LinearProgress variant="determinate" value={libraryPct} color={libraryPct >= 100 ? 'error' : 'success'} sx={{ height: 4, borderRadius: 1 }} />
             </SoftBox>
             <SoftBox mb={1.5}>
               <SoftBox display="flex" justifyContent="space-between" mb={0.25}>
                 <SoftTypography variant="caption">Opslag</SoftTypography>
                 <SoftTypography variant="caption">{u.storageUsed}/{storageLimit}</SoftTypography>
               </SoftBox>
-              <LinearProgress variant="determinate" value={storagePct} color={storagePct >= 100 ? 'error' : 'info'} sx={{ height: 4, borderRadius: 1 }} />
+              <LinearProgress variant="determinate" value={storagePct} color={storagePct >= 100 ? 'error' : 'success'} sx={{ height: 4, borderRadius: 1 }} />
             </SoftBox>
             <SoftButton variant="gradient" color="info" size="small" component={Link} to="/subscription" fullWidth>
               <Icon sx={{ mr: 0.5, fontSize: 16 }}>credit_card</Icon>

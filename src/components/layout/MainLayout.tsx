@@ -56,7 +56,8 @@ const MainLayout: React.FC = () => {
         <WPHubNavbar />
         <SoftBox
           component="main"
-          py={3}
+          pt={1}
+          pb={3}
           px={3}
           sx={({ breakpoints }) => ({
             flex: 1,

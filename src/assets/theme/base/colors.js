@@ -21,12 +21,12 @@ Coded by www.creative-tim.com
 
 const colors = {
   background: {
-    default: "#f8f9fa",
+    default: "#F4F6F9",
   },
 
   text: {
-    main: "#67748e",
-    focus: "#67748e",
+    main: "#292F4D",
+    focus: "#292F4D",
   },
 
   transparent: {
@@ -45,23 +45,23 @@ const colors = {
   },
 
   primary: {
-    main: "#cb0c9f",
-    focus: "#ad0a87",
+    main: "#292F4D",
+    focus: "#3a416f",
   },
 
   secondary: {
-    main: "#8392ab",
+    main: "#A3A7BA",
     focus: "#96a2b8",
   },
 
   info: {
-    main: "#17c1e8",
-    focus: "#3acaeb",
+    main: "#4F5482",
+    focus: "#7a8ef0",
   },
 
   success: {
-    main: "#82d616",
-    focus: "#95dc39",
+    main: "#f97316",
+    focus: "#fb923c",
   },
 
   warning: {
@@ -75,46 +75,51 @@ const colors = {
   },
 
   light: {
-    main: "#e9ecef",
-    focus: "#e9ecef",
+    main: "#E7EAF3",
+    focus: "#E7EAF3",
   },
 
   dark: {
-    main: "#344767",
-    focus: "#344767",
+    main: "#292F4D",
+    focus: "#3a416f",
+  },
+
+  cta: {
+    main: "#FF735D",
+    focus: "#ff8a77",
   },
 
   grey: {
-    100: "#f8f9fa",
-    200: "#e9ecef",
-    300: "#dee2e6",
+    100: "#F4F6F9",
+    200: "#E7EAF3",
+    300: "#D8DCEE",
     400: "#ced4da",
-    500: "#adb5bd",
+    500: "#A3A7BA",
     600: "#6c757d",
-    700: "#495057",
-    800: "#343a40",
+    700: "#424A67",
+    800: "#292F4D",
     900: "#212529",
   },
 
   gradients: {
     primary: {
-      main: "#7928ca",
-      state: "#ff0080",
+      main: "#292F4D",
+      state: "#424A67",
     },
 
     secondary: {
-      main: "#627594",
-      state: "#a8b8d8",
+      main: "#4F5482",
+      state: "#7a8ef0",
     },
 
     info: {
-      main: "#2152ff",
-      state: "#21d4fd",
+      main: "#4F5482",
+      state: "#7a8ef0",
     },
 
     success: {
-      main: "#17ad37",
-      state: "#98ec2d",
+      main: "#ea580c",
+      state: "#fb923c",
     },
 
     warning: {
@@ -220,9 +225,9 @@ const colors = {
     },
 
     success: {
-      main: "#17ad37",
-      state: "#84dc14",
-      border: "#daf3b9",
+      main: "#ea580c",
+      state: "#fb923c",
+      border: "#fed7aa",
     },
 
     warning: {
@@ -267,8 +272,8 @@ const colors = {
     },
 
     success: {
-      background: "#cdf59b",
-      text: "#67b108",
+      background: "#ffedd5",
+      text: "#ea580c",
     },
 
     warning: {
@@ -293,10 +298,10 @@ const colors = {
   },
 
   inputColors: {
-    borderColor: { main: "#d2d6da", focus: "#35d1f5" },
+    borderColor: { main: "#E7EAF3", focus: "#4F5482" },
     boxShadow: "#81e3f9",
     error: "#fd5c70",
-    success: "#66d432",
+    success: "#f97316",
   },
 
   sliderColors: {

@@ -25,7 +25,7 @@ import SoftBox from "components/SoftBox";
 import SoftTypography from "components/SoftTypography";
 
 // Custom styles for the SidenavCard
-import { card, cardContent, cardIconBox, cardIcon } from "examples/Sidenav/styles/sidenavCard";
+import { card, cardContent, cardIconBox } from "examples/Sidenav/styles/sidenavCard";
 
 // Soft UI Dashboard PRO React context
 import { useSoftUIController } from "context";
@@ -46,7 +46,7 @@ function SidenavCard() {
           mb={2}
           sx={cardIconBox}
         >
-          <Icon fontSize="medium" sx={(theme) => cardIcon(theme, { sidenavColor })}>
+          <Icon fontSize="medium" sx={{ color: "success.main" }}>
             star
           </Icon>
         </SoftBox>

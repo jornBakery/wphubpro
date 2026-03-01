@@ -27,7 +27,7 @@ import Icon from "@mui/material/Icon";
 import SoftBox from "components/SoftBox";
 import SoftTypography from "components/SoftTypography";
 
-function Breadcrumbs({ icon, title, route, light = false }) {
+function Breadcrumbs({ icon, title, route, light = false, showPageTitle = true }) {
   const routes = route.slice(0, -1);
 
   return (
@@ -75,15 +75,17 @@ function Breadcrumbs({ icon, title, route, light = false }) {
           {title.replace("-", " ")}
         </SoftTypography>
       </MuiBreadcrumbs>
-      <SoftTypography
-        fontWeight="bold"
-        textTransform="capitalize"
-        variant="h6"
-        color={light ? "white" : "dark"}
-        noWrap
-      >
-        {title.replace("-", " ")}
-      </SoftTypography>
+      {showPageTitle && (
+        <SoftTypography
+          fontWeight="bold"
+          textTransform="capitalize"
+          variant="h6"
+          color={light ? "white" : "dark"}
+          noWrap
+        >
+          {title.replace("-", " ")}
+        </SoftTypography>
+      )}
     </SoftBox>
   );
 }
@@ -94,6 +96,7 @@ Breadcrumbs.propTypes = {
   title: PropTypes.string.isRequired,
   route: PropTypes.oneOfType([PropTypes.string, PropTypes.array]).isRequired,
   light: PropTypes.bool,
+  showPageTitle: PropTypes.bool,
 };
 
 export default Breadcrumbs;

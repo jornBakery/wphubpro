@@ -38,7 +38,7 @@ function DefaultNavbarCategory({ color = "info", icon, title }) {
         variant="gradient"
         mr={1}
       >
-        {typeof icon === "string" ? <Icon>{icon}</Icon> : icon}
+        {typeof icon === "string" ? <Icon sx={{ color: "white" }}>{icon}</Icon> : icon}
       </SoftBox>
       <SoftTypography variant="button" fontWeight="bold">
         {title}

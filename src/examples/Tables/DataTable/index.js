@@ -13,13 +13,13 @@ Coded by www.creative-tim.com
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 */
 
-import { useMemo, useEffect, useState } from "react";
+import { useMemo, useEffect, useState, useRef, useCallback } from "react";
 
 // prop-types is a library for typechecking of props
 import PropTypes from "prop-types";
 
 // react-table components
-import { useTable, usePagination, useGlobalFilter, useAsyncDebounce, useSortBy } from "react-table";
+import { useTable, usePagination, useGlobalFilter, useSortBy } from "react-table";
 
 // @mui material components
 import Table from "@mui/material/Table";
@@ -110,10 +110,17 @@ function DataTable({
   // Search input value state
   const [search, setSearch] = useState(globalFilter);
 
-  // Search input state handle
-  const onSearchChange = useAsyncDebounce((value) => {
-    setGlobalFilter(value || undefined);
-  }, 100);
+  // Debounced search (avoids regeneratorRuntime dependency from useAsyncDebounce)
+  const debounceRef = useRef(null);
+  const onSearchChange = useCallback(
+    (value) => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(() => {
+        setGlobalFilter(value || undefined);
+      }, 100);
+    },
+    [setGlobalFilter]
+  );
 
   // A function that sets the sorted value for the table
   const setSortedValue = (column) => {
@@ -167,7 +174,7 @@ function DataTable({
                 placeholder="Search..."
                 value={search}
                 onChange={({ currentTarget }) => {
-                  setSearch(search);
+                  setSearch(currentTarget.value);
                   onSearchChange(currentTarget.value);
                 }}
               />
@@ -177,37 +184,49 @@ function DataTable({
       ) : null}
       <Table {...getTableProps()}>
         <SoftBox component="thead">
-          {headerGroups.map((headerGroup, key) => (
-            <TableRow key={key} {...headerGroup.getHeaderGroupProps()}>
-              {headerGroup.headers.map((column, key) => (
-                <DataTableHeadCell
-                  key={key}
-                  {...column.getHeaderProps(isSorted && column.getSortByToggleProps())}
-                  width={column.width ? column.width : "auto"}
-                  align={column.align ? column.align : "left"}
-                  sorted={setSortedValue(column)}
-                >
-                  {column.render("Header")}
-                </DataTableHeadCell>
-              ))}
-            </TableRow>
-          ))}
+          {headerGroups.map((headerGroup) => {
+            const { key: headerKey, ...headerGroupProps } = headerGroup.getHeaderGroupProps();
+            return (
+              <TableRow key={headerKey} {...headerGroupProps}>
+                {headerGroup.headers.map((column) => {
+                  const { key: columnKey, ...headerProps } = column.getHeaderProps(
+                    isSorted && column.getSortByToggleProps()
+                  );
+                  return (
+                    <DataTableHeadCell
+                      key={columnKey}
+                      {...headerProps}
+                      width={column.width ? column.width : "auto"}
+                      align={column.align ? column.align : "left"}
+                      sorted={setSortedValue(column)}
+                    >
+                      {column.render("Header")}
+                    </DataTableHeadCell>
+                  );
+                })}
+              </TableRow>
+            );
+          })}
         </SoftBox>
         <TableBody {...getTableBodyProps()}>
-          {page.map((row, key) => {
+          {page.map((row, rowIndex) => {
             prepareRow(row);
+            const { key: rowKey, ...rowProps } = row.getRowProps();
             return (
-              <TableRow key={key} {...row.getRowProps()}>
-                {row.cells.map((cell, key) => (
-                  <DataTableBodyCell
-                    key={key}
-                    noBorder={noEndBorder && rows.length - 1 === key}
-                    align={cell.column.align ? cell.column.align : "left"}
-                    {...cell.getCellProps()}
-                  >
-                    {cell.render("Cell")}
-                  </DataTableBodyCell>
-                ))}
+              <TableRow key={rowKey} {...rowProps}>
+                {row.cells.map((cell) => {
+                  const { key: cellKey, ...cellProps } = cell.getCellProps();
+                  return (
+                    <DataTableBodyCell
+                      key={cellKey}
+                      noBorder={noEndBorder && rows.length - 1 === rowIndex}
+                      align={cell.column.align ? cell.column.align : "left"}
+                      {...cellProps}
+                    >
+                      {cell.render("Cell")}
+                    </DataTableBodyCell>
+                  );
+                })}
               </TableRow>
             );
           })}

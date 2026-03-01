@@ -53,9 +53,9 @@ const AddSiteModal: React.FC<AddSiteModalProps> = ({ open, onClose }) => {
       <form onSubmit={handleSubmit}>
         <DialogContent>
           {addSiteMutation.isError && (
-            <SoftBox mb={2} p={2} borderRadius="md" bgColor="error" sx={{ opacity: 0.9 }}>
+            <SoftBox mb={2} p={2} borderRadius="md" bgColor="error" color="white" sx={{ opacity: 0.9 }}>
               <SoftBox display="flex" alignItems="center" gap={1}>
-                <Icon color="inherit" sx={{ fontSize: 20 }}>error</Icon>
+                <Icon sx={{ fontSize: 20, color: "white" }}>error</Icon>
                 <SoftTypography variant="caption" color="white">{addSiteMutation.error?.message}</SoftTypography>
               </SoftBox>
             </SoftBox>

@@ -5,12 +5,15 @@ import path from 'path'
 
 // https://vite.dev/config/
 export default defineConfig({
+  server: {
+    allowedHosts: ['wphubpro.code045.nl', 'wphub.pro', 'app.wphub.pro', 'dev.wphub.pro']
+  },
   plugins: [
     {
       name: 'jsx-in-js',
       async transform(code, id) {
         if (!id.includes('node_modules') && id.match(/\.js$/)) {
-          return transformWithEsbuild(code, id, {
+          return transformWithEsbuild(code, id.replace(/\.js$/, '.jsx'), {
             loader: 'jsx',
             jsx: 'automatic',
           })
@@ -32,6 +35,11 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     emptyOutDir: true,
+  },
+  optimizeDeps: {
+    esbuildOptions: {
+      loader: { '.js': 'jsx' },
+    },
   },
 })
 

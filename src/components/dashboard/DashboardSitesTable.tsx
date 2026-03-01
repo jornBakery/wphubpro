@@ -1,95 +1,56 @@
 /**
- * Dashboard sites table - Name, URL, WP version, health, status, plugins, actions
+ * Dashboard sites table - same DataTable as /sites page
  */
-import React from 'react';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
+import React, { useMemo } from 'react';
 import Card from '@mui/material/Card';
-import Icon from '@mui/material/Icon';
-import IconButton from '@mui/material/IconButton';
-import Tooltip from '@mui/material/Tooltip';
 import { Link } from 'react-router-dom';
 
 import SoftBox from 'components/SoftBox';
 import SoftTypography from 'components/SoftTypography';
-import SoftBadge from 'components/SoftBadge';
+import DataTable from 'examples/Tables/DataTable';
+
 import { Site } from '../../types';
-import { usePlugins } from '../../hooks/useWordPress';
+import { SiteCell, StatusIcon, HealthBadge, ActionCell } from '../sites/SitesTableCells';
 
 interface DashboardSitesTableProps {
   sites: Site[];
 }
 
-const SiteRow: React.FC<{ site: Site }> = ({ site }) => {
-  const { data: plugins } = usePlugins(site.$id);
-  const pluginCount = plugins?.length ?? 0;
-  const updateCount = plugins?.filter((p: { update?: { new_version?: string } }) => p.update?.new_version).length ?? 0;
-
-  return (
-    <TableRow>
-      <TableCell>
-        <SoftTypography variant="button" fontWeight="medium">
-          {site.siteName || site.siteUrl || 'Untitled'}
-        </SoftTypography>
-      </TableCell>
-      <TableCell>
-        <SoftTypography variant="caption" sx={{ wordBreak: 'break-all' }}>
-          {site.siteUrl || '-'}
-        </SoftTypography>
-      </TableCell>
-      <TableCell>
-        <SoftTypography variant="caption">{(site as { wpVersion?: string }).wpVersion ?? '-'}</SoftTypography>
-      </TableCell>
-      <TableCell>
-        <SoftBadge
-          variant="contained"
-          color={site.healthStatus === 'healthy' ? 'success' : 'error'}
-          size="xs"
-          badgeContent={site.healthStatus === 'healthy' ? 'Healthy' : 'Bad'}
-          container
-        />
-      </TableCell>
-      <TableCell>
-        <SoftBadge
-          variant="contained"
-          color={site.status === 'connected' ? 'success' : 'error'}
-          size="xs"
-          badgeContent={site.status === 'connected' ? 'Verbonden' : 'Losgekoppeld'}
-          container
-        />
-      </TableCell>
-      <TableCell>
-        <SoftTypography variant="caption">
-          {pluginCount} {updateCount > 0 ? `(${updateCount} need update)` : ''}
-        </SoftTypography>
-      </TableCell>
-      <TableCell align="right">
-        <Tooltip title="Beheer site">
-          <IconButton size="small" component={Link} to={`/sites/${site.$id}`}>
-            <Icon fontSize="small">settings</Icon>
-          </IconButton>
-        </Tooltip>
-        <Tooltip title="Bezoek site">
-          <IconButton
-            size="small"
-            href={site.siteUrl}
-            target="_blank"
-            rel="noreferrer"
-            component="a"
-          >
-            <Icon fontSize="small">open_in_new</Icon>
-          </IconButton>
-        </Tooltip>
-      </TableCell>
-    </TableRow>
-  );
-};
-
 const DashboardSitesTable: React.FC<DashboardSitesTableProps> = ({ sites }) => {
+  const dataTableData = useMemo(() => {
+    const rows = (sites || []).map((site) => ({
+      site: [site.siteName || site.siteUrl || 'Untitled', { url: site.siteUrl || '-' }],
+      status: site.status,
+      health: site.healthStatus,
+      lastChecked: site.lastChecked ? new Date(site.lastChecked).toLocaleDateString('nl-NL') : '-',
+      action: <ActionCell siteId={site.$id} siteUrl={site.siteUrl || '#'} />,
+    }));
+    return {
+      columns: [
+        {
+          Header: 'Site',
+          accessor: 'site',
+          width: '40%',
+          Cell: ({ value }: { value: [string, { url: string }] }) => <SiteCell value={value} />,
+        },
+        {
+          Header: 'Status',
+          accessor: 'status',
+          width: '8%',
+          Cell: ({ value }: { value: Site['status'] }) => <StatusIcon value={value} />,
+        },
+        {
+          Header: 'Health',
+          accessor: 'health',
+          Cell: ({ value }: { value: Site['healthStatus'] }) => <HealthBadge value={value} />,
+        },
+        { Header: 'Last Check', accessor: 'lastChecked', width: '15%' },
+        { Header: 'Actions', accessor: 'action', width: '12%' },
+      ],
+      rows,
+    };
+  }, [sites]);
+
   return (
     <Card>
       <SoftBox p={2} borderBottom="1px solid" borderColor="grey-200" display="flex" justifyContent="space-between" alignItems="center">
@@ -98,42 +59,25 @@ const DashboardSitesTable: React.FC<DashboardSitesTableProps> = ({ sites }) => {
         </SoftTypography>
         <Link to="/sites" style={{ textDecoration: 'none' }}>
           <SoftTypography variant="button" fontWeight="regular" color="info">
-            Alle sites
+            All sites
           </SoftTypography>
         </Link>
       </SoftBox>
-      <TableContainer>
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell><SoftTypography variant="caption" fontWeight="bold">Naam</SoftTypography></TableCell>
-              <TableCell><SoftTypography variant="caption" fontWeight="bold">URL</SoftTypography></TableCell>
-              <TableCell><SoftTypography variant="caption" fontWeight="bold">WP</SoftTypography></TableCell>
-              <TableCell><SoftTypography variant="caption" fontWeight="bold">Gezondheid</SoftTypography></TableCell>
-              <TableCell><SoftTypography variant="caption" fontWeight="bold">Status</SoftTypography></TableCell>
-              <TableCell><SoftTypography variant="caption" fontWeight="bold">Plugins</SoftTypography></TableCell>
-              <TableCell align="right"><SoftTypography variant="caption" fontWeight="bold">Acties</SoftTypography></TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {sites.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={7}>
-                  <SoftBox py={3} textAlign="center">
-                    <SoftTypography variant="caption" color="secondary">
-                      Nog geen sites. Voeg uw eerste WordPress-site toe.
-                    </SoftTypography>
-                  </SoftBox>
-                </TableCell>
-              </TableRow>
-            ) : (
-              sites.slice(0, 10).map((site) => (
-                <SiteRow key={site.$id} site={site} />
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
+      <SoftBox p={2}>
+        {sites.length === 0 ? (
+          <SoftBox py={3} textAlign="center">
+            <SoftTypography variant="caption" color="secondary">
+              No sites registered. Add your first WordPress site to get started.
+            </SoftTypography>
+          </SoftBox>
+        ) : (
+          <DataTable
+            table={dataTableData}
+            entriesPerPage={{ defaultValue: 5, entries: [5, 7, 10] }}
+            canSearch
+          />
+        )}
+      </SoftBox>
     </Card>
   );
 };

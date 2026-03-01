@@ -24,7 +24,7 @@ const Toast: React.FC<ToastProps> = ({
   const variantClasses = {
     default: "bg-card border-border text-foreground",
     destructive: "bg-destructive/10 border-destructive/50 text-destructive",
-    success: "bg-green-100 border-green-300 text-green-800",
+    success: "bg-orange-100 border-orange-300 text-orange-800",
   };
 
   const Icon = {

@@ -47,7 +47,7 @@ function ReportsBarChartItem({ color = "dark", icon, label, progress }) {
           mr={1}
           variant="gradient"
         >
-          <Icon>{icon.component}</Icon>
+          <Icon sx={{ color: "white" }}>{icon.component}</Icon>
         </SoftBox>
         <SoftTypography
           variant="caption"

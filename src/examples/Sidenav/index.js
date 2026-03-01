@@ -35,7 +35,6 @@ import SoftTypography from "components/SoftTypography";
 import SidenavCollapse from "examples/Sidenav/SidenavCollapse";
 import SidenavList from "examples/Sidenav/SidenavList";
 import SidenavItem from "examples/Sidenav/SidenavItem";
-import SidenavCard from "examples/Sidenav/SidenavCard";
 
 // Custom styles for the Sidenav
 import SidenavRoot from "examples/Sidenav/SidenavRoot";
@@ -53,8 +52,6 @@ function Sidenav({ color = "info", brand = "", brandName, routes, ...rest }) {
   const { pathname } = location;
   const collapseName = pathname.split("/").slice(1)[0];
   const itemName = pathname.split("/").slice(1)[1];
-
-  const closeSidenav = () => setMiniSidenav(dispatch, true);
 
   useEffect(() => {
     // A function that sets the mini state of the sidenav.
@@ -213,24 +210,22 @@ function Sidenav({ color = "info", brand = "", brandName, routes, ...rest }) {
     }
   );
 
+  const handleMiniSidenav = () => setMiniSidenav(dispatch, !miniSidenav);
+
   return (
     <SidenavRoot {...rest} variant="permanent" ownerState={{ transparentSidenav, miniSidenav }}>
-      <SoftBox pt={3} pb={1} px={4} textAlign="center">
+      <SoftBox sx={{ display: "flex", flexDirection: "column", height: "100%", overflow: "hidden" }}>
+        <SoftBox pt={3} pb={1} px={2} display="flex" alignItems="center" justifyContent="space-between" gap={1} flexShrink={0}>
         <SoftBox
-          display={{ xs: "block", xl: "none" }}
-          position="absolute"
-          top={0}
-          right={0}
-          p={1.625}
-          onClick={closeSidenav}
-          sx={{ cursor: "pointer" }}
+          component={NavLink}
+          to="/"
+          display="flex"
+          alignItems="center"
+          flex={1}
+          minWidth={0}
+          sx={{ textDecoration: "none" }}
         >
-          <SoftTypography variant="h6" color="secondary">
-            <Icon sx={{ fontWeight: "bold" }}>close</Icon>
-          </SoftTypography>
-        </SoftBox>
-        <SoftBox component={NavLink} to="/" display="flex" alignItems="center">
-          {brand && <SoftBox component="img" src={brand} alt="Soft UI Logo" width="2rem" />}
+          {brand && <SoftBox component="img" src={brand} alt="Logo" width="2rem" flexShrink={0} />}
           <SoftBox
             width={!brandName && "100%"}
             sx={(theme) => sidenavLogoLabel(theme, { miniSidenav })}
@@ -240,12 +235,18 @@ function Sidenav({ color = "info", brand = "", brandName, routes, ...rest }) {
             </SoftTypography>
           </SoftBox>
         </SoftBox>
+        <SoftBox
+          onClick={handleMiniSidenav}
+          sx={{ cursor: "pointer", display: "flex", alignItems: "center", flexShrink: 0, p: 0.5 }}
+        >
+          <Icon sx={{ fontWeight: "bold", fontSize: "1.25rem" }}>
+            {miniSidenav ? "menu" : "menu_open"}
+          </Icon>
+        </SoftBox>
       </SoftBox>
       <Divider />
-      <List>{renderRoutes}</List>
-
-      <SoftBox pt={2} my={2} mx={2}>
-        <SidenavCard />
+      <List sx={{ flex: 1, overflow: "auto", minHeight: 0 }}>{renderRoutes}</List>
+      <SidenavUserCard />
       </SoftBox>
     </SidenavRoot>
   );

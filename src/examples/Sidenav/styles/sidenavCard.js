@@ -89,7 +89,7 @@ function cardIcon(theme, ownerState) {
   return {
     backgroundImage:
       sidenavColor === "default"
-        ? linearGradient(gradients.dark, gradients.dark.state)
+        ? linearGradient(gradients.dark.main, gradients.dark.state)
         : linearGradient(gradients[sidenavColor].main, gradients[sidenavColor].state),
     WebkitBackgroundClip: "text",
     WebkitTextFillColor: transparent.main,

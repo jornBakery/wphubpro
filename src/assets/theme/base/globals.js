@@ -36,6 +36,10 @@ const globals = {
   "a.link:hover, .link:hover, a.link:focus, .link:focus": {
     color: `${info.main} !important`,
   },
+  /* Icons on colored backgrounds (buttons, gradient boxes) should always be white */
+  ".MuiButton-contained .material-icons-round, .MuiButton-contained .material-icons, .MuiButton-contained .MuiIcon-root, .MuiButton-contained .MuiSvgIcon-root, .MuiButton-contained svg": {
+    color: "white !important",
+  },
 };
 
 export default globals;

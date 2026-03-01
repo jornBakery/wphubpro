@@ -14,11 +14,19 @@ export const getSidenavRoutes = (isAdmin = false) => {
   const adminRoutes = isAdmin
     ? [
         { type: 'title', title: 'Admin', key: 'admin-title' },
-        { type: 'collapse', name: 'Admin Dashboard', key: 'admin-dashboard', icon: 'dashboard', route: '/admin/dashboard', noCollapse: true },
-        { type: 'collapse', name: 'User Manager', key: 'admin-users', icon: 'people', route: '/admin/users', noCollapse: true },
-        { type: 'collapse', name: 'Orders', key: 'admin-orders', icon: 'receipt_long', route: '/admin/orders', noCollapse: true },
-        { type: 'collapse', name: 'Plan Management', key: 'admin-plans', icon: 'inventory_2', route: '/admin/plans', noCollapse: true },
-        { type: 'collapse', name: 'Subscriptions', key: 'admin-subscriptions', icon: 'paid', route: '/admin/subscriptions', noCollapse: true },
+        { type: 'collapse', name: 'Admin Dashboard', key: 'admin', icon: 'dashboard', route: '/admin/dashboard', noCollapse: true },
+        { type: 'collapse', name: 'Users', key: 'admin-users', icon: 'people', route: '/admin/users', noCollapse: true },
+        {
+          type: 'collapse',
+          name: 'Business',
+          key: 'admin-business',
+          icon: 'business_center',
+          collapse: [
+            { name: 'Subscriptions', route: '/admin/subscriptions', key: 'admin-subscriptions' },
+            { name: 'Orders', route: '/admin/orders', key: 'admin-orders' },
+            { name: 'Plan Manager', route: '/admin/plans', key: 'admin-plans' },
+          ],
+        },
         { type: 'collapse', name: 'Platform Settings', key: 'admin-settings', icon: 'settings', route: '/admin/settings', noCollapse: true },
       ]
     : [];

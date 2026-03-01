@@ -45,7 +45,7 @@ function MiniStatisticsCard({ bgColor = "white", title = { fontWeight: "medium",
                   alignItems="center"
                   shadow="md"
                 >
-                  <Icon fontSize="small" color="inherit">
+                  <Icon fontSize="small" sx={{ color: bgColor === "white" ? "white" : "inherit" }}>
                     {icon.component}
                   </Icon>
                 </SoftBox>
@@ -89,7 +89,7 @@ function MiniStatisticsCard({ bgColor = "white", title = { fontWeight: "medium",
                   alignItems="center"
                   shadow="md"
                 >
-                  <Icon fontSize="small" color="inherit">
+                  <Icon fontSize="small" sx={{ color: bgColor === "white" ? "white" : "inherit" }}>
                     {icon.component}
                   </Icon>
                 </SoftBox>

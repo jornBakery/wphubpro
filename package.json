@@ -39,6 +39,7 @@
     "vanilla-tilt": "1.8.1"
   },
   "devDependencies": {
+    "concurrently": "^9.1.0",
     "@types/node": "^22.14.0",
     "@types/react": "^19.2.4",
     "@types/react-dom": "^19.2.3",
