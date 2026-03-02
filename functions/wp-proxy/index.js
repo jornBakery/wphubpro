@@ -7,6 +7,7 @@ function safeCompare(a, b) {
   return String(a || '') === String(b || '');
 }
 
+/** Decrypt api_key stored in format iv:encrypted:tag */
 function decryptApiKey(encrypted, key) {
   if (!encrypted || typeof encrypted !== 'string' || !key) return encrypted;
   const parts = encrypted.split(':');
@@ -60,18 +61,25 @@ module.exports = async ({ req, res, log, error }) => {
     return res.json({ success: false, message: 'Invalid request body.' }, 400);
   }
 
+  // 1. Haal de stuurgegevens op
   const siteId = payload.siteId || (req && req.query && (req.query.siteId || req.query.site_id));
   const endpoint = payload.endpoint || (req && req.query && req.query.endpoint);
-  const method = payload.method || (req && req.query && req.query.method) || 'GET';
-  
-  // Verbeterde body extractie: voorkom dat siteId en endpoint worden meegepost naar WordPress
-  let bodyData = payload.body || null;
-  if (!bodyData && (payload.action || payload.plugin || payload.slug)) {
+  const method = (payload.method || (req && req.query && req.query.method) || 'GET').toUpperCase();
+
+  // 2. Dynamische body extractie
+  // We halen alle 'besturingsvelden' eruit, wat overblijft is de data voor WordPress
+  let bodyData = null;
+  if (payload.body) {
+    bodyData = payload.body;
+  } else {
+    // Als siteId/endpoint in de root staan, filteren we ze eruit om een 'schone' body te krijgen
     const { siteId: _s, endpoint: _e, method: _m, userId: _u, api_key: _a, apiKey: _ak, ...rest } = payload;
-    bodyData = rest;
+    // Gebruik de rest alleen als er daadwerkelijk plugin-data (zoals action) aanwezig is
+    bodyData = (rest.action || rest.plugin || rest.slug) ? rest : null;
   }
 
   if (!siteId || !endpoint) {
+    log('[wp-proxy] MISSING siteId or endpoint');
     return res.json({ success: false, message: 'Missing siteId or endpoint.' }, 400);
   }
 
@@ -91,12 +99,15 @@ module.exports = async ({ req, res, log, error }) => {
     const keyMatch = incomingKey && apiKey && safeCompare(incomingKey, apiKey);
 
     if (!ownerMatch && !keyMatch) {
+      log(`[wp-proxy] 403 Forbidden: siteId=${siteId}`);
       return res.json({ success: false, message: 'Forbidden.' }, 403);
     }
 
+    // Bouw de proxy URL
     const cleanedEndpoint = String(decodeURIComponent(endpoint)).replace(/^\/+/, '');
     const proxyUrl = `${site_url.replace(/\/$/, '')}/wp-json/${cleanedEndpoint}`;
 
+    // Voorbereiden van headers
     const headers = {
       'Accept': 'application/json',
       'Content-Type': 'application/json',
@@ -104,13 +115,12 @@ module.exports = async ({ req, res, log, error }) => {
       'User-Agent': 'WPHub-Proxy/1.0'
     };
 
-    const fetchOptions = { 
-        method: method.toUpperCase(), 
-        headers 
-    };
+    const fetchOptions = { method, headers };
 
-    if (['POST', 'PUT', 'PATCH'].includes(fetchOptions.method) && bodyData) {
+    // Voeg dynamisch de body toe voor schrijfacties
+    if (['POST', 'PUT', 'PATCH'].includes(method) && bodyData) {
       fetchOptions.body = JSON.stringify(bodyData);
+      log(`[wp-proxy] Sending body: ${fetchOptions.body}`);
     }
 
     const proxyResponse = await fetch(proxyUrl, fetchOptions);
@@ -124,13 +134,18 @@ module.exports = async ({ req, res, log, error }) => {
     }
 
     if (!proxyResponse.ok) {
-        throw new Error(responseData.message || `WordPress Error ${proxyResponse.status}`);
+        error(`[wp-proxy] WordPress Error: ${proxyResponse.status}`);
+        return res.json({ 
+            success: false, 
+            message: responseData.message || `WordPress API fout: ${proxyResponse.status}`,
+            details: responseData 
+        }, proxyResponse.status);
     }
 
     return res.json(responseData);
 
   } catch (e) {
-    error(`[wp-proxy] Error: ${e.message}`);
+    error(`[wp-proxy] 500 Error: ${e.message}`);
     return res.json({ success: false, message: e.message }, 500);
   }
 };
