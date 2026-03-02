@@ -7,7 +7,6 @@ function safeCompare(a, b) {
   return String(a || '') === String(b || '');
 }
 
-/** Decrypt api_key stored in format iv:encrypted:tag (from update-site encryption) */
 function decryptApiKey(encrypted, key) {
   if (!encrypted || typeof encrypted !== 'string' || !key) return encrypted;
   const parts = encrypted.split(':');
@@ -64,114 +63,74 @@ module.exports = async ({ req, res, log, error }) => {
   const siteId = payload.siteId || (req && req.query && (req.query.siteId || req.query.site_id));
   const endpoint = payload.endpoint || (req && req.query && req.query.endpoint);
   const method = payload.method || (req && req.query && req.query.method) || 'GET';
-  // Body can be: payload.body, req.query.body, or req.payload when it IS the REST body (action/plugin)
-  let body = payload.body || (req && req.query && req.query.body);
-  if (!body && payload && (payload.action !== undefined || payload.plugin !== undefined)) {
-    body = payload;
+  
+  // Verbeterde body extractie: voorkom dat siteId en endpoint worden meegepost naar WordPress
+  let bodyData = payload.body || null;
+  if (!bodyData && (payload.action || payload.plugin || payload.slug)) {
+    const { siteId: _s, endpoint: _e, method: _m, userId: _u, api_key: _a, apiKey: _ak, ...rest } = payload;
+    bodyData = rest;
   }
 
   if (!siteId || !endpoint) {
-    log('[wp-proxy] MISSING siteId or endpoint');
     return res.json({ success: false, message: 'Missing siteId or endpoint.' }, 400);
   }
-
-  log(`[wp-proxy] ACTION: siteId=${siteId} method=${method} endpoint=${endpoint} body=${typeof body === 'string' ? body : (body ? JSON.stringify(body) : '')}`);
 
   const callerUserId = APPWRITE_FUNCTION_USER_ID || payload.userId || (req && req.query && (req.query.userId || req.query.user_id));
 
   try {
     const siteDocument = await databases.getDocument('platform_db', 'sites', siteId);
-
     const site_url = siteDocument.site_url;
-    const username = siteDocument.username;
     
-    // Gebruik de API Key uit de database; decrypt als versleuteld (iv:encrypted:tag)
     let apiKey = siteDocument.api_key || siteDocument.apiKey || siteDocument.password;
     if (apiKey && apiKey.includes(':') && apiKey.split(':').length === 3 && ENCRYPTION_KEY) {
       apiKey = decryptApiKey(apiKey, ENCRYPTION_KEY);
     }
 
-    // Authenticatiecontrole: matches de beller met de eigenaar, of wordt de juiste X-WPHub-Key meegegeven?
     const incomingKey = (req && req.headers && (req.headers['x-wphub-key'] || req.headers['X-WPHub-Key'])) || payload.api_key || payload.apiKey;
-
     const ownerMatch = callerUserId && siteDocument.user_id && (siteDocument.user_id === callerUserId);
     const keyMatch = incomingKey && apiKey && safeCompare(incomingKey, apiKey);
 
     if (!ownerMatch && !keyMatch) {
-      log(`[wp-proxy] 403 Forbidden: siteId=${siteId} endpoint=${endpoint}`);
-      return res.json({ success: false, message: 'Forbidden. Geen toegang tot deze site.' }, 403);
+      return res.json({ success: false, message: 'Forbidden.' }, 403);
     }
 
-    // Endpoint opschonen en URL opbouwen
-    let decodedEndpoint = endpoint;
-    try {
-      decodedEndpoint = decodeURIComponent(String(endpoint));
-    } catch (e) { /* fallback */ }
+    const cleanedEndpoint = String(decodeURIComponent(endpoint)).replace(/^\/+/, '');
+    const proxyUrl = `${site_url.replace(/\/$/, '')}/wp-json/${cleanedEndpoint}`;
 
-    const cleanedEndpoint = String(decodedEndpoint).replace(/^\/+/, '');
-    let proxyUrl = `${site_url.replace(/\/$/, '')}/wp-json/${cleanedEndpoint}`;
-
-    // Parse body - WordPress REST API get_param() leest uit JSON body (Content-Type: application/json)
-    let bodyObj = null;
-    if (body) {
-      try {
-        bodyObj = typeof body === 'string' ? JSON.parse(body) : body;
-      } catch (e) { bodyObj = null; }
-    }
-
-    // Headers voorbereiden voor WordPress
-    const incomingHeaders = (req && req.headers) ? req.headers : {};
     const headers = {
-      'Accept': incomingHeaders['accept'] || 'application/json',
-      'User-Agent': incomingHeaders['user-agent'] || 'WPHub-Proxy/1.0',
-      'X-WPHub-Key': apiKey, // De Bridge-plugin gebruikt deze header voor validatie
-      ...(incomingHeaders['content-type'] ? { 'Content-Type': incomingHeaders['content-type'] } : {}),
-      ...(incomingHeaders['x-wp-nonce'] ? { 'X-WP-Nonce': incomingHeaders['x-wp-nonce'] } : {}),
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      'X-WPHub-Key': apiKey,
+      'User-Agent': 'WPHub-Proxy/1.0'
     };
 
+    const fetchOptions = { 
+        method: method.toUpperCase(), 
+        headers 
+    };
 
-    const fetchOptions = { method, headers };
-
-    // Body afhandeling: voor POST/PUT/PATCH sturen we JSON body met Content-Type: application/json
-    if (req && req.rawBody && req.rawBody.length) {
-      fetchOptions.body = req.rawBody;
-    } else if (bodyObj && typeof bodyObj === 'object' && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
-      fetchOptions.body = JSON.stringify(bodyObj);
-      headers['Content-Type'] = 'application/json';
-    } else if (body && !bodyObj && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
-      fetchOptions.body = typeof body === 'string' ? body : JSON.stringify(body);
-      headers['Content-Type'] = 'application/json';
+    if (['POST', 'PUT', 'PATCH'].includes(fetchOptions.method) && bodyData) {
+      fetchOptions.body = JSON.stringify(bodyData);
     }
 
-    log(`[wp-proxy] Proxying: ${method} ${proxyUrl} body=${fetchOptions.body ? '(present)' : '(none)'}`);
-    
     const proxyResponse = await fetch(proxyUrl, fetchOptions);
-    const proxyResponseText = await proxyResponse.text();
+    const responseText = await proxyResponse.text();
     
     let responseData;
     try {
-      responseData = proxyResponseText ? JSON.parse(proxyResponseText) : null;
+      responseData = JSON.parse(responseText);
     } catch (e) {
-      responseData = proxyResponseText;
+      responseData = responseText;
     }
 
-    log(`[wp-proxy] Response: ${proxyResponse.status} ${proxyUrl}`);
     if (!proxyResponse.ok) {
-        const msg = (responseData && typeof responseData === 'object' && responseData.message)
-          ? responseData.message
-          : (proxyResponseText || `WordPress API fout: ${proxyResponse.status}`);
-        error(`[wp-proxy] Error: ${msg}`);
-        throw new Error(msg);
-    }
-
-    if (typeof responseData === 'string' || responseData === null) {
-      return res.json({ text: responseData });
+        throw new Error(responseData.message || `WordPress Error ${proxyResponse.status}`);
     }
 
     return res.json(responseData);
 
   } catch (e) {
-    error(`[wp-proxy] 500: ${e.message}`);
+    error(`[wp-proxy] Error: ${e.message}`);
     return res.json({ success: false, message: e.message }, 500);
   }
 };
