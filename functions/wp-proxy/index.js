@@ -36,7 +36,6 @@ module.exports = async ({ req, res, log, error }) => {
   const APPWRITE_FUNCTION_ENDPOINT = env.APPWRITE_FUNCTION_ENDPOINT || env.APPWRITE_ENDPOINT;
   const APPWRITE_FUNCTION_PROJECT_ID = env.APPWRITE_FUNCTION_PROJECT_ID || env.APPWRITE_PROJECT_ID;
   const APPWRITE_FUNCTION_API_KEY = env.APPWRITE_FUNCTION_API_KEY || env.APPWRITE_API_KEY || env.APPWRITE_KEY;
-  const APPWRITE_FUNCTION_USER_ID = env.APPWRITE_FUNCTION_USER_ID || env.APPWRITE_USER_ID || null;
   const ENCRYPTION_KEY = env.ENCRYPTION_KEY;
 
   if (!APPWRITE_FUNCTION_ENDPOINT || !APPWRITE_FUNCTION_PROJECT_ID || !APPWRITE_FUNCTION_API_KEY) {
@@ -64,21 +63,22 @@ module.exports = async ({ req, res, log, error }) => {
   const siteId = payload.siteId || (req && req.query && (req.query.siteId || req.query.site_id));
   const endpoint = payload.endpoint || (req && req.query && req.query.endpoint);
   const method = (payload.method || (req && req.query && req.query.method) || 'GET').toUpperCase();
-  const callerUserId = APPWRITE_FUNCTION_USER_ID || payload.userId || (req && req.query && (req.query.userId || req.query.user_id));
+  const callerUserId = payload.userId || (req && req.query && (req.query.userId || req.query.user_id));
 
   if (!siteId || !endpoint) {
-    log('[wp-proxy] MISSING siteId or endpoint');
     return res.json({ success: false, message: 'Missing siteId or endpoint.' }, 400);
   }
 
-  // Body afhandeling: Zorg dat siteId en endpoint niet in de POST body naar WordPress belanden
-  let bodyData = null;
+  // --- LOGICA VOOR LOSSE DATA ---
+  // We kijken of er een 'body' object is. Zo ja, dan gebruiken we die direct als de nieuwe body.
+  // Dit zorgt ervoor dat {"body": {"action": "deactivate"}} plat naar WP gaat als {"action": "deactivate"}.
+  let finalBody = null;
   if (payload.body) {
-    bodyData = typeof payload.body === 'string' ? JSON.parse(payload.body) : payload.body;
+    finalBody = typeof payload.body === 'string' ? JSON.parse(payload.body) : payload.body;
   } else if (['POST', 'PUT', 'PATCH'].includes(method)) {
-    // Verwijder metadata velden zodat alleen action/plugin overblijven
+    // Indien er geen 'body' key is, filteren we de bekende stuur-parameters eruit
     const { siteId: _s, endpoint: _e, method: _m, userId: _u, api_key: _a, apiKey: _ak, useApiKey: _ua, ...rest } = payload;
-    bodyData = rest;
+    finalBody = rest;
   }
 
   try {
@@ -95,14 +95,12 @@ module.exports = async ({ req, res, log, error }) => {
     const keyMatch = incomingKey && apiKey && safeCompare(incomingKey, apiKey);
 
     if (!ownerMatch && !keyMatch) {
-      log(`[wp-proxy] 403 Forbidden: siteId=${siteId}`);
-      return res.json({ success: false, message: 'Forbidden. Geen toegang.' }, 403);
+      return res.json({ success: false, message: 'Forbidden.' }, 403);
     }
 
     const cleanedEndpoint = String(decodeURIComponent(endpoint)).replace(/^\/+/, '');
     const proxyUrl = `${site_url.replace(/\/$/, '')}/wp-json/${cleanedEndpoint}`;
 
-    // Gebruik headers die WordPress verwacht voor JSON verwerking
     const headers = {
       'Accept': 'application/json',
       'Content-Type': 'application/json',
@@ -112,27 +110,26 @@ module.exports = async ({ req, res, log, error }) => {
 
     const fetchOptions = { method, headers };
 
-    if (bodyData && ['POST', 'PUT', 'PATCH'].includes(method)) {
-      fetchOptions.body = JSON.stringify(bodyData);
+    if (finalBody && ['POST', 'PUT', 'PATCH'].includes(method)) {
+      fetchOptions.body = JSON.stringify(finalBody);
     }
 
-    log(`[wp-proxy] Proxying: ${method} ${proxyUrl} body=${fetchOptions.body || 'none'}`);
-    
+    log(`[wp-proxy] Sending to WP: ${proxyUrl} Body: ${fetchOptions.body || 'none'}`);
+
     const proxyResponse = await fetch(proxyUrl, fetchOptions);
     const proxyResponseText = await proxyResponse.text();
     
     let responseData;
     try {
-      responseData = proxyResponseText ? JSON.parse(proxyResponseText) : null;
+      responseData = JSON.parse(proxyResponseText);
     } catch (e) {
       responseData = proxyResponseText;
     }
 
     if (!proxyResponse.ok) {
-        error(`[wp-proxy] WP Error: ${proxyResponse.status} - ${proxyResponseText}`);
         return res.json({ 
             success: false, 
-            message: (responseData && responseData.message) ? responseData.message : `WordPress API fout: ${proxyResponse.status}`,
+            message: responseData.message || `WordPress API fout: ${proxyResponse.status}`,
             details: responseData 
         }, proxyResponse.status);
     }
