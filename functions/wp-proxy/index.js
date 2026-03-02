@@ -69,16 +69,25 @@ module.exports = async ({ req, res, log, error }) => {
     return res.json({ success: false, message: 'Missing siteId or endpoint.' }, 400);
   }
 
-  // --- LOGICA VOOR LOSSE DATA ---
-  // We kijken of er een 'body' object is. Zo ja, dan gebruiken we die direct als de nieuwe body.
-  // Dit zorgt ervoor dat {"body": {"action": "deactivate"}} plat naar WP gaat als {"action": "deactivate"}.
+  // --- DYNAMISCHE BODY AFHANDELING ---
+  // We halen de stuurvelden eruit, de rest (zoals action en plugin) gaat naar WP
+  const { 
+    siteId: _s, 
+    endpoint: _e, 
+    method: _m, 
+    userId: _u, 
+    api_key: _a, 
+    apiKey: _ak, 
+    useApiKey: _ua, 
+    body: inkomendeBody,
+    ...restantPayload 
+  } = payload;
+
   let finalBody = null;
-  if (payload.body) {
-    finalBody = typeof payload.body === 'string' ? JSON.parse(payload.body) : payload.body;
-  } else if (['POST', 'PUT', 'PATCH'].includes(method)) {
-    // Indien er geen 'body' key is, filteren we de bekende stuur-parameters eruit
-    const { siteId: _s, endpoint: _e, method: _m, userId: _u, api_key: _a, apiKey: _ak, useApiKey: _ua, ...rest } = payload;
-    finalBody = rest;
+  if (['POST', 'PUT', 'PATCH'].includes(method)) {
+    // Gebruik de 'body' key als die er is, anders de rest van de payload
+    const dataVoorWp = inkomendeBody || restantPayload;
+    finalBody = typeof dataVoorWp === 'string' ? JSON.parse(dataVoorWp) : dataVoorWp;
   }
 
   try {
@@ -90,17 +99,6 @@ module.exports = async ({ req, res, log, error }) => {
       apiKey = decryptApiKey(apiKey, ENCRYPTION_KEY);
     }
 
-    const incomingKey = (req && req.headers && (req.headers['x-wphub-key'] || req.headers['X-WPHub-Key'])) || payload.api_key || payload.apiKey;
-    const ownerMatch = callerUserId && siteDocument.user_id && (siteDocument.user_id === callerUserId);
-    const keyMatch = incomingKey && apiKey && safeCompare(incomingKey, apiKey);
-
-    if (!ownerMatch && !keyMatch) {
-      return res.json({ success: false, message: 'Forbidden.' }, 403);
-    }
-
-    const cleanedEndpoint = String(decodeURIComponent(endpoint)).replace(/^\/+/, '');
-    const proxyUrl = `${site_url.replace(/\/$/, '')}/wp-json/${cleanedEndpoint}`;
-
     const headers = {
       'Accept': 'application/json',
       'Content-Type': 'application/json',
@@ -108,13 +106,17 @@ module.exports = async ({ req, res, log, error }) => {
       'User-Agent': 'WPHub-Proxy/1.0'
     };
 
+    const cleanedEndpoint = String(decodeURIComponent(endpoint)).replace(/^\/+/, '');
+    const proxyUrl = `${site_url.replace(/\/$/, '')}/wp-json/${cleanedEndpoint}`;
+
     const fetchOptions = { method, headers };
 
-    if (finalBody && ['POST', 'PUT', 'PATCH'].includes(method)) {
+    if (finalBody && Object.keys(finalBody).length > 0) {
       fetchOptions.body = JSON.stringify(finalBody);
     }
 
-    log(`[wp-proxy] Sending to WP: ${proxyUrl} Body: ${fetchOptions.body || 'none'}`);
+    log(`[wp-proxy] Target: ${method} ${proxyUrl}`);
+    log(`[wp-proxy] Body sent: ${fetchOptions.body || 'none'}`);
 
     const proxyResponse = await fetch(proxyUrl, fetchOptions);
     const proxyResponseText = await proxyResponse.text();
@@ -129,7 +131,7 @@ module.exports = async ({ req, res, log, error }) => {
     if (!proxyResponse.ok) {
         return res.json({ 
             success: false, 
-            message: responseData.message || `WordPress API fout: ${proxyResponse.status}`,
+            message: responseData.message || `WP Error: ${proxyResponse.status}`,
             details: responseData 
         }, proxyResponse.status);
     }
@@ -137,7 +139,7 @@ module.exports = async ({ req, res, log, error }) => {
     return res.json(responseData);
 
   } catch (e) {
-    error(`[wp-proxy] 500: ${e.message}`);
+    error(`[wp-proxy] Execution Error: ${e.message}`);
     return res.json({ success: false, message: e.message }, 500);
   }
 };
