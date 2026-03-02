@@ -31,14 +31,14 @@ import { item, itemContent, itemArrow } from "examples/Sidenav/styles/sidenavIte
 // Soft UI Dashboard PRO React contexts
 import { useSoftUIController } from "context";
 
-function SidenavItem({ name, active = false, nested = false, children = false, open = false, ...rest }) {
+function SidenavItem({ name, active = false, nested = false, children = false, open = false, submenuColor, ...rest }) {
   const [controller] = useSoftUIController();
   const { miniSidenav } = controller;
 
   return (
     <>
       <ListItem {...rest} component="li" sx={item}>
-        <SoftBox sx={(theme) => itemContent(theme, { active, miniSidenav, name, nested })}>
+        <SoftBox sx={(theme) => itemContent(theme, { active, miniSidenav, name, nested, submenuColor })}>
           <ListItemText primary={name} />
           {children && (
             <Icon component="i" sx={(theme) => itemArrow(theme, { open, miniSidenav })}>
@@ -64,6 +64,7 @@ SidenavItem.propTypes = {
   nested: PropTypes.bool,
   children: PropTypes.node,
   open: PropTypes.bool,
+  submenuColor: PropTypes.string,
 };
 
 export default SidenavItem;

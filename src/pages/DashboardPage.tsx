@@ -12,9 +12,9 @@ import Footer from 'examples/Footer';
 import { useSubscription, useUsage } from '../hooks/useSubscription';
 import { useSites } from '../hooks/useSites';
 
+import DashboardHealthCards from '../components/dashboard/DashboardHealthCards';
 import DashboardSitesTable from '../components/dashboard/DashboardSitesTable';
 import DashboardSubscriptionCard from '../components/dashboard/DashboardSubscriptionCard';
-import DashboardSitesMonitor from '../components/dashboard/DashboardSitesMonitor';
 
 const DashboardPage: React.FC = () => {
   const { data: subscription, isLoading: subLoading } = useSubscription();
@@ -23,11 +23,21 @@ const DashboardPage: React.FC = () => {
 
   return (
     <>
-      <SoftBox mt={3}>
-        <Grid container spacing={3}>
-          {/* Left column ~65% (8/12) - Sites list */}
-          <Grid item xs={12} lg={8}>
-            <DashboardSitesTable sites={sites ?? []} />
+      <SoftBox mt={3} sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+        <Grid container spacing={3} alignItems="stretch" sx={{ flex: 1, minHeight: 0 }}>
+          {/* Left column ~65% (8/12) - Health cards + Sites list */}
+          <Grid item xs={12} lg={8} sx={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+            <DashboardHealthCards
+              sites={sites ?? []}
+              sitesNeedingUpdatesCount={0}
+              pluginUpdatesCount={0}
+              pluginTotalCount={0}
+              themeUpdatesCount={0}
+              themeTotalCount={0}
+            />
+            <SoftBox sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', alignSelf: 'stretch' }}>
+              <DashboardSitesTable sites={sites ?? []} />
+            </SoftBox>
           </Grid>
 
           {/* Right column ~35% (4/12) */}
@@ -38,13 +48,6 @@ const DashboardPage: React.FC = () => {
                   subscription={subscription}
                   usage={usage}
                   isLoading={subLoading}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <DashboardSitesMonitor
-                  sites={sites ?? []}
-                  pluginUpdatesCount={0}
-                  themeUpdatesCount={0}
                 />
               </Grid>
             </Grid>

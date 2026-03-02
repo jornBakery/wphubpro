@@ -80,7 +80,13 @@ const SiteDetailsTab: React.FC<SiteDetailsTabProps> = ({ siteId, onEdit, onRemov
                 </SoftBox>
                 <SoftBox display="flex" justifyContent="space-between" py={1} borderBottom="1px solid" borderColor="grey-200">
                   <SoftTypography variant="caption" color="secondary">URL</SoftTypography>
-                  <SoftTypography variant="caption" fontWeight="medium" sx={{ wordBreak: 'break-all' }}>{(site as any).siteUrl || (site as any).site_url || '—'}</SoftTypography>
+                  {((site as any).siteUrl || (site as any).site_url) ? (
+                    <a href={((site as any).siteUrl || (site as any).site_url).startsWith('http') ? ((site as any).siteUrl || (site as any).site_url) : `https://${(site as any).siteUrl || (site as any).site_url}`} target="_blank" rel="noreferrer" style={{ textDecoration: 'none', color: 'inherit' }}>
+                      <SoftTypography variant="caption" fontWeight="medium" sx={{ wordBreak: 'break-all', '&:hover': { textDecoration: 'underline' } }}>{(site as any).siteUrl || (site as any).site_url}</SoftTypography>
+                    </a>
+                  ) : (
+                    <SoftTypography variant="caption" fontWeight="medium" sx={{ wordBreak: 'break-all' }}>—</SoftTypography>
+                  )}
                 </SoftBox>
                 <SoftBox display="flex" justifyContent="space-between" py={1} borderBottom="1px solid" borderColor="grey-200">
                   <SoftTypography variant="caption" color="secondary">Status</SoftTypography>

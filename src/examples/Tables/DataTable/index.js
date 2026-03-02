@@ -48,6 +48,7 @@ function DataTable({
   pagination = { variant: "gradient", color: "info" },
   isSorted = true,
   noEndBorder = false,
+  headerColor,
 }) {
   const defaultValue = entriesPerPage.defaultValue ? entriesPerPage.defaultValue : 10;
   const entries = entriesPerPage.entries ? entriesPerPage.entries : [5, 10, 15, 20, 25];
@@ -124,17 +125,12 @@ function DataTable({
 
   // A function that sets the sorted value for the table
   const setSortedValue = (column) => {
-    let sortedValue;
+    if (column.disableSortBy || !isSorted) return false;
 
-    if (isSorted && column.isSorted) {
-      sortedValue = column.isSortedDesc ? "desc" : "asce";
-    } else if (isSorted) {
-      sortedValue = "none";
-    } else {
-      sortedValue = false;
+    if (column.isSorted) {
+      return column.isSortedDesc ? "desc" : "asce";
     }
-
-    return sortedValue;
+    return "none";
   };
 
   // Setting the entries starting point
@@ -153,9 +149,9 @@ function DataTable({
 
   return (
     <TableContainer sx={{ boxShadow: "none" }}>
-      {entriesPerPage || canSearch ? (
-        <SoftBox display="flex" justifyContent="space-between" alignItems="center" p={3}>
-          {entriesPerPage && (
+      {(entriesPerPage && entriesPerPage.showSelector !== false) || canSearch ? (
+        <SoftBox display="flex" justifyContent="space-between" alignItems="center" pt={1} px={3} pb={2}>
+          {entriesPerPage && entriesPerPage.showSelector !== false && (
             <SoftBox display="flex" alignItems="center">
               <SoftSelect
                 defaultValue={{ value: defaultValue, label: defaultValue }}
@@ -168,18 +164,6 @@ function DataTable({
               </SoftTypography>
             </SoftBox>
           )}
-          {canSearch && (
-            <SoftBox width="12rem" ml="auto">
-              <SoftInput
-                placeholder="Search..."
-                value={search}
-                onChange={({ currentTarget }) => {
-                  setSearch(currentTarget.value);
-                  onSearchChange(currentTarget.value);
-                }}
-              />
-            </SoftBox>
-          )}
         </SoftBox>
       ) : null}
       <Table {...getTableProps()}>
@@ -188,9 +172,9 @@ function DataTable({
             const { key: headerKey, ...headerGroupProps } = headerGroup.getHeaderGroupProps();
             return (
               <TableRow key={headerKey} {...headerGroupProps}>
-                {headerGroup.headers.map((column) => {
+                {headerGroup.headers.map((column, colIndex) => {
                   const { key: columnKey, ...headerProps } = column.getHeaderProps(
-                    isSorted && column.getSortByToggleProps()
+                    isSorted && !column.disableSortBy && column.getSortByToggleProps()
                   );
                   return (
                     <DataTableHeadCell
@@ -199,6 +183,8 @@ function DataTable({
                       width={column.width ? column.width : "auto"}
                       align={column.align ? column.align : "left"}
                       sorted={setSortedValue(column)}
+                      color={headerColor}
+                      pl={colIndex === 0 ? 5 : undefined}
                     >
                       {column.render("Header")}
                     </DataTableHeadCell>
@@ -238,16 +224,29 @@ function DataTable({
         flexDirection={{ xs: "column", sm: "row" }}
         justifyContent="space-between"
         alignItems={{ xs: "flex-start", sm: "center" }}
-        p={!showTotalEntries && pageOptions.length === 1 ? 0 : 3}
+        p={!showTotalEntries && !canSearch && pageOptions.length === 1 ? 0 : 3}
       >
         {showTotalEntries && (
-          <SoftBox mb={{ xs: 3, sm: 0 }}>
+          <SoftBox mb={{ xs: canSearch || pageOptions.length > 1 ? 3 : 0, sm: 0 }}>
             <SoftTypography variant="button" color="secondary" fontWeight="regular">
               Showing {entriesStart} to {entriesEnd} of {rows.length} entries
             </SoftTypography>
           </SoftBox>
         )}
-        {pageOptions.length > 1 && (
+        <SoftBox display="flex" alignItems="center" gap={2} ml="auto" mb={{ xs: 3, sm: 0 }}>
+          {canSearch && (
+            <SoftBox width="12rem">
+              <SoftInput
+                placeholder="Search..."
+                value={search}
+                onChange={({ currentTarget }) => {
+                  setSearch(currentTarget.value);
+                  onSearchChange(currentTarget.value);
+                }}
+              />
+            </SoftBox>
+          )}
+          {pageOptions.length > 1 && (
           <SoftPagination
             variant={pagination.variant ? pagination.variant : "gradient"}
             color={pagination.color ? pagination.color : "info"}
@@ -274,7 +273,8 @@ function DataTable({
               </SoftPagination>
             )}
           </SoftPagination>
-        )}
+          )}
+        </SoftBox>
       </SoftBox>
     </TableContainer>
   );

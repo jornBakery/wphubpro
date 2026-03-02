@@ -13,7 +13,15 @@ import Icon from '@mui/material/Icon';
 import { useAuth } from '../contexts/AuthContext';
 import { useSites, useAddSite, useUpdateSite } from '../hooks/useSites';
 
-const normalizeUrl = (url: string) => (url || '').replace(/\/$/, '').toLowerCase();
+const normalizeUrl = (url: string) => {
+  const s = (url || '').trim();
+  if (!s) return '';
+  try {
+    return s.replace(/^https?:\/\//, '').replace(/\/$/, '').toLowerCase();
+  } catch {
+    return s;
+  }
+};
 
 const ConnectSuccessPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -35,10 +43,18 @@ const ConnectSuccessPage: React.FC = () => {
       navigate('/dashboard', { replace: true });
       return;
     }
-
+    // Gebruik sites-array (bij fout/undefined als lege array, zodat we alsnog kunnen aanmaken)
+    const sitesList = Array.isArray(sites) ? sites : [];
     processed.current = true;
     const normalized = normalizeUrl(siteUrl);
-    const existing = sites?.find((s) => normalizeUrl(s.siteUrl || (s as any).site_url) === normalized);
+    if (!normalized) {
+      navigate('/dashboard', { replace: true });
+      return;
+    }
+    const existing = sitesList.find((s) => {
+      const existingNorm = normalizeUrl(s.siteUrl || (s as any).site_url || '');
+      return existingNorm && existingNorm === normalized;
+    });
 
     if (existing) {
       updateSite.mutate(

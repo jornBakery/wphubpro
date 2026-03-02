@@ -1,15 +1,16 @@
 /**
  * User details card for Sidenav - blue gradient, avatar, name, email, role, action buttons
  */
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 import SoftBox from "components/SoftBox";
+import { useToast } from "../../contexts/ToastContext";
 import SoftTypography from "components/SoftTypography";
 import SoftAvatar from "components/SoftAvatar";
 import Icon from "@mui/material/Icon";
 import { useSoftUIController } from "context";
-import { useAuth } from "contexts/AuthContext";
-import { avatars } from "services/appwrite";
+import { useAuth } from "../../contexts/AuthContext";
+import { avatars } from "../../services/appwrite";
 import colors from "assets/theme/base/colors";
 
 const infoGradient = "linear-gradient(310deg, #4F5482, #7a8ef0)";
@@ -64,13 +65,8 @@ function ActionButton({ icon, title, to, onClick }) {
 function SidenavUserCard() {
   const [controller] = useSoftUIController();
   const { miniSidenav } = controller;
-  const { user, isAdmin, logout } = useAuth();
-  const navigate = useNavigate();
-
-  const handleLogout = async () => {
-    await logout();
-    navigate("/login");
-  };
+  const { user, isAdmin } = useAuth();
+  const { toast } = useToast();
 
   if (!user) {
     return (
@@ -99,8 +95,35 @@ function SidenavUserCard() {
 
   const avatarUrl = getAvatarUrl(user);
 
+  // In collapsed/mini mode: only show the 3 action buttons vertically
+  if (miniSidenav) {
+    return (
+      <SoftBox pt={2} my={1} mx={1} sx={{ flexShrink: 0, display: "flex", justifyContent: "center" }}>
+        <SoftBox
+          sx={{
+            background: infoGradient,
+            borderRadius: 2,
+            p: 1.5,
+            color: "white",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 0.5,
+          }}
+        >
+          <ActionButton icon="person" title="Profile" to="/account" />
+          <ActionButton
+            icon="settings"
+            title="Settings"
+            onClick={() => toast({ title: "Account Settings", description: "Coming soon", variant: "default" })}
+          />
+        </SoftBox>
+      </SoftBox>
+    );
+  }
+
   return (
-    <SoftBox pt={2} my={1} mx={2} mr={4} sx={{ flexShrink: 0 }}>
+    <SoftBox pt={2} my={1} mx={2} sx={{ flexShrink: 0, mr: 1.5 }}>
       <SoftBox
         sx={{
           background: infoGradient,
@@ -128,38 +151,46 @@ function SidenavUserCard() {
             {isAdmin ? "Admin" : "Platform Member"}
           </SoftTypography>
           <SoftBox display="flex" gap={0.5}>
-            <ActionButton icon="person" title="View profile" to="/subscription" />
-            <ActionButton icon="settings" title="Settings" to={isAdmin ? "/admin/settings" : "/subscription"} />
-            <ActionButton icon="logout" title="Logout" onClick={handleLogout} />
+            <ActionButton icon="person" title="Mijn profiel" to="/account" />
+            <ActionButton
+              icon="settings"
+              title="Account settings"
+              onClick={() => toast({ title: "Account Settings", description: "Coming soon", variant: "default" })}
+            />
           </SoftBox>
         </SoftBox>
-        <SoftBox display="flex" flexDirection={miniSidenav ? "column" : "row"} alignItems="center" gap={1.5}>
+        <SoftBox display="flex" flexDirection="row" alignItems="center" gap={1.5}>
           <SoftAvatar
             src={avatarUrl}
             alt={user.name || user.email}
             size="sm"
             sx={{
-              width: miniSidenav ? 40 : 48,
-              height: miniSidenav ? 40 : 48,
+              width: 48,
+              height: 48,
               flexShrink: 0,
               bgcolor: "rgba(255,255,255,0.3)",
             }}
           />
-          {!miniSidenav && (
-            <SoftBox flex={1} minWidth={0}>
-              <SoftTypography variant="button" fontWeight="bold" color="white" noWrap>
-                {user.name || "Gebruiker"}
+          <SoftBox flex={1} minWidth={0}>
+            <SoftTypography variant="button" fontWeight="bold" color="white" noWrap>
+              {user.name || "Gebruiker"}
+            </SoftTypography>
+            {user.email ? (
+              <a href={`mailto:${user.email}`} style={{ textDecoration: "none", color: "inherit", opacity: 0.9, fontSize: 10, display: "block" }}>
+                <SoftTypography
+                  variant="caption"
+                  color="white"
+                  sx={{ opacity: 0.9, fontSize: 10, "&:hover": { textDecoration: "underline" } }}
+                >
+                  {user.email}
+                </SoftTypography>
+              </a>
+            ) : (
+              <SoftTypography variant="caption" color="white" sx={{ opacity: 0.9, fontSize: 10 }} display="block">
+                {" "}
               </SoftTypography>
-              <SoftTypography
-                variant="caption"
-                color="white"
-                sx={{ opacity: 0.9, fontSize: 10 }}
-                display="block"
-              >
-                {user.email || ""}
-              </SoftTypography>
-            </SoftBox>
-          )}
+            )}
+          </SoftBox>
         </SoftBox>
       </SoftBox>
     </SoftBox>

@@ -22,6 +22,7 @@ class WPHubPro_Bridge_Plugins {
 	 * @return WP_REST_Response
 	 */
 	public function get_plugins_list() {
+		error_log( '[WPHubPro Bridge] plugins/list GET' );
 		if ( ! function_exists( 'get_plugins' ) ) {
 			require_once ABSPATH . 'wp-admin/includes/plugin.php';
 		}
@@ -56,6 +57,13 @@ class WPHubPro_Bridge_Plugins {
 			'plugin' => $request->get_param( 'plugin' ),
 			'slug'   => $request->get_param( 'slug' ),
 		);
+
+		// Debug: log alle binnenkomende plugin-actions
+		error_log( '[WPHubPro Bridge] plugins/manage INCOMING: ' . wp_json_encode( array(
+			'get_params'   => $req_data,
+			'body_params'  => $request->get_body_params(),
+			'query_params' => $request->get_query_params(),
+		) ) );
 
 		require_once ABSPATH . 'wp-admin/includes/plugin.php';
 		require_once ABSPATH . 'wp-admin/includes/file.php';

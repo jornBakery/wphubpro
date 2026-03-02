@@ -10,20 +10,17 @@ const FUNCTION_ID = 'wp-proxy';
 // --- API Helper ---
 const executeWpProxy = async <T>(payload: { siteId: string; method?: string; endpoint: string; body?: any; userId?: string; useApiKey?: boolean }): Promise<T> => {
   try {
-    // Some Appwrite runtimes drop `req.payload`; encode parameters in the execution path as a fallback.
     const qs = new URLSearchParams();
     qs.set('siteId', payload.siteId);
     qs.set('endpoint', payload.endpoint);
     if (payload.method) qs.set('method', String(payload.method));
-    if (payload.body) qs.set('body', encodeURIComponent(JSON.stringify(payload.body)));
-    // include caller identity to satisfy function authorization when runtime doesn't inject it
     if (payload.userId) qs.set('userId', payload.userId);
-    // instruct the proxy to prefer api_key field when available
     if (payload.useApiKey) qs.set('useApiKey', '1');
+    // Appwrite execution body may not reach the function; put body in query so wp-proxy gets it
+    if (payload.body) qs.set('body', JSON.stringify(payload.body));
 
     const path = `/?${qs.toString()}`;
 
-    // Appwrite SDK expects the HTTP method as a string (e.g. 'GET'|'POST') — pass strings to avoid enum/value mismatches
     const execMethod = payload.method ? String(payload.method) : 'GET';
     const result = await functions.createExecution(FUNCTION_ID, undefined, false, path, execMethod as any);
 
@@ -68,16 +65,18 @@ const executeWpProxy = async <T>(payload: { siteId: string; method?: string; end
 
 // --- Hooks ---
 // Use the new bridge endpoint for plugin list
+// Bridge returns: { file, name, version, active (boolean), update }
+// Frontend expects: { plugin (file path), name, version, status: 'active'|'inactive' }
 export const usePlugins = (siteId: string | undefined) => {
   const { user } = useAuth();
   return useQuery<WordPressPlugin[], Error>({
     queryKey: ['plugins', siteId],
     queryFn: async () => {
       const raw = await executeWpProxy<any[]>({ siteId: siteId!, endpoint: 'wphubpro/v1/plugins', userId: user?.$id, useApiKey: true });
-      // Map file to plugin for compatibility
       return raw.map((p) => ({
         ...p,
         plugin: p.plugin || p.file,
+        status: p.active === true ? ('active' as const) : ('inactive' as const),
       })) as WordPressPlugin[];
     },
     enabled: !!siteId,
@@ -85,11 +84,20 @@ export const usePlugins = (siteId: string | undefined) => {
 };
 
 // Use the new bridge endpoint for theme list
+// Bridge returns: { slug, name, version, active (boolean), update }
+// Frontend expects: { stylesheet (slug), name, version, status: 'active'|'inactive' }
 export const useThemes = (siteId: string | undefined) => {
   const { user } = useAuth();
   return useQuery<WordPressTheme[], Error>({
     queryKey: ['themes', siteId],
-    queryFn: () => executeWpProxy<WordPressTheme[]>({ siteId: siteId!, endpoint: 'wphubpro/v1/themes', userId: user?.$id, useApiKey: true }),
+    queryFn: async () => {
+      const raw = await executeWpProxy<any[]>({ siteId: siteId!, endpoint: 'wphubpro/v1/themes', userId: user?.$id, useApiKey: true });
+      return raw.map((t) => ({
+        ...t,
+        stylesheet: t.stylesheet || t.slug,
+        status: t.active === true ? ('active' as const) : ('inactive' as const),
+      })) as WordPressTheme[];
+    },
     enabled: !!siteId,
   });
 };
@@ -102,7 +110,6 @@ export const useTogglePlugin = (siteId: string | undefined) => {
   return useMutation<WordPressPlugin, Error, { pluginSlug: string; status: 'active' | 'inactive', pluginName: string }>({
     mutationFn: ({ pluginSlug, status }) => {
       const newStatus = status === 'active' ? 'deactivate' : 'activate';
-      // Use the bridge endpoint for plugin management
       return executeWpProxy<WordPressPlugin>({
         siteId: siteId!,
         method: 'POST',
@@ -113,7 +120,6 @@ export const useTogglePlugin = (siteId: string | undefined) => {
       });
     },
     onSuccess: (_data, variables) => {
-      // Invalidate the plugins list to refetch the updated status
       queryClient.invalidateQueries({ queryKey: ['plugins', siteId] });
       const action = variables.status === 'active' ? 'deactivated' : 'activated';
       toast({
@@ -126,6 +132,40 @@ export const useTogglePlugin = (siteId: string | undefined) => {
       toast({
         title: "Action Failed",
         description: `Could not toggle plugin "${variables.pluginName}": ${error.message}`,
+        variant: 'destructive',
+      });
+    }
+  });
+};
+
+export const useDeletePlugin = (siteId: string | undefined) => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const { user } = useAuth();
+
+  return useMutation<void, Error, { pluginFile: string; pluginName: string }>({
+    mutationFn: ({ pluginFile }) => {
+      return executeWpProxy<void>({
+        siteId: siteId!,
+        method: 'POST',
+        endpoint: 'wphubpro/v1/plugins/manage',
+        body: { action: 'delete', plugin: pluginFile },
+        userId: user?.$id,
+        useApiKey: true,
+      });
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['plugins', siteId] });
+      toast({
+        title: "Success",
+        description: `Plugin "${variables.pluginName}" is verwijderd.`,
+        variant: 'success'
+      });
+    },
+    onError: (error, variables) => {
+      toast({
+        title: "Verwijderen mislukt",
+        description: `Could not remove plugin "${variables.pluginName}": ${error.message}`,
         variant: 'destructive',
       });
     }

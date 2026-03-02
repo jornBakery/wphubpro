@@ -85,7 +85,13 @@ const SiteDetailPage: React.FC = () => {
         <SoftBox display="flex" justifyContent="space-between" alignItems="flex-start" mb={3} flexWrap="wrap" gap={2}>
           <SoftBox>
             <SoftTypography variant="h4" fontWeight="bold">{siteName}</SoftTypography>
-            <SoftTypography variant="button" color="secondary">{siteUrl}</SoftTypography>
+            {siteUrl ? (
+              <a href={siteUrl.startsWith('http') ? siteUrl : `https://${siteUrl}`} target="_blank" rel="noreferrer" style={{ textDecoration: 'none', color: 'inherit' }}>
+                <SoftTypography variant="button" color="secondary" sx={{ '&:hover': { textDecoration: 'underline' } }}>{siteUrl}</SoftTypography>
+              </a>
+            ) : (
+              <SoftTypography variant="button" color="secondary">{siteUrl}</SoftTypography>
+            )}
           </SoftBox>
           <SoftButton variant="outlined" color="secondary" size="small" onClick={() => navigate('/sites')}>
             <Icon sx={{ mr: 0.5 }}>arrow_back</Icon>

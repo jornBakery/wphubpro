@@ -21,7 +21,7 @@ const item = {
 
 function itemContent(theme, ownerState) {
   const { palette, typography, transitions, functions } = theme;
-  const { active, miniSidenav, name, nested } = ownerState;
+  const { active, miniSidenav, name, nested, submenuColor } = ownerState;
 
   const { dark, gradients } = palette;
   const { size, fontWeightMedium, fontWeightRegular } = typography;
@@ -32,13 +32,13 @@ function itemContent(theme, ownerState) {
     alignItems: "center",
     justifyContent: "space-between",
     width: "100%",
-    padding: `${pxToRem(7.2)} ${pxToRem(16)}`,
+    padding: `${pxToRem(4)} ${pxToRem(16)}`,
     margin: `0 ${pxToRem(16)} 0 ${pxToRem(21.6)}`,
     userSelect: "none",
     position: "relative",
 
     "& span": {
-      color: active ? dark.main : rgba(gradients.dark.state, 0.7),
+      color: active ? dark.main : (submenuColor || rgba(gradients.dark.state, 0.7)),
       fontWeight: active ? fontWeightMedium : fontWeightRegular,
       fontSize: size.sm,
       opacity: miniSidenav ? 0 : 1,

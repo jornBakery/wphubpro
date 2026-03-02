@@ -21,9 +21,8 @@ module.exports = async ({ req, res, log, error }) => {
   const APPWRITE_FUNCTION_PROJECT_ID = env.APPWRITE_FUNCTION_PROJECT_ID || env.APPWRITE_PROJECT_ID;
   const APPWRITE_FUNCTION_API_KEY = env.APPWRITE_FUNCTION_API_KEY || env.APPWRITE_API_KEY || env.APPWRITE_KEY;
   const ENCRYPTION_KEY = env.ENCRYPTION_KEY;
-  const DISABLE_ENCRYPTION = env.DISABLE_ENCRYPTION === '1' || env.DISABLE_ENCRYPTION === 'true';
 
-  if (!APPWRITE_FUNCTION_ENDPOINT || !APPWRITE_FUNCTION_PROJECT_ID || !APPWRITE_FUNCTION_API_KEY || (!ENCRYPTION_KEY && !DISABLE_ENCRYPTION)) {
+  if (!APPWRITE_FUNCTION_ENDPOINT || !APPWRITE_FUNCTION_PROJECT_ID || !APPWRITE_FUNCTION_API_KEY || !ENCRYPTION_KEY) {
     error('Function environment is not configured');
     return res.json({ success: false, message: 'Function environment is not configured.' }, 500);
   }
@@ -44,7 +43,9 @@ module.exports = async ({ req, res, log, error }) => {
     return res.json({ success: false, message: 'Missing required fields: site_url, site_name, userId' }, 400);
   }
 
-  // Username, Password en api_key zijn nu OPTIONEEL bij creatie (api_key = Bridge plugin flow)
+  // Twee flows:
+  // 1) Platform: site aanmaken (alleen site_url/site_name) - geen api_key, die komt later via update-site vanuit Bridge
+  // 2) Bridge success: site bestaat nog niet, ConnectSuccessPage roept addSite aan mét api_key - dan hier encrypten en opslaan
   let username = (payloadObj && (payloadObj.username || payloadObj.user)) || (req.query && (req.query.username || req.query.user)) || null;
   let password = (payloadObj && payloadObj.password) || (req.query && req.query.password) || null;
   let api_key = (payloadObj && (payloadObj.api_key || payloadObj.apiKey)) || (req.query && (req.query.api_key || req.query.apiKey)) || null;
@@ -53,10 +54,9 @@ module.exports = async ({ req, res, log, error }) => {
     let encryptedPassword = "";
     let encryptedApiKey = "";
 
-    // api_key (Bridge plugin) - versleutelen indien aanwezig
+    // api_key (Bridge success flow, site bestaat nog niet) - versleutelen en opslaan
     if (api_key) {
-      const disableEncEnv = env.DISABLE_ENCRYPTION === '1' || env.DISABLE_ENCRYPTION === 'true';
-      encryptedApiKey = (ENCRYPTION_KEY && !disableEncEnv) ? encrypt(api_key, ENCRYPTION_KEY) : api_key;
+      encryptedApiKey = encrypt(api_key, ENCRYPTION_KEY);
     }
 
     // Alleen valideren en (optioneel) versleutelen als er username+password zijn meegeleverd
@@ -68,24 +68,16 @@ module.exports = async ({ req, res, log, error }) => {
       if (!resp.ok) {
         return res.json({ success: false, message: 'WP validation failed' }, resp.status);
       }
-      // Allow a client-provided flag to disable encryption for testing (payloadObj._disable_encryption)
-      const disableEncFlag = (payloadObj && (payloadObj._disable_encryption || payloadObj.disable_encryption)) || (req.query && (req.query._disable_encryption || req.query.disable_encryption));
-      if (DISABLE_ENCRYPTION || disableEncFlag) {
-        encryptedPassword = password;
-      } else {
-        encryptedPassword = encrypt(password, ENCRYPTION_KEY);
-      }
+      encryptedPassword = encrypt(password, ENCRYPTION_KEY);
     }
 
-    const hasCreds = !!(encryptedApiKey || encryptedPassword);
     const document = {
       user_id: user_id,
       site_url: site_url,
       site_name: site_name,
       username: username || "",
       password: encryptedPassword,
-      ...(encryptedApiKey ? { api_key: encryptedApiKey } : {}),
-      ...(hasCreds ? { status: 'connected', health_status: 'healthy', last_checked: new Date().toISOString() } : {})
+      ...(encryptedApiKey ? { api_key: encryptedApiKey } : {})
     };
 
     const created = await databases.createDocument('platform_db', 'sites', sdk.ID.unique(), document);

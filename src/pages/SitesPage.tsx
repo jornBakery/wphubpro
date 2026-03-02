@@ -11,50 +11,17 @@ import Stack from '@mui/material/Stack';
 import Icon from '@mui/material/Icon';
 
 import Footer from 'examples/Footer';
-import DataTable from 'examples/Tables/DataTable';
 
 import { useSites } from '../hooks/useSites';
+import { usePinnedSites } from '../hooks/usePinnedSites';
 import AddSiteModal from '../components/sites/AddSiteModal';
+import ResponsiveSitesTable from '../components/sites/ResponsiveSitesTable';
 import { Site } from '../types';
-import { SiteCell, StatusIcon, HealthBadge, ActionCell } from '../components/sites/SitesTableCells';
 
 const SitesPage: React.FC = () => {
   const [addModalOpen, setAddModalOpen] = useState(false);
   const { data: sites, isLoading, isError, error } = useSites();
-
-  const dataTableData = useMemo(() => {
-    const rows = (sites || []).map((site) => ({
-      site: [site.siteName || site.siteUrl || 'Untitled', { url: site.siteUrl || '-' }],
-      status: site.status,
-      health: site.healthStatus,
-      lastChecked: site.lastChecked ? new Date(site.lastChecked).toLocaleDateString('nl-NL') : '-',
-      action: <ActionCell siteId={site.$id} siteUrl={site.siteUrl || '#'} />,
-    }));
-    return {
-      columns: [
-        {
-          Header: 'Site',
-          accessor: 'site',
-          width: '40%',
-          Cell: ({ value }: { value: [string, { url: string }] }) => <SiteCell value={value} />,
-        },
-        {
-          Header: 'Status',
-          accessor: 'status',
-          width: '8%',
-          Cell: ({ value }: { value: Site['status'] }) => <StatusIcon value={value} />,
-        },
-        {
-          Header: 'Gezondheid',
-          accessor: 'health',
-          Cell: ({ value }: { value: Site['healthStatus'] }) => <HealthBadge value={value} />,
-        },
-        { Header: 'Laatst gecontroleerd', accessor: 'lastChecked', width: '15%' },
-        { Header: 'Acties', accessor: 'action', width: '12%' },
-      ],
-      rows,
-    };
-  }, [sites]);
+  const { togglePin, isPinned } = usePinnedSites();
 
   return (
     <>
@@ -64,7 +31,7 @@ const SitesPage: React.FC = () => {
         <Card>
           <SoftBox display="flex" justifyContent="space-between" alignItems="flex-start" p={3}>
             <SoftBox lineHeight={1}>
-              <SoftTypography variant="h5" fontWeight="medium">
+              <SoftTypography variant="h5" fontWeight="bold">
                 Sites
               </SoftTypography>
               <SoftTypography variant="button" fontWeight="regular" color="text">
@@ -104,10 +71,15 @@ const SitesPage: React.FC = () => {
           )}
 
           {!isLoading && !isError && sites && sites.length > 0 && (
-            <DataTable
-              table={dataTableData}
-              entriesPerPage={{ defaultValue: 7, entries: [5, 7, 10, 15, 20, 25] }}
-              canSearch
+            <ResponsiveSitesTable
+              sites={sites}
+              showPinButton
+              isPinned={isPinned}
+              onTogglePin={togglePin}
+              linkToDetails
+              showHeader={false}
+              headerColor="#4F5482"
+              entriesPerPage={{ defaultValue: 10, entries: [5, 10, 15, 20, 25] }}
             />
           )}
         </Card>

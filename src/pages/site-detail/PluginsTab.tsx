@@ -11,7 +11,7 @@ import SoftBox from 'components/SoftBox';
 import SoftTypography from 'components/SoftTypography';
 import SoftButton from 'components/SoftButton';
 import SoftBadge from 'components/SoftBadge';
-import { usePlugins, useTogglePlugin } from '../../hooks/useWordPress';
+import { usePlugins, useTogglePlugin, useDeletePlugin } from '../../hooks/useWordPress';
 import { useSite } from '../../hooks/useSites';
 import { WordPressPlugin } from '../../types';
 
@@ -23,9 +23,16 @@ const PluginsTab: React.FC<PluginsTabProps> = ({ siteId }) => {
   const { data: plugins, isLoading, isError, error, refetch } = usePlugins(siteId);
   const { data: site } = useSite(siteId);
   const togglePluginMutation = useTogglePlugin(siteId);
+  const deletePluginMutation = useDeletePlugin(siteId);
 
   const handleToggle = (plugin: WordPressPlugin) => {
     togglePluginMutation.mutate({ pluginSlug: plugin.plugin, status: plugin.status, pluginName: plugin.name });
+  };
+
+  const handleDelete = (plugin: WordPressPlugin) => {
+    if (window.confirm(`Weet je zeker dat je "${plugin.name}" wilt verwijderen?`)) {
+      deletePluginMutation.mutate({ pluginFile: plugin.plugin, pluginName: plugin.name });
+    }
   };
 
   if (isLoading) {
@@ -82,9 +89,14 @@ const PluginsTab: React.FC<PluginsTabProps> = ({ siteId }) => {
                 </TableCell>
                 <TableCell><SoftTypography variant="caption">{plugin.version}</SoftTypography></TableCell>
                 <TableCell align="right">
-                  <SoftButton variant="outlined" color="info" size="small" onClick={() => handleToggle(plugin)} disabled={togglePluginMutation.isPending && togglePluginMutation.variables?.pluginSlug === plugin.plugin}>
-                    {togglePluginMutation.isPending && togglePluginMutation.variables?.pluginSlug === plugin.plugin ? '...' : plugin.status === 'active' ? 'Deactiveren' : 'Activeren'}
-                  </SoftButton>
+                  <SoftBox display="flex" gap={1} justifyContent="flex-end">
+                    <SoftButton variant="outlined" color="info" size="small" onClick={() => handleToggle(plugin)} disabled={(togglePluginMutation.isPending && togglePluginMutation.variables?.pluginSlug === plugin.plugin) || (deletePluginMutation.isPending && deletePluginMutation.variables?.pluginFile === plugin.plugin)}>
+                      {togglePluginMutation.isPending && togglePluginMutation.variables?.pluginSlug === plugin.plugin ? '...' : plugin.status === 'active' ? 'Deactiveren' : 'Activeren'}
+                    </SoftButton>
+                    <SoftButton variant="outlined" color="error" size="small" onClick={() => handleDelete(plugin)} disabled={(togglePluginMutation.isPending && togglePluginMutation.variables?.pluginSlug === plugin.plugin) || (deletePluginMutation.isPending && deletePluginMutation.variables?.pluginFile === plugin.plugin)}>
+                      {deletePluginMutation.isPending && deletePluginMutation.variables?.pluginFile === plugin.plugin ? '...' : 'Verwijderen'}
+                    </SoftButton>
+                  </SoftBox>
                 </TableCell>
               </TableRow>
             ))}

@@ -24,6 +24,14 @@ class WPHubPro_Bridge_Logger {
 	 * @param mixed  $response Response/result.
 	 */
 	public static function log_action( $site_url, $action, $endpoint, $request, $response ) {
+		// Debug: log alle actions naar PHP error_log
+		error_log( '[WPHubPro Bridge] log_action: ' . wp_json_encode( array(
+			'action'   => $action,
+			'endpoint' => $endpoint,
+			'request'  => $request,
+			'response' => $response,
+		) ) );
+
 		$appwrite_endpoint = getenv( 'APPWRITE_ENDPOINT' );
 		$appwrite_project  = getenv( 'APPWRITE_PROJECT_ID' );
 		$appwrite_key      = getenv( 'APPWRITE_API_KEY' );

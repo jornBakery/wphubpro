@@ -26,7 +26,7 @@ import SoftBox from "components/SoftBox";
 import colors from "assets/theme/base/colors";
 import borders from "assets/theme/base/borders";
 
-function DataTableHeadCell({ width = "auto", children, sorted = "none", align = "left", ...rest }) {
+function DataTableHeadCell({ width = "auto", children, sorted = "none", align = "left", color, pl, ...rest }) {
   const { light } = colors;
   const { borderWidth } = borders;
 
@@ -36,48 +36,57 @@ function DataTableHeadCell({ width = "auto", children, sorted = "none", align = 
       width={width}
       borderBottom={`${borderWidth[1]} solid ${light.main}`}
       py={1.5}
-      px={3}
+      px={pl === undefined ? 3 : undefined}
+      pl={pl}
+      pr={pl !== undefined ? 3 : undefined}
     >
       <SoftBox
         {...rest}
         position="relative"
+        display="flex"
+        alignItems="flex-start"
         textAlign={align}
         color="secondary"
         opacity={0.7}
+        minHeight={0}
         sx={({ typography: { size, fontWeightBold } }) => ({
           fontSize: size.xxs,
           fontWeight: fontWeightBold,
           textTransform: "uppercase",
+          lineHeight: 1,
           cursor: sorted && "pointer",
           userSelect: sorted && "none",
+          ...(color && { color }),
         })}
       >
         {children}
         {sorted && (
           <SoftBox
             position="absolute"
-            top={0}
+            top={-6}
             right={align !== "right" ? "16px" : 0}
             left={align === "right" ? "-5px" : "unset"}
-            sx={({ typography: { size } }) => ({
-              fontSize: size.lg,
-            })}
+            sx={{ fontSize: "1.75rem" }}
           >
             <SoftBox
               position="absolute"
               top={-6}
-              color={sorted === "asce" ? "text" : "secondary"}
-              opacity={sorted === "asce" ? 1 : 0.5}
+              sx={{
+                color: colors.success.main,
+                opacity: sorted === "asce" ? 1 : 0.5,
+              }}
             >
-              <Icon>arrow_drop_up</Icon>
+              <Icon sx={{ fontSize: "inherit" }}>arrow_drop_up</Icon>
             </SoftBox>
             <SoftBox
               position="absolute"
               top={0}
-              color={sorted === "desc" ? "text" : "secondary"}
-              opacity={sorted === "desc" ? 1 : 0.5}
+              sx={{
+                color: colors.success.main,
+                opacity: sorted === "desc" ? 1 : 0.5,
+              }}
             >
-              <Icon>arrow_drop_down</Icon>
+              <Icon sx={{ fontSize: "inherit" }}>arrow_drop_down</Icon>
             </SoftBox>
           </SoftBox>
         )}

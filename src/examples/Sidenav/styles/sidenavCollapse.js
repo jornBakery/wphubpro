@@ -27,7 +27,7 @@ function collapseItem(theme, ownerState) {
     display: "flex",
     alignItems: "center",
     width: "100%",
-    padding: `${pxToRem(10.8)} ${pxToRem(12.8)} ${pxToRem(10.8)} ${pxToRem(16)}`,
+    padding: `${pxToRem(6)} ${pxToRem(12.8)} ${pxToRem(6)} ${pxToRem(16)}`,
     margin: `0 ${pxToRem(16)}`,
     borderRadius: borderRadius.md,
     cursor: "pointer",

@@ -21,6 +21,7 @@ export const getSidenavRoutes = (isAdmin = false) => {
           name: 'Business',
           key: 'admin-business',
           icon: 'business_center',
+          submenuColor: '#ea580c',
           collapse: [
             { name: 'Subscriptions', route: '/admin/subscriptions', key: 'admin-subscriptions' },
             { name: 'Orders', route: '/admin/orders', key: 'admin-orders' },

@@ -61,6 +61,9 @@ const MainLayout: React.FC = () => {
           px={3}
           sx={({ breakpoints }) => ({
             flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            minHeight: 0,
             overflowX: 'hidden',
             overflowY: 'auto',
             [breakpoints.down('sm')]: {

@@ -204,6 +204,7 @@ class WPHubPro_Bridge_Connect {
 	 * @return array{redirect: string}
 	 */
 	public function handle_connect() {
+		error_log( '[WPHubPro Bridge] connect GET' );
 		$api_key = wp_generate_password( 32, false );
 		update_option( 'wphubpro_api_key', $api_key );
 		$params = array(

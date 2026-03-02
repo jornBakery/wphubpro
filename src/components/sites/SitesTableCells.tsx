@@ -11,8 +11,18 @@ import Tooltip from '@mui/material/Tooltip';
 import { Site } from '../../types';
 import { useDeleteSite } from '../../hooks/useSites';
 
-export const SiteCell: React.FC<{ value: [string, { url: string }] }> = ({ value: [name, data] }) => (
-  <SoftBox display="flex" alignItems="center">
+const infoGradient = 'linear-gradient(310deg, #4F5482, #7a8ef0)';
+const orangeGradient = 'linear-gradient(310deg, #ea580c, #fb923c)';
+
+interface SiteCellProps {
+  value: [string, { url: string }];
+  siteId?: string;
+  linkToDetails?: boolean;
+}
+
+export const SiteCell: React.FC<SiteCellProps> = ({ value: [name, data], siteId, linkToDetails = false }) => {
+  const content = (
+    <SoftBox display="flex" alignItems="center">
     <SoftBox
       mx={2}
       display="flex"
@@ -26,11 +36,27 @@ export const SiteCell: React.FC<{ value: [string, { url: string }] }> = ({ value
       <Icon sx={{ color: 'white !important' }}>public</Icon>
     </SoftBox>
     <SoftBox>
-      <SoftTypography variant="button" fontWeight="medium">{name || 'Untitled'}</SoftTypography>
-      <SoftTypography variant="caption" color="secondary" display="block">{data?.url || '-'}</SoftTypography>
+      {linkToDetails && siteId ? (
+        <Link to={`/sites/${siteId}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+          <SoftTypography variant="button" fontWeight="medium" sx={{ '&:hover': { textDecoration: 'underline' } }}>
+            {name || 'Untitled'}
+          </SoftTypography>
+        </Link>
+      ) : (
+        <SoftTypography variant="button" fontWeight="medium">{name || 'Untitled'}</SoftTypography>
+      )}
+      {data?.url && (data.url.startsWith('http') ? (
+        <a href={data.url} target="_blank" rel="noreferrer" style={{ textDecoration: 'none', color: 'inherit', fontSize: '0.75rem', display: 'block', opacity: 0.7 }} title={data.url}>
+          <SoftTypography variant="caption" color="secondary" component="span" sx={{ '&:hover': { textDecoration: 'underline' } }}>{data.url}</SoftTypography>
+        </a>
+      ) : (
+        <SoftTypography variant="caption" color="secondary" display="block">{data.url || '-'}</SoftTypography>
+      ))}
     </SoftBox>
   </SoftBox>
-);
+  );
+  return content;
+};
 
 export const StatusIcon: React.FC<{ value: Site['status'] }> = ({ value }) => {
   const isConnected = value === 'connected';
@@ -59,16 +85,13 @@ export const HealthBadge: React.FC<{ value: Site['healthStatus'] }> = ({ value }
   return <SoftBadge variant="gradient" color={c.color} size="xs" badgeContent={c.label} container />;
 };
 
-const infoGradient = 'linear-gradient(310deg, #4F5482, #7a8ef0)';
-const orangeGradient = 'linear-gradient(310deg, #ea580c, #fb923c)';
-
 const ActionIconButton: React.FC<{
   icon: string;
   title: string;
-  color?: 'info' | 'error';
+  color?: 'info' | 'error' | 'success';
   onClick?: () => void;
 }> = ({ icon, title, color = 'info', onClick }) => {
-  const isDelete = color === 'error';
+  const bg = color === 'error' ? orangeGradient : color === 'success' ? orangeGradient : infoGradient;
   return (
     <Tooltip title={title} placement="top">
       <SoftBox
@@ -79,13 +102,14 @@ const ActionIconButton: React.FC<{
           width: 32,
           height: 32,
           borderRadius: '50%',
-          background: isDelete ? orangeGradient : infoGradient,
+          background: bg,
           color: 'white',
-          cursor: 'pointer',
+          cursor: onClick ? 'pointer' : 'inherit',
           '&:hover': { opacity: 0.9 },
         }}
-        component="span"
+        component={onClick ? 'button' : 'span'}
         onClick={onClick}
+        {...(onClick && { type: 'button' as const })}
       >
         <Icon sx={{ fontSize: 18, color: 'white !important' }}>{icon}</Icon>
       </SoftBox>
@@ -93,7 +117,13 @@ const ActionIconButton: React.FC<{
   );
 };
 
-export const ActionCell: React.FC<{ siteId: string; siteUrl: string }> = ({ siteId, siteUrl }) => {
+export const ActionCell: React.FC<{
+  siteId: string;
+  siteUrl: string;
+  showPinButton?: boolean;
+  isPinned?: boolean;
+  onTogglePin?: () => void;
+}> = ({ siteId, siteUrl, showPinButton = false, isPinned = false, onTogglePin }) => {
   const deleteSite = useDeleteSite();
   const handleDelete = () => {
     if (window.confirm('Weet je zeker dat je deze site wilt verwijderen?')) {
@@ -102,6 +132,14 @@ export const ActionCell: React.FC<{ siteId: string; siteUrl: string }> = ({ site
   };
   return (
     <SoftBox display="flex" alignItems="center" gap={0.5}>
+      {showPinButton && onTogglePin && (
+        <ActionIconButton
+          icon="push_pin"
+          title={isPinned ? 'Verwijder van dashboard' : 'Pin naar dashboard'}
+          color={isPinned ? 'success' : 'info'}
+          onClick={onTogglePin}
+        />
+      )}
       <Link to={`/sites/${siteId}`} style={{ textDecoration: 'none', color: 'inherit', display: 'inline-flex' }}>
         <ActionIconButton icon="settings" title="Beheer" />
       </Link>

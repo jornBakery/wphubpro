@@ -73,7 +73,7 @@ function Sidenav({ color = "info", brand = "", brandName, routes, ...rest }) {
   }, [dispatch, location]);
 
   // Render all the nested collapse items from the routes.js
-  const renderNestedCollapse = (collapse) => {
+  const renderNestedCollapse = (collapse, submenuColor) => {
     const template = collapse.map(({ name, route, key, href }) =>
       href ? (
         <Link
@@ -83,11 +83,11 @@ function Sidenav({ color = "info", brand = "", brandName, routes, ...rest }) {
           rel="noreferrer"
           sx={{ textDecoration: "none" }}
         >
-          <SidenavItem name={name} nested />
+          <SidenavItem name={name} nested submenuColor={submenuColor} />
         </Link>
       ) : (
         <NavLink to={route} key={key} sx={{ textDecoration: "none" }}>
-          <SidenavItem name={name} active={route === pathname} nested />
+          <SidenavItem name={name} active={route === pathname} nested submenuColor={submenuColor} />
         </NavLink>
       )
     );
@@ -96,7 +96,7 @@ function Sidenav({ color = "info", brand = "", brandName, routes, ...rest }) {
   };
 
   // Render the all the collpases from the routes.js
-  const renderCollapse = (collapses) =>
+  const renderCollapse = (collapses, submenuColor) =>
     collapses.map(({ name, collapse, route, href, key }) => {
       let returnValue;
 
@@ -113,7 +113,7 @@ function Sidenav({ color = "info", brand = "", brandName, routes, ...rest }) {
                 : setOpenNestedCollapse(name)
             }
           >
-            {renderNestedCollapse(collapse)}
+            {renderNestedCollapse(collapse, submenuColor)}
           </SidenavItem>
         );
       } else {
@@ -138,7 +138,7 @@ function Sidenav({ color = "info", brand = "", brandName, routes, ...rest }) {
 
   // Render all the routes from the routes.js (All the visible items on the Sidenav)
   const renderRoutes = routes.map(
-    ({ type, name, icon, title, collapse, noCollapse, key, href, route }) => {
+    ({ type, name, icon, title, collapse, noCollapse, key, href, route, submenuColor }) => {
       let returnValue;
 
       if (type === "collapse") {
@@ -168,7 +168,7 @@ function Sidenav({ color = "info", brand = "", brandName, routes, ...rest }) {
                 noCollapse={noCollapse}
                 active={key === collapseName}
               >
-                {collapse ? renderCollapse(collapse) : null}
+                {collapse ? renderCollapse(collapse, submenuColor) : null}
               </SidenavCollapse>
             </NavLink>
           );
@@ -182,7 +182,7 @@ function Sidenav({ color = "info", brand = "", brandName, routes, ...rest }) {
               open={openCollapse === key}
               onClick={() => (openCollapse === key ? setOpenCollapse(false) : setOpenCollapse(key))}
             >
-              {collapse ? renderCollapse(collapse) : null}
+              {collapse ? renderCollapse(collapse, submenuColor) : null}
             </SidenavCollapse>
           );
         }
@@ -237,16 +237,27 @@ function Sidenav({ color = "info", brand = "", brandName, routes, ...rest }) {
         </SoftBox>
         <SoftBox
           onClick={handleMiniSidenav}
-          sx={{ cursor: "pointer", display: "flex", alignItems: "center", flexShrink: 0, p: 0.5 }}
+          sx={{ cursor: "pointer", display: "flex", alignItems: "center", flexShrink: 0, p: 0.5, color: "#4F5482" }}
         >
-          <Icon sx={{ fontWeight: "bold", fontSize: "1.25rem" }}>
+          <Icon sx={{ fontWeight: "bold", fontSize: "1.25rem", color: "#4F5482" }}>
             {miniSidenav ? "menu" : "menu_open"}
           </Icon>
         </SoftBox>
       </SoftBox>
       <Divider />
-      <SoftBox display="flex" flexDirection="column" sx={{ flex: 1, minHeight: 0, overflow: "hidden" }}>
-        <List className="sidenav-scroll" sx={{ flex: 1, overflow: "auto", minHeight: 0 }}>{renderRoutes}</List>
+      <SoftBox display="flex" flexDirection="column" pb={3} sx={{ flex: 1, minHeight: 0, overflow: "hidden" }}>
+        <List
+          className="sidenav-scroll"
+          sx={{
+            flex: 1,
+            overflow: "auto",
+            overflowX: miniSidenav ? "hidden" : undefined,
+            minHeight: 0,
+            "& .MuiListItem-root": { marginBottom: 1 },
+          }}
+        >
+          {renderRoutes}
+        </List>
         <SidenavUserCard />
       </SoftBox>
     </SidenavRoot>

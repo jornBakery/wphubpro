@@ -66,8 +66,8 @@ function Footer({ company = { href: "https://www.creative-tim.com/", name: "Crea
         px={1.5}
       >
         &copy; {new Date().getFullYear()}, made with
-        <SoftBox fontSize={size.md} color="text" mb={-0.5} mx={0.25}>
-          <Icon color="inherit" fontSize="inherit">
+        <SoftBox fontSize={size.md} mb={-0.5} mx={0.25} sx={{ color: "#ea580c" }}>
+          <Icon sx={{ color: "#ea580c" }} fontSize="inherit">
             favorite
           </Icon>
         </SoftBox>

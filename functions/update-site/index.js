@@ -66,15 +66,8 @@ module.exports = async ({ req, res, log, error }) => {
   // If a password is supplied (Connect flow) — including empty string to clear — handle accordingly
   if (hasProp(updates, 'password')) {
     const rawPass = updates.password;
-    // Allow disabling encryption via environment or explicit client flag (_disable_encryption)
-    const disableEncEnv = env.DISABLE_ENCRYPTION === '1' || env.DISABLE_ENCRYPTION === 'true';
-    const disableEncFlag = hasProp(updates, '_disable_encryption') && !!updates._disable_encryption;
-    const disableEnc = disableEncEnv || disableEncFlag;
     if (rawPass === '' || rawPass === null) {
-      // Explicitly clear password
       finalUpdates.password = '';
-    } else if (disableEnc) {
-      finalUpdates.password = rawPass;
     } else {
       if (!ENCRYPTION_KEY) {
         return res.json({ success: false, message: 'ENCRYPTION_KEY not configured' }, 500);
@@ -86,26 +79,13 @@ module.exports = async ({ req, res, log, error }) => {
   // If an api_key is supplied (Bridge plugin) — including empty string to clear — handle accordingly
   if (hasProp(updates, 'api_key') || hasProp(updates, 'apiKey')) {
     const rawKey = hasProp(updates, 'api_key') ? updates.api_key : updates.apiKey;
-    const disableEncEnv = env.DISABLE_ENCRYPTION === '1' || env.DISABLE_ENCRYPTION === 'true';
-    const disableEncFlag = hasProp(updates, '_disable_encryption') && !!updates._disable_encryption;
-    const disableEnc = disableEncEnv || disableEncFlag;
     if (rawKey === '' || rawKey === null) {
       finalUpdates.api_key = '';
-      finalUpdates.status = 'disconnected';
-      finalUpdates.health_status = 'bad';
-    } else if (disableEnc) {
-      finalUpdates.api_key = rawKey;
-      finalUpdates.status = 'connected';
-      finalUpdates.health_status = 'healthy';
-      finalUpdates.last_checked = new Date().toISOString();
     } else {
       if (!ENCRYPTION_KEY) {
         return res.json({ success: false, message: 'ENCRYPTION_KEY not configured' }, 500);
       }
       finalUpdates.api_key = encrypt(rawKey, ENCRYPTION_KEY);
-      finalUpdates.status = 'connected';
-      finalUpdates.health_status = 'healthy';
-      finalUpdates.last_checked = new Date().toISOString();
     }
   }
 

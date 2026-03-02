@@ -42,6 +42,10 @@ const globals = {
   "a.link:hover, .link:hover, a.link:focus, .link:focus": {
     color: `${info.main} !important`,
   },
+  ".sidenav-scroll": {
+    scrollbarColor: "rgba(234, 88, 12, 0.3) transparent",
+    scrollbarWidth: "thin",
+  },
   ".sidenav-scroll::-webkit-scrollbar": {
     width: "8px",
   },

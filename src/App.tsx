@@ -54,6 +54,7 @@ const AppRoutes: React.FC = () => {
         <Route path="/sites" element={<SitesPage />} />
         <Route path="/sites/:id" element={<SiteDetailPage />} />
         <Route path="/library" element={<PlaceholderPage name="Bibliotheek" />} />
+        <Route path="/account" element={<PlaceholderPage name="Mijn Account" />} />
         <Route path="/subscription" element={<PlaceholderPage name="Abonnement" />} />
         <Route path="/subscription/plans" element={<PlaceholderPage name="Plannen" />} />
 

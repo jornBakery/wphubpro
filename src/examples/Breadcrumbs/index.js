@@ -45,9 +45,9 @@ function Breadcrumbs({ icon, title, route, light = false, showPageTitle = true }
             variant="body2"
             color={light ? "white" : "dark"}
             opacity={light ? 0.8 : 0.5}
-            sx={{ lineHeight: 0 }}
+            sx={{ lineHeight: 0, color: light ? undefined : "#ea580c" }}
           >
-            <Icon>{icon}</Icon>
+            <Icon sx={{ color: light ? undefined : "#ea580c" }}>{icon}</Icon>
           </SoftTypography>
         </Link>
         {routes.map((el) => (
@@ -59,7 +59,7 @@ function Breadcrumbs({ icon, title, route, light = false, showPageTitle = true }
               textTransform="capitalize"
               color={light ? "white" : "dark"}
               opacity={light ? 0.8 : 0.5}
-              sx={{ lineHeight: 0 }}
+              sx={{ lineHeight: 0, color: light ? undefined : "inherit" }}
             >
               {el}
             </SoftTypography>
@@ -70,7 +70,7 @@ function Breadcrumbs({ icon, title, route, light = false, showPageTitle = true }
           fontWeight="regular"
           textTransform="capitalize"
           color={light ? "white" : "dark"}
-          sx={{ lineHeight: 0 }}
+          sx={{ lineHeight: 0, color: light ? undefined : "#4F5482" }}
         >
           {title.replace("-", " ")}
         </SoftTypography>

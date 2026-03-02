@@ -14,6 +14,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Main bridge class – coordinates feature modules.
  */
+if ( ! class_exists( 'WPHubPro_Bridge' ) ) {
+
 class WPHubPro_Bridge {
 
 	private static $instance = null;
@@ -76,6 +78,22 @@ class WPHubPro_Bridge {
 			'methods'             => 'POST',
 			'callback'            => array( $this->plugins, 'manage_plugin' ),
 			'permission_callback' => $validate,
+			'args'                => array(
+				'action' => array(
+					'required'          => true,
+					'type'              => 'string',
+					'enum'              => array( 'activate', 'deactivate', 'delete', 'update', 'install' ),
+					'sanitize_callback' => 'sanitize_text_field',
+				),
+				'plugin' => array(
+					'type'              => 'string',
+					'sanitize_callback' => 'sanitize_text_field',
+				),
+				'slug'   => array(
+					'type'              => 'string',
+					'sanitize_callback' => 'sanitize_text_field',
+				),
+			),
 		) );
 
 		// Themes
@@ -94,4 +112,6 @@ class WPHubPro_Bridge {
 		$this->health->register_routes( $namespace );
 		$this->debug->register_routes( $namespace );
 	}
+}
+
 }

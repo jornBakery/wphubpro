@@ -53,9 +53,17 @@ const DashboardUserCard: React.FC<DashboardUserCardProps> = ({ user }) => {
             <SoftTypography variant="button" fontWeight="medium" noWrap>
               {user?.name || user?.email || 'Gebruiker'}
             </SoftTypography>
-            <SoftTypography variant="caption" color="secondary" display="block" noWrap>
-              {user?.email || '-'}
-            </SoftTypography>
+            {user?.email ? (
+              <a href={`mailto:${user.email}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                <SoftTypography variant="caption" color="secondary" display="block" noWrap sx={{ '&:hover': { textDecoration: 'underline' } }}>
+                  {user.email}
+                </SoftTypography>
+              </a>
+            ) : (
+              <SoftTypography variant="caption" color="secondary" display="block" noWrap>
+                -
+              </SoftTypography>
+            )}
             <SoftTypography variant="caption" color="secondary">
               {role} · Lid sinds {memberSince}
             </SoftTypography>
