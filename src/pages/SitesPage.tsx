@@ -21,7 +21,7 @@ import { Site } from '../types';
 const SitesPage: React.FC = () => {
   const [addModalOpen, setAddModalOpen] = useState(false);
   const { data: sites, isLoading, isError, error } = useSites();
-  const { togglePin, isPinned } = usePinnedSites();
+  const { togglePin, isPinned } = usePinnedSites(sites ?? []);
 
   return (
     <>

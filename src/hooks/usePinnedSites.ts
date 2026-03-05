@@ -1,88 +1,47 @@
 /**
- * Hook for pinned dashboard sites (max 5)
- * Stores in localStorage keyed by user ID
+ * Hook for pinned dashboard sites - stores pinned state in site meta_data
  */
-import { useCallback, useEffect, useState } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { useCallback } from 'react';
+import { Site } from '../types';
+import { useUpdateSite } from './useSites';
 
-const STORAGE_KEY = 'wphub-pinned-sites';
-const MAX_PINNED = 5;
-const PINNED_CHANGED = 'wphub-pinned-sites-changed';
-
-function getStorageKey(userId: string) {
-  return `${STORAGE_KEY}-${userId}`;
-}
-
-function loadPinnedIds(userId: string): string[] {
-  if (!userId) return [];
+function parseMeta(site: Site): Record<string, unknown> {
+  if (!site.meta_data) return {};
   try {
-    const raw = localStorage.getItem(getStorageKey(userId));
-    const ids = raw ? JSON.parse(raw) : [];
-    return Array.isArray(ids) ? ids : [];
+    const parsed = JSON.parse(site.meta_data);
+    return typeof parsed === 'object' && parsed !== null ? parsed : {};
   } catch {
-    return [];
+    return {};
   }
 }
 
-function savePinnedIds(userId: string, ids: string[]) {
-  if (!userId) return;
-  localStorage.setItem(getStorageKey(userId), JSON.stringify(ids));
-  window.dispatchEvent(new CustomEvent(PINNED_CHANGED, { detail: { userId } }));
+export function isSitePinned(site: Site): boolean {
+  const meta = parseMeta(site);
+  return meta?.pinned === true;
 }
 
-export function usePinnedSites() {
-  const { user } = useAuth();
-  const userId = user?.$id ?? null;
-  const [pinnedIds, setPinnedIds] = useState<string[]>(() => loadPinnedIds(userId ?? ''));
+export function usePinnedSites(sites: Site[]) {
+  const updateSite = useUpdateSite();
 
-  useEffect(() => {
-    setPinnedIds(loadPinnedIds(userId ?? ''));
-    const handler = () => setPinnedIds(loadPinnedIds(userId ?? ''));
-    window.addEventListener(PINNED_CHANGED, handler);
-    return () => window.removeEventListener(PINNED_CHANGED, handler);
-  }, [userId]);
+  const isPinned = useCallback(
+    (siteId: string) => {
+      const site = sites.find((s) => s.$id === siteId);
+      return site ? isSitePinned(site) : false;
+    },
+    [sites]
+  );
 
   const togglePin = useCallback(
     (siteId: string) => {
-      if (!userId) return;
-      const ids = loadPinnedIds(userId);
-      const idx = ids.indexOf(siteId);
-      let next: string[];
-      if (idx >= 0) {
-        next = ids.filter((id) => id !== siteId);
-      } else if (ids.length >= MAX_PINNED) {
-        next = [...ids.slice(1), siteId];
-      } else {
-        next = [...ids, siteId];
-      }
-      savePinnedIds(userId, next);
+      const site = sites.find((s) => s.$id === siteId);
+      if (!site) return;
+      const meta = parseMeta(site);
+      meta.pinned = !(meta.pinned === true);
+      const meta_data = JSON.stringify(meta);
+      updateSite.mutate({ siteId, meta_data });
     },
-    [userId]
+    [sites, updateSite]
   );
 
-  const isPinned = useCallback(
-    (siteId: string) => pinnedIds.includes(siteId),
-    [pinnedIds]
-  );
-
-  const pin = useCallback(
-    (siteId: string) => {
-      if (!userId || pinnedIds.includes(siteId)) return;
-      const next =
-        pinnedIds.length >= MAX_PINNED ? [...pinnedIds.slice(1), siteId] : [...pinnedIds, siteId];
-      savePinnedIds(userId, next);
-    },
-    [userId, pinnedIds]
-  );
-
-  const unpin = useCallback(
-    (siteId: string) => {
-      if (!userId) return;
-      const next = pinnedIds.filter((id) => id !== siteId);
-      savePinnedIds(userId, next);
-    },
-    [userId, pinnedIds]
-  );
-
-  return { pinnedIds, togglePin, isPinned, pin, unpin };
+  return { isPinned, togglePin };
 }

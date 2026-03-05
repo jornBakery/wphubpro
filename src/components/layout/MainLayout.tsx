@@ -2,13 +2,14 @@
  * Main layout with Soft UI Sidenav and Navbar styling
  */
 import React, { useEffect } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import SoftBox from 'components/SoftBox';
 
 import Sidenav from 'examples/Sidenav';
 import { useSoftUIController, setLayout } from 'context';
 
 import WPHubNavbar from './WPHubNavbar';
+import { PageBreadcrumbProvider } from '../../contexts/PageBreadcrumbContext';
 import { getSidenavRoutes } from '../../config/sidenavRoutes';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePlatformSettings } from '../../hooks/usePlatformSettings';
@@ -18,6 +19,8 @@ import brand from 'assets/images/logo-ct.png';
 
 const MainLayout: React.FC = () => {
   const [controller, dispatch] = useSoftUIController();
+  const location = useLocation();
+  const isSiteDetailPage = /^\/sites\/[^/]+$/.test(location.pathname);
   const { miniSidenav } = controller;
   const { isAdmin } = useAuth();
   const { data: details } = usePlatformSettings('details');
@@ -38,42 +41,45 @@ const MainLayout: React.FC = () => {
         brandName={brandName}
         routes={routes}
       />
-      <SoftBox
-        sx={({ breakpoints, transitions, functions: { pxToRem } }) => ({
-          display: 'flex',
-          flexDirection: 'column',
-          minHeight: '100vh',
-          position: 'relative',
-          [breakpoints.up('xl')]: {
-            marginLeft: miniSidenav ? pxToRem(120) : pxToRem(274),
-            transition: transitions.create(['margin-left', 'margin-right'], {
-              easing: transitions.easing.easeInOut,
-              duration: transitions.duration.standard,
-            }),
-          },
-        })}
-      >
-        <WPHubNavbar />
+      <PageBreadcrumbProvider>
         <SoftBox
-          component="main"
-          pt={1}
-          pb={3}
-          px={3}
-          sx={({ breakpoints }) => ({
-            flex: 1,
+          sx={({ breakpoints, transitions, functions: { pxToRem } }) => ({
             display: 'flex',
             flexDirection: 'column',
-            minHeight: 0,
-            overflowX: 'hidden',
-            overflowY: 'auto',
-            [breakpoints.down('sm')]: {
-              px: 2,
+            minHeight: '100vh',
+            position: 'relative',
+            [breakpoints.up('xl')]: {
+              marginLeft: miniSidenav ? pxToRem(120) : pxToRem(274),
+              transition: transitions.create(['margin-left', 'margin-right'], {
+                easing: transitions.easing.easeInOut,
+                duration: transitions.duration.standard,
+              }),
             },
           })}
         >
-          <Outlet />
+          <WPHubNavbar />
+          <SoftBox
+            component="main"
+            pt={1}
+            pb={3}
+            px={3}
+            sx={({ breakpoints }) => ({
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              minHeight: 0,
+              overflowX: 'hidden',
+              overflowY: 'auto',
+              backgroundColor: isSiteDetailPage ? 'transparent' : undefined,
+              [breakpoints.down('sm')]: {
+                px: 2,
+              },
+            })}
+          >
+            <Outlet />
+          </SoftBox>
         </SoftBox>
-      </SoftBox>
+      </PageBreadcrumbProvider>
       <Toaster />
     </>
   );

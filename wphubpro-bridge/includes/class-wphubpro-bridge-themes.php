@@ -22,7 +22,6 @@ class WPHubPro_Bridge_Themes {
 	 * @return WP_REST_Response
 	 */
 	public function get_themes_list() {
-		error_log( '[WPHubPro Bridge] themes/list GET' );
 		$all_themes = wp_get_themes();
 		$current    = get_stylesheet();
 		$updates    = get_site_transient( 'update_themes' );
@@ -53,12 +52,6 @@ class WPHubPro_Bridge_Themes {
 			'action' => $request->get_param( 'action' ),
 			'slug'   => $request->get_param( 'slug' ),
 		);
-
-		error_log( '[WPHubPro Bridge] themes/manage INCOMING: ' . wp_json_encode( array(
-			'get_params'   => $req_data,
-			'body_params'  => $request->get_body_params(),
-			'query_params' => $request->get_query_params(),
-		) ) );
 
 		require_once ABSPATH . 'wp-admin/includes/theme.php';
 		require_once ABSPATH . 'wp-admin/includes/file.php';

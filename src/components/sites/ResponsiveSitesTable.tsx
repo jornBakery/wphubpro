@@ -72,6 +72,7 @@ export default function ResponsiveSitesTable({
             showPinButton={showPinButton}
             isPinned={isPinned(site.$id)}
             onTogglePin={onTogglePin ? () => onTogglePin(site.$id) : undefined}
+            compact
           />
         ),
       })),
@@ -151,6 +152,7 @@ export default function ResponsiveSitesTable({
                         showPinButton={showPinButton}
                         isPinned={isPinned(site.$id)}
                         onTogglePin={onTogglePin ? () => onTogglePin(site.$id) : undefined}
+                        compact
                       />
                     </SoftBox>
                     <Icon sx={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>

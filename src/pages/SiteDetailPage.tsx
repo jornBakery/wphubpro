@@ -1,24 +1,26 @@
 /**
- * Site Detail page - based on soft layouts/dashboards/smart-home
- * Tabs: Site Details, Plugins, Themes, Site Health
+ * Site Detail page - Dashboard layout: main content left, sidebar right
+ * Tabs: Overview, Plugins, Themes, Health
  */
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
-import Card from '@mui/material/Card';
+import Grid from '@mui/material/Grid';
 import Icon from '@mui/material/Icon';
+import Card from '@mui/material/Card';
 import SoftBox from 'components/SoftBox';
 import SoftTypography from 'components/SoftTypography';
 import SoftButton from 'components/SoftButton';
 import Footer from 'examples/Footer';
 
 import { useSite, useDeleteSite, useCheckSiteHealth } from '../hooks/useSites';
+import { usePageBreadcrumb } from '../contexts/PageBreadcrumbContext';
 
 import SiteDetailsTab from './site-detail/SiteDetailsTab';
 import PluginsTab from './site-detail/PluginsTab';
 import ThemesTab from './site-detail/ThemesTab';
 import SiteHealthTab from './site-detail/SiteHealthTab';
+import SiteDetailSidebar from '../components/site-detail/SiteDetailSidebar';
+import EditSiteModal from '../components/sites/EditSiteModal';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -38,12 +40,21 @@ const SiteDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [tab, setTab] = useState(0);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const { setBreadcrumbTitle } = usePageBreadcrumb();
 
   const { data: site, isLoading, isError, error } = useSite(id);
   const deleteSite = useDeleteSite();
   const checkHealth = useCheckSiteHealth(id);
 
-  // Bij laden: API-verbinding testen en health_status in database bijwerken
+  useEffect(() => {
+    if (site) {
+      const name = (site as any).siteName || (site as any).site_name || 'Site';
+      setBreadcrumbTitle?.(name);
+    }
+    return () => setBreadcrumbTitle?.(null);
+  }, [site, setBreadcrumbTitle]);
+
   useEffect(() => {
     if (!id || !site) return;
     checkHealth.mutate({ silent: true });
@@ -76,53 +87,49 @@ const SiteDetailPage: React.FC = () => {
     );
   }
 
-  const siteName = (site as any).siteName || (site as any).site_name || 'Naamloze site';
-  const siteUrl = (site as any).siteUrl || (site as any).site_url || '';
-
   return (
     <>
-      <SoftBox my={3}>
-        <SoftBox display="flex" justifyContent="space-between" alignItems="flex-start" mb={3} flexWrap="wrap" gap={2}>
-          <SoftBox>
-            <SoftTypography variant="h4" fontWeight="bold">{siteName}</SoftTypography>
-            {siteUrl ? (
-              <a href={siteUrl.startsWith('http') ? siteUrl : `https://${siteUrl}`} target="_blank" rel="noreferrer" style={{ textDecoration: 'none', color: 'inherit' }}>
-                <SoftTypography variant="button" color="secondary" sx={{ '&:hover': { textDecoration: 'underline' } }}>{siteUrl}</SoftTypography>
-              </a>
-            ) : (
-              <SoftTypography variant="button" color="secondary">{siteUrl}</SoftTypography>
-            )}
-          </SoftBox>
-          <SoftButton variant="outlined" color="secondary" size="small" onClick={() => navigate('/sites')}>
-            <Icon sx={{ mr: 0.5 }}>arrow_back</Icon>
-            Terug
-          </SoftButton>
-        </SoftBox>
+      <SoftBox mt={3} sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, backgroundColor: 'transparent' }}>
+        <Grid container spacing={3} alignItems="stretch" sx={{ flex: 1, minHeight: 0 }}>
+          {/* Left column - main content */}
+          <Grid item xs={12} lg={8} sx={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+            <Card sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden' }}>
+              <SoftBox px={3} pb={3} sx={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
+                <TabPanel value={tab} index={0}>
+                  <SiteDetailsTab siteId={site.$id} />
+                </TabPanel>
+                <TabPanel value={tab} index={1}>
+                  <PluginsTab siteId={site.$id} />
+                </TabPanel>
+                <TabPanel value={tab} index={2}>
+                  <ThemesTab siteId={site.$id} />
+                </TabPanel>
+                <TabPanel value={tab} index={3}>
+                  <SiteHealthTab siteId={site.$id} />
+                </TabPanel>
+              </SoftBox>
+            </Card>
+          </Grid>
 
-        <Card>
-          <Tabs value={tab} onChange={(_, v) => setTab(v)}>
-            <Tab label="Site Details" icon={<Icon fontSize="small">info</Icon>} iconPosition="start" />
-            <Tab label="Plugins" icon={<Icon fontSize="small">extension</Icon>} iconPosition="start" />
-            <Tab label="Thema's" icon={<Icon fontSize="small">palette</Icon>} iconPosition="start" />
-            <Tab label="Site Health" icon={<Icon fontSize="small">health_and_safety</Icon>} iconPosition="start" />
-          </Tabs>
-
-          <SoftBox px={3} pb={3}>
-            <TabPanel value={tab} index={0}>
-              <SiteDetailsTab siteId={site.$id} onRemove={handleRemove} />
-            </TabPanel>
-            <TabPanel value={tab} index={1}>
-              <PluginsTab siteId={site.$id} />
-            </TabPanel>
-            <TabPanel value={tab} index={2}>
-              <ThemesTab siteId={site.$id} />
-            </TabPanel>
-            <TabPanel value={tab} index={3}>
-              <SiteHealthTab siteId={site.$id} />
-            </TabPanel>
-          </SoftBox>
-        </Card>
+          {/* Right column - sidebar */}
+          <Grid item xs={12} lg={4}>
+            <SiteDetailSidebar
+              site={site}
+              tab={tab}
+              onTabChange={setTab}
+              onEdit={() => setEditModalOpen(true)}
+              onRemove={handleRemove}
+            />
+          </Grid>
+        </Grid>
       </SoftBox>
+
+      <EditSiteModal
+        open={editModalOpen}
+        onClose={() => setEditModalOpen(false)}
+        site={site}
+      />
+
       <Footer company={{ href: 'https://wphub.pro', name: 'WPHub.PRO' }} links={[]} />
     </>
   );

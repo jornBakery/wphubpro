@@ -1,4 +1,4 @@
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 /**
  * Get detailed subscription data from Stripe
@@ -8,29 +8,29 @@ module.exports = async ({ req, res, log, error }) => {
   const { STRIPE_SECRET_KEY } = process.env;
 
   if (!STRIPE_SECRET_KEY) {
-    error('Missing STRIPE_SECRET_KEY');
-    return res.json({ error: 'Missing required environment variables' }, 500);
+    error("Missing STRIPE_SECRET_KEY");
+    return res.json({ error: "Missing required environment variables" }, 500);
   }
 
   try {
-    const payload = JSON.parse(req.body || '{}');
+    const payload = JSON.parse(req.body || "{}");
     const { subscriptionId } = payload;
 
     if (!subscriptionId) {
-      return res.json({ error: 'subscriptionId is required' }, 400);
+      return res.json({ error: "subscriptionId is required" }, 400);
     }
 
-    log('Fetching subscription details for: ' + subscriptionId);
+    log("Fetching subscription details for: " + subscriptionId);
 
     // Fetch subscription with expanded data
     const subscription = await stripe.subscriptions.retrieve(subscriptionId, {
-      expand: ['latest_invoice', 'customer', 'default_payment_method', 'schedule']
+      expand: ["latest_invoice", "customer", "default_payment_method", "schedule"],
     });
 
     // Fetch all invoices for this subscription
     const invoices = await stripe.invoices.list({
       subscription: subscriptionId,
-      limit: 100
+      limit: 100,
     });
 
     // Fetch price and product details
@@ -40,52 +40,60 @@ module.exports = async ({ req, res, log, error }) => {
 
     // Fetch upcoming invoice if subscription is active
     let upcomingInvoice = null;
-    if (subscription.status === 'active' || subscription.status === 'trialing') {
+    if (subscription.status === "active" || subscription.status === "trialing") {
       try {
         upcomingInvoice = await stripe.invoices.retrieveUpcoming({
-          subscription: subscriptionId
+          subscription: subscriptionId,
         });
       } catch (e) {
-        log('No upcoming invoice: ' + e.message);
+        log("No upcoming invoice: " + e.message);
       }
     }
 
     // Check for pending updates via Schedule
     let pendingUpdate = null;
     if (subscription.schedule) {
-        const schedule = typeof subscription.schedule === 'object' ? subscription.schedule : await stripe.subscriptionSchedules.retrieve(subscription.schedule);
-        
-        // Look for future phases
-        // Simplistic approach: if phases.length > 1, the next one is the update.
-        if (schedule.phases && schedule.phases.length > 1) {
-            // Find the phase that matches current active period? No, subscription object IS the current phase instantiation.
-            // The schedule phases list ALL phases.
-            // We want the one starting AFTER the current period end.
-            const nextPhase = schedule.phases.find(p => p.start_date >= subscription.current_period_end);
-            
-            if (nextPhase) {
-                const nextPriceId = nextPhase.items[0]?.price;
-                // If next price is different from current
-                if (nextPriceId && nextPriceId !== priceId) {
-                    // Fetch next product details
-                    try {
-                        const nextPrice = typeof nextPriceId === 'string' ? await stripe.prices.retrieve(nextPriceId) : nextPriceId;
-                        const nextProduct = await stripe.products.retrieve(nextPrice.product);
-                        
-                        pendingUpdate = {
-                            date: nextPhase.start_date,
-                            plan_name: nextProduct.name,
-                            price_amount: nextPrice.unit_amount,
-                            currency: nextPrice.currency,
-                            interval: nextPrice.recurring?.interval,
-                            schedule_id: schedule.id
-                        };
-                    } catch (e) {
-                        log('Error fetching pending update details: ' + e.message);
-                    }
-                }
+      const schedule =
+        typeof subscription.schedule === "object"
+          ? subscription.schedule
+          : await stripe.subscriptionSchedules.retrieve(subscription.schedule);
+
+      // Look for future phases
+      // Simplistic approach: if phases.length > 1, the next one is the update.
+      if (schedule.phases && schedule.phases.length > 1) {
+        // Find the phase that matches current active period? No, subscription object IS the current phase instantiation.
+        // The schedule phases list ALL phases.
+        // We want the one starting AFTER the current period end.
+        const nextPhase = schedule.phases.find(
+          (p) => p.start_date >= subscription.current_period_end
+        );
+
+        if (nextPhase) {
+          const nextPriceId = nextPhase.items[0]?.price;
+          // If next price is different from current
+          if (nextPriceId && nextPriceId !== priceId) {
+            // Fetch next product details
+            try {
+              const nextPrice =
+                typeof nextPriceId === "string"
+                  ? await stripe.prices.retrieve(nextPriceId)
+                  : nextPriceId;
+              const nextProduct = await stripe.products.retrieve(nextPrice.product);
+
+              pendingUpdate = {
+                date: nextPhase.start_date,
+                plan_name: nextProduct.name,
+                price_amount: nextPrice.unit_amount,
+                currency: nextPrice.currency,
+                interval: nextPrice.recurring?.interval,
+                schedule_id: schedule.id,
+              };
+            } catch (e) {
+              log("Error fetching pending update details: " + e.message);
             }
+          }
         }
+      }
     }
 
     // Build response
@@ -104,7 +112,7 @@ module.exports = async ({ req, res, log, error }) => {
         trial_end: subscription.trial_end,
         metadata: subscription.metadata,
         collection_method: subscription.collection_method,
-        days_until_due: subscription.days_until_due
+        days_until_due: subscription.days_until_due,
       },
       customer: {
         id: subscription.customer?.id || subscription.customer,
@@ -114,7 +122,7 @@ module.exports = async ({ req, res, log, error }) => {
         address: subscription.customer?.address || null,
         created: subscription.customer?.created || null,
         balance: subscription.customer?.balance || 0,
-        currency: subscription.customer?.currency || null
+        currency: subscription.customer?.currency || null,
       },
       plan: {
         product_id: product?.id || null,
@@ -127,13 +135,19 @@ module.exports = async ({ req, res, log, error }) => {
         interval_count: price?.recurring?.interval_count || null,
         metadata: product?.metadata || {},
         limits: {
-          sites_limit: product?.metadata?.sites_limit ? parseInt(product.metadata.sites_limit, 10) : null,
-          library_limit: product?.metadata?.library_limit ? parseInt(product.metadata.library_limit, 10) : null,
-          storage_limit: product?.metadata?.storage_limit ? parseInt(product.metadata.storage_limit, 10) : null
-        }
+          sites_limit: product?.metadata?.sites_limit
+            ? parseInt(product.metadata.sites_limit, 10)
+            : null,
+          library_limit: product?.metadata?.library_limit
+            ? parseInt(product.metadata.library_limit, 10)
+            : null,
+          storage_limit: product?.metadata?.storage_limit
+            ? parseInt(product.metadata.storage_limit, 10)
+            : null,
+        },
       },
       pending_update: pendingUpdate,
-      invoices: invoices.data.map(inv => ({
+      invoices: invoices.data.map((inv) => ({
         id: inv.id,
         number: inv.number,
         status: inv.status,
@@ -147,32 +161,37 @@ module.exports = async ({ req, res, log, error }) => {
         period_end: inv.period_end,
         invoice_pdf: inv.invoice_pdf,
         hosted_invoice_url: inv.hosted_invoice_url,
-        paid: inv.paid
+        paid: inv.paid,
       })),
-      upcoming_invoice: upcomingInvoice ? {
-        amount_due: upcomingInvoice.amount_due,
-        currency: upcomingInvoice.currency,
-        period_start: upcomingInvoice.period_start,
-        period_end: upcomingInvoice.period_end,
-        next_payment_attempt: upcomingInvoice.next_payment_attempt
-      } : null,
-      payment_method: subscription.default_payment_method ? {
-        id: subscription.default_payment_method.id,
-        type: subscription.default_payment_method.type,
-        card: subscription.default_payment_method.card ? {
-          brand: subscription.default_payment_method.card.brand,
-          last4: subscription.default_payment_method.card.last4,
-          exp_month: subscription.default_payment_method.card.exp_month,
-          exp_year: subscription.default_payment_method.card.exp_year
-        } : null
-      } : null
+      upcoming_invoice: upcomingInvoice
+        ? {
+            amount_due: upcomingInvoice.amount_due,
+            currency: upcomingInvoice.currency,
+            period_start: upcomingInvoice.period_start,
+            period_end: upcomingInvoice.period_end,
+            next_payment_attempt: upcomingInvoice.next_payment_attempt,
+          }
+        : null,
+      payment_method: subscription.default_payment_method
+        ? {
+            id: subscription.default_payment_method.id,
+            type: subscription.default_payment_method.type,
+            card: subscription.default_payment_method.card
+              ? {
+                  brand: subscription.default_payment_method.card.brand,
+                  last4: subscription.default_payment_method.card.last4,
+                  exp_month: subscription.default_payment_method.card.exp_month,
+                  exp_year: subscription.default_payment_method.card.exp_year,
+                }
+              : null,
+          }
+        : null,
     };
 
-    log('Successfully fetched subscription details');
+    log("Successfully fetched subscription details");
     return res.json(response, 200);
-
   } catch (e) {
-    error('Error fetching subscription details: ' + e.message);
+    error("Error fetching subscription details: " + e.message);
     return res.json({ error: e.message }, e.statusCode || 500);
   }
 };

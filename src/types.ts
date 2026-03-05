@@ -96,6 +96,8 @@ export interface Site {
   wpVersion: string;
   phpVersion: string;
   action_log?: ActionLogEntry[];
+  /** Extra data stored as JSON; use meta_data or metaData from API */
+  meta_data?: string;
 }
 
 export enum LibraryItemType {

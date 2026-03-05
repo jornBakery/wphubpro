@@ -1,12 +1,17 @@
 /**
  * Shared table cells for Sites DataTable - used by SitesPage and Dashboard
  */
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import SoftBox from 'components/SoftBox';
 import SoftTypography from 'components/SoftTypography';
 import SoftBadge from 'components/SoftBadge';
 import Icon from '@mui/material/Icon';
+import IconButton from '@mui/material/IconButton';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
 import Tooltip from '@mui/material/Tooltip';
 import { Site } from '../../types';
 import { useDeleteSite } from '../../hooks/useSites';
@@ -123,30 +128,189 @@ export const ActionCell: React.FC<{
   showPinButton?: boolean;
   isPinned?: boolean;
   onTogglePin?: () => void;
-}> = ({ siteId, siteUrl, showPinButton = false, isPinned = false, onTogglePin }) => {
+  compact?: boolean;
+}> = ({ siteId, siteUrl, showPinButton = false, isPinned = false, onTogglePin, compact = false }) => {
   const deleteSite = useDeleteSite();
+  const navigate = useNavigate();
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+
+  const handleMenuOpen = (e: React.MouseEvent<HTMLElement>) => {
+    e.stopPropagation();
+    setAnchorEl(e.currentTarget);
+  };
+  const handleMenuClose = () => setAnchorEl(null);
+
   const handleDelete = () => {
+    handleMenuClose();
     if (window.confirm('Weet je zeker dat je deze site wilt verwijderen?')) {
       deleteSite.mutate(siteId);
     }
   };
+
+  const handlePin = () => {
+    handleMenuClose();
+    onTogglePin?.();
+  };
+
+  const handleSettings = () => {
+    handleMenuClose();
+    navigate(`/sites/${siteId}`);
+  };
+
+  const handleOpenSite = () => {
+    handleMenuClose();
+    window.open(siteUrl, '_blank');
+  };
+
+  const pinButton = showPinButton && onTogglePin && (
+    <Tooltip title={isPinned ? 'Verwijder van dashboard' : 'Pin naar dashboard'} placement="top">
+      <SoftBox
+        sx={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: 32,
+          height: 32,
+          borderRadius: '50%',
+          background: isPinned ? 'rgba(249, 115, 22, 0.15)' : infoGradient,
+          cursor: 'pointer',
+          '&:hover': { opacity: 0.9 },
+        }}
+        component="button"
+        type="button"
+        onClick={onTogglePin}
+      >
+        <Icon sx={{ fontSize: 18, color: isPinned ? '#F97316 !important' : 'white !important' }}>push_pin</Icon>
+      </SoftBox>
+    </Tooltip>
+  );
+
+  const settingsButton = (
+    <Link to={`/sites/${siteId}`} style={{ textDecoration: 'none', color: 'inherit', display: 'inline-flex' }}>
+      <ActionIconButton icon="settings" title="Beheer" />
+    </Link>
+  );
+
+  const openSiteButton = (
+    <a href={siteUrl} target="_blank" rel="noreferrer" style={{ textDecoration: 'none', color: 'inherit', display: 'inline-flex' }}>
+      <ActionIconButton icon="open_in_new" title="Open site" />
+    </a>
+  );
+
+  const deleteButton = (
+    <ActionIconButton icon="delete" title="Verwijderen" color="error" onClick={handleDelete} />
+  );
+
+  if (compact) {
+    return (
+      <>
+        <Tooltip title="Acties" placement="top">
+          <IconButton
+            size="small"
+            onClick={handleMenuOpen}
+            sx={{ color: '#F97316' }}
+            aria-controls={open ? 'site-actions-menu' : undefined}
+            aria-haspopup="true"
+            aria-expanded={open ? 'true' : undefined}
+          >
+            <Icon>more_vert</Icon>
+          </IconButton>
+        </Tooltip>
+        <Menu
+          id="site-actions-menu"
+          anchorEl={anchorEl}
+          open={open}
+          onClose={handleMenuClose}
+          MenuListProps={{ 'aria-labelledby': 'site-actions-button' }}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+          transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+        >
+          {showPinButton && onTogglePin && (
+            <MenuItem onClick={handlePin}>
+              <ListItemIcon sx={{ minWidth: 40 }}>
+                <SoftBox
+                  sx={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: 28,
+                    height: 28,
+                    borderRadius: '50%',
+                    background: isPinned ? 'rgba(249, 115, 22, 0.2)' : infoGradient,
+                  }}
+                >
+                  <Icon sx={{ fontSize: 16, color: isPinned ? '#4F5482 !important' : 'white !important' }}>push_pin</Icon>
+                </SoftBox>
+              </ListItemIcon>
+              <ListItemText primaryTypographyProps={{ sx: { fontSize: '0.65rem !important', fontWeight: 700, textTransform: 'uppercase' } }}>{isPinned ? 'Verwijder van dashboard' : 'Pin naar dashboard'}</ListItemText>
+            </MenuItem>
+          )}
+          <MenuItem onClick={handleSettings}>
+            <ListItemIcon sx={{ minWidth: 40 }}>
+              <SoftBox
+                sx={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: 28,
+                  height: 28,
+                  borderRadius: '50%',
+                  background: infoGradient,
+                }}
+              >
+                <Icon sx={{ fontSize: 16, color: 'white !important' }}>settings</Icon>
+              </SoftBox>
+            </ListItemIcon>
+            <ListItemText primaryTypographyProps={{ sx: { fontSize: '0.65rem !important', fontWeight: 700, textTransform: 'uppercase' } }}>Beheer</ListItemText>
+          </MenuItem>
+          <MenuItem onClick={handleOpenSite}>
+            <ListItemIcon sx={{ minWidth: 40 }}>
+              <SoftBox
+                sx={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: 28,
+                  height: 28,
+                  borderRadius: '50%',
+                  background: infoGradient,
+                }}
+              >
+                <Icon sx={{ fontSize: 16, color: 'white !important' }}>open_in_new</Icon>
+              </SoftBox>
+            </ListItemIcon>
+            <ListItemText primaryTypographyProps={{ sx: { fontSize: '0.65rem !important', fontWeight: 700, textTransform: 'uppercase' } }}>Open site</ListItemText>
+          </MenuItem>
+          <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
+            <ListItemIcon sx={{ minWidth: 40 }}>
+              <SoftBox
+                sx={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: 28,
+                  height: 28,
+                  borderRadius: '50%',
+                  background: orangeGradient,
+                }}
+              >
+                <Icon sx={{ fontSize: 16, color: 'white !important' }}>delete</Icon>
+              </SoftBox>
+            </ListItemIcon>
+            <ListItemText primaryTypographyProps={{ sx: { fontSize: '0.65rem !important', fontWeight: 700, textTransform: 'uppercase' } }}>Verwijderen</ListItemText>
+          </MenuItem>
+        </Menu>
+      </>
+    );
+  }
+
   return (
     <SoftBox display="flex" alignItems="center" gap={0.5}>
-      {showPinButton && onTogglePin && (
-        <ActionIconButton
-          icon="push_pin"
-          title={isPinned ? 'Verwijder van dashboard' : 'Pin naar dashboard'}
-          color={isPinned ? 'success' : 'info'}
-          onClick={onTogglePin}
-        />
-      )}
-      <Link to={`/sites/${siteId}`} style={{ textDecoration: 'none', color: 'inherit', display: 'inline-flex' }}>
-        <ActionIconButton icon="settings" title="Beheer" />
-      </Link>
-      <a href={siteUrl} target="_blank" rel="noreferrer" style={{ textDecoration: 'none', color: 'inherit', display: 'inline-flex' }}>
-        <ActionIconButton icon="open_in_new" title="Open site" />
-      </a>
-      <ActionIconButton icon="delete" title="Verwijderen" color="error" onClick={handleDelete} />
+      {pinButton}
+      {settingsButton}
+      {openSiteButton}
+      {deleteButton}
     </SoftBox>
   );
 };

@@ -17,6 +17,7 @@ import Breadcrumbs from 'examples/Breadcrumbs';
 
 import { useSoftUIController, setTransparentNavbar } from 'context';
 import { useAuth } from '../../contexts/AuthContext';
+import { usePageBreadcrumb } from '../../contexts/PageBreadcrumbContext';
 
 
 import {
@@ -36,8 +37,12 @@ function WPHubNavbar({ absolute = false, light = false, isMini = false }) {
     await logout();
     navigate('/login');
   };
-  const route = location.pathname.split('/').slice(1);
-  const pageTitle = route[route.length - 1] || 'dashboard';
+  const { breadcrumbTitle } = usePageBreadcrumb();
+  const route = location.pathname.split('/').filter(Boolean);
+  const defaultPageTitle = route[route.length - 1] || 'dashboard';
+  const pageTitle = breadcrumbTitle || defaultPageTitle;
+  const canGoBack = route.length > 1;
+  const parentPath = '/' + route.slice(0, -1).join('/');
 
   useEffect(() => {
     setNavbarType(fixedNavbar ? 'sticky' : 'static');
@@ -58,7 +63,16 @@ function WPHubNavbar({ absolute = false, light = false, isMini = false }) {
     >
       <Toolbar sx={(theme) => navbarContainer(theme)}>
         <SoftBox display="flex" alignItems="center" justifyContent="space-between" width="100%">
-          <Breadcrumbs icon="home" title={pageTitle} route={route} light={light} showPageTitle={false} />
+          <SoftBox display="flex" alignItems="center" gap={0.5}>
+            {canGoBack && (
+              <Tooltip title="Terug">
+                <IconButton size="small" onClick={() => navigate(parentPath)} sx={{ color: 'inherit', mr: 0.5 }} aria-label="Terug">
+                  <Icon>arrow_back</Icon>
+                </IconButton>
+              </Tooltip>
+            )}
+            <Breadcrumbs icon="home" title={pageTitle} route={route} light={light} showPageTitle={false} />
+          </SoftBox>
           {!isMini && (
             <SoftBox display="flex" alignItems="center" gap={1} color={light ? 'white' : 'inherit'}>
               <SoftInput

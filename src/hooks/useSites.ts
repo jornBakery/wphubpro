@@ -96,6 +96,7 @@ export const useAddSite = () => {
         username: string;
         password?: string;
         api_key?: string;
+        meta_data?: string;
     }
 
     return useMutation<Site, Error, NewSiteInput>({
@@ -110,6 +111,7 @@ export const useAddSite = () => {
                 userId: user.$id,
             };
             if (newSiteData.api_key) payload.api_key = newSiteData.api_key;
+            if (newSiteData.meta_data !== undefined) payload.meta_data = newSiteData.meta_data;
 
             const path = `/?userId=${user.$id}`;
             const exec = await functions.createExecution('create-site', JSON.stringify(payload), false, path);
@@ -149,7 +151,7 @@ export const useUpdateSite = () => {
     const { user } = useAuth();
     const { toast } = useToast();
 
-    return useMutation<any, Error, { siteId: string; username?: string; password?: string; api_key?: string; apiKey?: string; siteName?: string; siteUrl?: string; status?: 'connected' | 'disconnected'; health_status?: 'healthy' | 'bad'; last_checked?: string }>({
+    return useMutation<any, Error, { siteId: string; username?: string; password?: string; api_key?: string; apiKey?: string; siteName?: string; siteUrl?: string; status?: 'connected' | 'disconnected'; health_status?: 'healthy' | 'bad'; last_checked?: string; meta_data?: string }>({
         mutationFn: async ({ siteId, ...updates }) => {
             if (!user) throw new Error('User not authenticated.');
 
@@ -165,6 +167,7 @@ export const useUpdateSite = () => {
                 if (updates.status) dbUpdates.status = updates.status;
                 if (updates.health_status) dbUpdates.health_status = updates.health_status;
                 if (updates.last_checked) dbUpdates.last_checked = updates.last_checked;
+                if (updates.meta_data !== undefined) dbUpdates.meta_data = updates.meta_data;
                 // If there are no dbUpdates, avoid calling updateDocument with empty payload
                 if (Object.keys(dbUpdates).length === 0) {
                     throw new Error('No fields to update.');

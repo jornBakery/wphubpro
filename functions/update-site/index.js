@@ -92,6 +92,7 @@ module.exports = async ({ req, res, log, error }) => {
   if (usernameRaw !== null) finalUpdates.username = usernameRaw;
   if (siteNameRaw !== null) finalUpdates.site_name = siteNameRaw;
   if (siteUrlCandidate !== null) finalUpdates.site_url = siteUrlCandidate;
+  if (hasProp(updates, 'meta_data')) finalUpdates.meta_data = updates.meta_data;
 
   // If siteId wasn't provided, try to find the site by site_url or create it
   try {

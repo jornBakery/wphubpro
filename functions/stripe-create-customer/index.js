@@ -1,5 +1,5 @@
-const sdk = require('node-appwrite');
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const sdk = require("node-appwrite");
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 module.exports = async ({ req, res, log, error }) => {
   const client = new sdk.Client();
@@ -10,11 +10,11 @@ module.exports = async ({ req, res, log, error }) => {
     !process.env.APPWRITE_PROJECT_ID ||
     !process.env.APPWRITE_API_KEY ||
     !process.env.STRIPE_SECRET_KEY ||
-    !process.env.DATABASE_ID ||
+    !process.env.APPWRITE_DATABASE_ID ||
     !process.env.ACCOUNTS_COLLECTION_ID
   ) {
     error("Missing environment variables. Please check your function settings.");
-    return res.json({ error: 'Internal Server Error: Missing configuration.' }, 500);
+    return res.json({ error: "Internal Server Error: Missing configuration." }, 500);
   }
 
   client
@@ -23,7 +23,7 @@ module.exports = async ({ req, res, log, error }) => {
     .setKey(process.env.APPWRITE_API_KEY);
 
   try {
-    const user = JSON.parse(req.env['APPWRITE_FUNCTION_EVENT_DATA']);
+    const user = JSON.parse(req.env["APPWRITE_FUNCTION_EVENT_DATA"]);
 
     if (!user.email) {
       console.log(`User ${user.$id} has no email, skipping Stripe customer creation.`);
@@ -44,19 +44,19 @@ module.exports = async ({ req, res, log, error }) => {
       user_id: user.$id,
       stripe_customer_id: customer.id,
     };
-    
+
     // 3. Set document permissions so only the user can read/update it
     const permissions = [
       sdk.Permission.read(sdk.Role.user(user.$id)),
       sdk.Permission.update(sdk.Role.user(user.$id)),
       // Admins can also manage this record
-      sdk.Permission.read(sdk.Role.team('admin')),
-      sdk.Permission.update(sdk.Role.team('admin')),
-      sdk.Permission.delete(sdk.Role.team('admin')),
+      sdk.Permission.read(sdk.Role.team("admin")),
+      sdk.Permission.update(sdk.Role.team("admin")),
+      sdk.Permission.delete(sdk.Role.team("admin")),
     ];
 
     await databases.createDocument(
-      process.env.DATABASE_ID,
+      process.env.APPWRITE_DATABASE_ID,
       process.env.ACCOUNTS_COLLECTION_ID,
       sdk.ID.unique(),
       accountData,

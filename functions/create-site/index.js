@@ -71,13 +71,15 @@ module.exports = async ({ req, res, log, error }) => {
       encryptedPassword = encrypt(password, ENCRYPTION_KEY);
     }
 
+    const meta_data = (payloadObj && (payloadObj.meta_data || payloadObj.metaData)) || null;
     const document = {
       user_id: user_id,
       site_url: site_url,
       site_name: site_name,
       username: username || "",
       password: encryptedPassword,
-      ...(encryptedApiKey ? { api_key: encryptedApiKey } : {})
+      ...(encryptedApiKey ? { api_key: encryptedApiKey } : {}),
+      ...(meta_data != null ? { meta_data } : {})
     };
 
     const created = await databases.createDocument('platform_db', 'sites', sdk.ID.unique(), document);

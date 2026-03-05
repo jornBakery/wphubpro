@@ -46,7 +46,8 @@
             "path": "functions/wp-proxy",
             "entrypoint": "index.js",
             "execute": [
-                "users"
+                "users",
+                "any"
             ],
             "enabled": true,
             "logging": true,
@@ -768,39 +769,27 @@
                 "documents.read"
             ],
             "specification": "s-1vcpu-512mb"
-        }
-    ],
-    "sites": [
+        },
         {
-            "$id": "wphubpro",
-            "name": "WPHubPro",
-            "framework": "vite",
-            "adapter": "static",
-            "buildRuntime": "node-22",
-            "installCommand": "npm install",
-            "buildCommand": "npm run build",
-            "outputDirectory": "./dist",
-            "fallbackFile": "",
-            "specification": "s-1vcpu-1gb",
+            "$id": "migrate-local-plan-to-stripe",
+            "name": "migrate-local-plan-to-stripe",
+            "runtime": "node-18.0",
+            "path": "functions/migrate-local-plan-to-stripe",
+            "entrypoint": "index.js",
+            "execute": [
+                "team:admin"
+            ],
             "enabled": true,
-            "timeout": 30,
             "logging": true,
-            "ignore": null,
-            "path": "src",
-            "vars": [
-                {
-                    "key": "VITE_APPWRITE_ENDPOINT",
-                    "value": "https://appwrite.code045.nl/v1"
-                },
-                {
-                    "key": "VITE_APPWRITE_PROJECT_ID",
-                    "value": "698a55ce00010497b136"
-                },
-                {
-                    "key": "VITE_APPWRITE_PROJECT_NAME",
-                    "value": "WPHub"
-                }
-            ]
+            "events": [],
+            "schedule": "",
+            "timeout": 30,
+            "commands": "npm install",
+            "scopes": [
+                "documents.read",
+                "documents.write"
+            ],
+            "specification": "s-1vcpu-512mb"
         }
     ],
     "tablesDB": [
@@ -879,21 +868,12 @@
                     "encrypt": false
                 },
                 {
-                    "key": "status",
-                    "type": "string",
-                    "required": false,
-                    "array": false,
-                    "size": 32,
-                    "default": "disconnected",
-                    "encrypt": false
-                },
-                {
                     "key": "health_status",
                     "type": "string",
                     "required": false,
                     "array": false,
                     "size": 32,
-                    "default": "bad",
+                    "default": null,
                     "encrypt": false
                 },
                 {
@@ -902,6 +882,24 @@
                     "required": false,
                     "array": false,
                     "size": 64,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "password",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 20,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "meta_data",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 50000,
                     "default": null,
                     "encrypt": false
                 }
@@ -1130,6 +1128,27 @@
                     "size": 200,
                     "default": null,
                     "encrypt": false
+                },
+                {
+                    "key": "avatar",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 512,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "current_plan",
+                    "type": "relationship",
+                    "required": false,
+                    "array": false,
+                    "relatedTable": "plans",
+                    "relationType": "oneToOne",
+                    "twoWay": false,
+                    "twoWayKey": "69a14221002d33374777",
+                    "onDelete": "setNull",
+                    "side": "parent"
                 }
             ],
             "indexes": [
@@ -1147,7 +1166,7 @@
             ]
         },
         {
-            "$id": "plans",
+            "$id": "local_plans",
             "$permissions": [
                 "read(\"users\")",
                 "create(\"team:admin\")",
@@ -1156,7 +1175,7 @@
                 "delete(\"team:admin\")"
             ],
             "databaseId": "platform_db",
-            "name": "Plans",
+            "name": "Local Plans",
             "enabled": true,
             "rowSecurity": false,
             "columns": [
@@ -1233,15 +1252,6 @@
                     "encrypt": false
                 },
                 {
-                    "key": "stripe_price_id",
-                    "type": "string",
-                    "required": false,
-                    "array": false,
-                    "size": 200,
-                    "default": null,
-                    "encrypt": false
-                },
-                {
                     "key": "plan_order",
                     "type": "integer",
                     "required": false,
@@ -1249,6 +1259,27 @@
                     "default": null,
                     "min": 0,
                     "max": 99
+                },
+                {
+                    "key": "price",
+                    "type": "string",
+                    "required": false,
+                    "array": true,
+                    "size": 200,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "source",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "default": null,
+                    "format": "enum",
+                    "elements": [
+                        "local",
+                        "stripe"
+                    ]
                 }
             ],
             "indexes": [
@@ -1459,6 +1490,137 @@
                     ]
                 }
             ]
+        },
+        {
+            "$id": "plans",
+            "$permissions": [
+                "read(\"users\")",
+                "create(\"team:admin\")",
+                "read(\"team:admin\")",
+                "update(\"team:admin\")",
+                "delete(\"team:admin\")"
+            ],
+            "databaseId": "platform_db",
+            "name": "Plans",
+            "enabled": true,
+            "rowSecurity": false,
+            "columns": [
+                {
+                    "key": "name",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 255,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "description",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 1000,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "label",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 100,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "sites_limit",
+                    "type": "integer",
+                    "required": true,
+                    "array": false,
+                    "default": null,
+                    "min": 0,
+                    "max": 999999
+                },
+                {
+                    "key": "library_limit",
+                    "type": "integer",
+                    "required": true,
+                    "array": false,
+                    "default": null,
+                    "min": 0,
+                    "max": 999999
+                },
+                {
+                    "key": "storage_limit",
+                    "type": "integer",
+                    "required": true,
+                    "array": false,
+                    "default": null,
+                    "min": 0,
+                    "max": 999999
+                },
+                {
+                    "key": "status",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 50,
+                    "default": "active",
+                    "encrypt": false
+                },
+                {
+                    "key": "stripe_product_id",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 50,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "plan_order",
+                    "type": "integer",
+                    "required": false,
+                    "array": false,
+                    "default": null,
+                    "min": 0,
+                    "max": 99
+                },
+                {
+                    "key": "price",
+                    "type": "string",
+                    "required": false,
+                    "array": true,
+                    "size": 200,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "source",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "default": null,
+                    "format": "enum",
+                    "elements": [
+                        "local",
+                        "stripe"
+                    ]
+                }
+            ],
+            "indexes": [
+                {
+                    "key": "label_index",
+                    "type": "key",
+                    "status": "available",
+                    "columns": [
+                        "label"
+                    ],
+                    "orders": [
+                        "ASC"
+                    ]
+                }
+            ]
         }
     ],
     "buckets": [],
@@ -1466,7 +1628,7 @@
         {
             "$id": "admin",
             "$createdAt": "2026-02-09T23:44:31.874+00:00",
-            "$updatedAt": "2026-02-22T22:35:23.694+00:00",
+            "$updatedAt": "2026-02-23T05:18:10.138+00:00",
             "name": "admin",
             "total": 2,
             "prefs": {

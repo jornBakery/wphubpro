@@ -1,4 +1,4 @@
-import Stripe from 'stripe';
+import Stripe from "stripe";
 
 /**
  * Expects environment variable STRIPE_SECRET_KEY
@@ -7,14 +7,14 @@ import Stripe from 'stripe';
 
 export default async ({ req, res, log }) => {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-    apiVersion: '2023-10-16',
+    apiVersion: "2023-10-16",
   });
 
   let payload = {};
   try {
-    if (req.payload && typeof req.payload === 'string') {
+    if (req.payload && typeof req.payload === "string") {
       payload = JSON.parse(req.payload);
-    } else if (req.payload && typeof req.payload === 'object') {
+    } else if (req.payload && typeof req.payload === "object") {
       payload = req.payload;
     }
   } catch {
@@ -34,7 +34,8 @@ export default async ({ req, res, log }) => {
     for (const pi of paymentIntents.data) {
       let invoiceInfo = null;
       try {
-        const charge = pi.charges && pi.charges.data && pi.charges.data.length ? pi.charges.data[0] : null;
+        const charge =
+          pi.charges && pi.charges.data && pi.charges.data.length ? pi.charges.data[0] : null;
         if (charge && charge.invoice) {
           const invoice = await stripe.invoices.retrieve(charge.invoice);
           invoiceInfo = {
@@ -54,7 +55,7 @@ export default async ({ req, res, log }) => {
         currency: pi.currency,
         status: pi.status,
         customer: pi.customer || null,
-        email: pi.receipt_email || (pi.charges?.data?.[0]?.billing_details?.email) || null,
+        email: pi.receipt_email || pi.charges?.data?.[0]?.billing_details?.email || null,
         date: pi.created,
         invoice: invoiceInfo,
         raw: pi,
@@ -63,7 +64,7 @@ export default async ({ req, res, log }) => {
 
     return res.json({ orders });
   } catch (_e) {
-    log('Stripe error:', _e);
-    return res.json({ error: true, message: _e.message || 'Stripe error' }, 500);
+    log("Stripe error:", _e);
+    return res.json({ error: true, message: _e.message || "Stripe error" }, 500);
   }
 };
