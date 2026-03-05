@@ -1,0 +1,13 @@
+{
+  "name": "get-site-details",
+  "version": "1.0.0",
+  "description": "Appwrite function to fetch site details (WP version, plugins/themes count, PHP) from the bridge.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "node-appwrite": "^12.0.1",
+    "node-fetch": "^2.6.7"
+  }
+}

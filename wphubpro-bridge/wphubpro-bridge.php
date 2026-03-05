@@ -24,6 +24,7 @@ foreach ([
 	'class-wphubpro-bridge-connect.php',
 	'class-wphubpro-bridge-plugins.php',
 	'class-wphubpro-bridge-themes.php',
+	'class-wphubpro-bridge-details.php',
 	'class-wphubpro-bridge-health.php',
 	'class-wphubpro-bridge-debug.php',
 	'class-wphubpro-bridge.php',

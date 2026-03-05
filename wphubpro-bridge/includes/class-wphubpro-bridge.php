@@ -29,6 +29,9 @@ class WPHubPro_Bridge {
 	/** @var WPHubPro_Bridge_Themes */
 	private $themes;
 
+	/** @var WPHubPro_Bridge_Details */
+	private $details;
+
 	/** @var WPHubPro_Bridge_Health */
 	private $health;
 
@@ -46,6 +49,7 @@ class WPHubPro_Bridge {
 		$this->connect = WPHubPro_Bridge_Connect::instance();
 		$this->plugins = new WPHubPro_Bridge_Plugins();
 		$this->themes  = new WPHubPro_Bridge_Themes();
+		$this->details = new WPHubPro_Bridge_Details();
 		$this->health  = new WPHubPro_Bridge_Health();
 		$this->debug   = new WPHubPro_Bridge_Debug();
 
@@ -105,6 +109,13 @@ class WPHubPro_Bridge {
 		register_rest_route( $namespace, '/themes/manage', array(
 			'methods'             => 'POST',
 			'callback'            => array( $this->themes, 'manage_theme' ),
+			'permission_callback' => $validate,
+		) );
+
+		// Site details (WordPress version, plugin/theme counts, PHP info)
+		register_rest_route( $namespace, '/details', array(
+			'methods'             => 'GET',
+			'callback'            => array( $this->details, 'get_details' ),
 			'permission_callback' => $validate,
 		) );
 
