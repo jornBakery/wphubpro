@@ -24,6 +24,7 @@ export default defineConfig({
     react(),
   ],
   resolve: {
+    dedupe: ['react', 'react-dom'],
     alias: {
       assets: path.resolve(__dirname, './src/assets'),
       components: path.resolve(__dirname, './src/components'),

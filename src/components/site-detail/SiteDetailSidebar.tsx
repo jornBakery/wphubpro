@@ -3,6 +3,7 @@
  */
 import React from 'react';
 import Card from '@mui/material/Card';
+import Grid from '@mui/material/Grid';
 import Icon from '@mui/material/Icon';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
@@ -14,7 +15,7 @@ import ListItemText from '@mui/material/ListItemText';
 import SoftBox from 'components/SoftBox';
 import SoftTypography from 'components/SoftTypography';
 import { StatusIcon, HealthBadge } from '../sites/SitesTableCells';
-import { useDeleteSite, useCheckSiteHealth } from '../../hooks/useSites';
+import { useCheckSiteHealth } from '../../hooks/useSites';
 import type { Site } from '../../types';
 
 const infoGradient = 'linear-gradient(310deg, #4F5482, #7a8ef0)';
@@ -75,6 +76,31 @@ const SiteDetailSidebar: React.FC<SiteDetailSidebarProps> = ({
             <StatusIcon value={site.status} />
             <HealthBadge value={site.healthStatus} />
           </SoftBox>
+
+          {/* Technical details */}
+          <SoftBox mt={2} pt={2} borderTop="1px solid" borderColor="grey.200">
+            <SoftTypography variant="caption" fontWeight="bold" color="secondary" sx={{ display: 'block', mb: 1 }}>
+              Technische gegevens
+            </SoftTypography>
+            <Grid container spacing={1}>
+              <Grid item xs={6}>
+                <SoftTypography variant="caption" color="secondary">WordPress</SoftTypography>
+                <SoftTypography variant="button" display="block">{(site as any).wpVersion || site.wpVersion || '—'}</SoftTypography>
+              </Grid>
+              <Grid item xs={6}>
+                <SoftTypography variant="caption" color="secondary">PHP</SoftTypography>
+                <SoftTypography variant="button" display="block">{(site as any).phpVersion || site.phpVersion || '—'}</SoftTypography>
+              </Grid>
+              <Grid item xs={6}>
+                <SoftTypography variant="caption" color="secondary">Schijfruimte</SoftTypography>
+                <SoftTypography variant="button" display="block">—</SoftTypography>
+              </Grid>
+              <Grid item xs={6}>
+                <SoftTypography variant="caption" color="secondary">Memory limit</SoftTypography>
+                <SoftTypography variant="button" display="block">—</SoftTypography>
+              </Grid>
+            </Grid>
+          </SoftBox>
           <SoftBox display="flex" alignItems="center" gap={0.5}>
             <Tooltip title="Verwijderen" placement="top">
               <IconButton
@@ -86,9 +112,10 @@ const SiteDetailSidebar: React.FC<SiteDetailSidebarProps> = ({
                   background: orangeGradient,
                   color: 'white',
                   '&:hover': { background: orangeGradient, opacity: 0.9 },
+                  '& .MuiSvgIcon-root': { color: 'white' },
                 }}
               >
-                <Icon sx={{ fontSize: 18 }}>delete</Icon>
+                <Icon sx={{ fontSize: 18, color: 'white !important' }}>delete</Icon>
               </IconButton>
             </Tooltip>
             <Tooltip title="Verbinding controleren" placement="top">
@@ -102,9 +129,10 @@ const SiteDetailSidebar: React.FC<SiteDetailSidebarProps> = ({
                   background: infoGradient,
                   color: 'white',
                   '&:hover': { background: infoGradient, opacity: 0.9 },
+                  '& .MuiSvgIcon-root': { color: 'white' },
                 }}
               >
-                <Icon sx={{ fontSize: 18 }}>sync</Icon>
+                <Icon sx={{ fontSize: 18, color: 'white !important' }}>sync</Icon>
               </IconButton>
             </Tooltip>
             <Tooltip title="Bewerken" placement="top">
@@ -117,17 +145,24 @@ const SiteDetailSidebar: React.FC<SiteDetailSidebarProps> = ({
                   background: infoGradient,
                   color: 'white',
                   '&:hover': { background: infoGradient, opacity: 0.9 },
+                  '& .MuiSvgIcon-root': { color: 'white' },
                 }}
               >
-                <Icon sx={{ fontSize: 18 }}>edit</Icon>
+                <Icon sx={{ fontSize: 18, color: 'white !important' }}>edit</Icon>
               </IconButton>
             </Tooltip>
           </SoftBox>
         </SoftBox>
       </Card>
 
-      {/* Vertical tab menu */}
-      <Card>
+      {/* Vertical tab menu - info gradient to match app theme */}
+      <Card
+        sx={{
+          background: infoGradient,
+          boxShadow: '0 4px 14px 0 rgba(79, 84, 130, 0.25)',
+          overflow: 'hidden',
+        }}
+      >
         <List disablePadding>
           {TAB_ITEMS.map(({ index, label, icon }) => (
             <ListItemButton
@@ -136,15 +171,29 @@ const SiteDetailSidebar: React.FC<SiteDetailSidebarProps> = ({
               onClick={() => onTabChange(index)}
               sx={{
                 py: 1.25,
+                color: 'rgba(255,255,255,0.85)',
+                '&:hover': {
+                  bgcolor: 'rgba(255,255,255,0.1)',
+                  color: 'white',
+                },
                 '&.Mui-selected': {
-                  bgcolor: 'action.selected',
+                  bgcolor: 'rgba(255,255,255,0.2)',
+                  color: 'white',
+                  '&:hover': { bgcolor: 'rgba(255,255,255,0.25)' },
                 },
               }}
             >
-              <ListItemIcon sx={{ minWidth: 36 }}>
-                <Icon fontSize="small">{icon}</Icon>
+              <ListItemIcon sx={{ minWidth: 36, color: 'inherit' }}>
+                <Icon fontSize="small" sx={{ color: 'inherit' }}>{icon}</Icon>
               </ListItemIcon>
-              <ListItemText primary={label} primaryTypographyProps={{ variant: 'button', fontWeight: tab === index ? 'bold' : 'regular' }} />
+              <ListItemText
+                primary={label}
+                primaryTypographyProps={{
+                  variant: 'button',
+                  fontWeight: tab === index ? 'bold' : 'regular',
+                  color: 'inherit',
+                }}
+              />
             </ListItemButton>
           ))}
         </List>

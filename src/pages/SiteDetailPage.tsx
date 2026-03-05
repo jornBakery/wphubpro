@@ -6,7 +6,6 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Grid from '@mui/material/Grid';
 import Icon from '@mui/material/Icon';
-import Card from '@mui/material/Card';
 import SoftBox from 'components/SoftBox';
 import SoftTypography from 'components/SoftTypography';
 import SoftButton from 'components/SoftButton';
@@ -93,10 +92,10 @@ const SiteDetailPage: React.FC = () => {
         <Grid container spacing={3} alignItems="stretch" sx={{ flex: 1, minHeight: 0 }}>
           {/* Left column - main content */}
           <Grid item xs={12} lg={8} sx={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-            <Card sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden' }}>
+            <SoftBox sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden', backgroundColor: 'transparent' }}>
               <SoftBox px={3} pb={3} sx={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
                 <TabPanel value={tab} index={0}>
-                  <SiteDetailsTab siteId={site.$id} />
+                  <SiteDetailsTab siteId={site.$id} onTabChange={setTab} />
                 </TabPanel>
                 <TabPanel value={tab} index={1}>
                   <PluginsTab siteId={site.$id} />
@@ -108,11 +107,11 @@ const SiteDetailPage: React.FC = () => {
                   <SiteHealthTab siteId={site.$id} />
                 </TabPanel>
               </SoftBox>
-            </Card>
+            </SoftBox>
           </Grid>
 
           {/* Right column - sidebar */}
-          <Grid item xs={12} lg={4}>
+          <Grid item xs={12} lg={4} sx={{ pr: { lg: 4 } }}>
             <SiteDetailSidebar
               site={site}
               tab={tab}
