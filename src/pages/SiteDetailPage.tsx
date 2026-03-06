@@ -100,11 +100,11 @@ const SiteDetailPage: React.FC = () => {
 
   return (
     <>
-      <SoftBox mt={3} sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, backgroundColor: 'transparent' }}>
-        <Grid container spacing={3} alignItems="stretch" sx={{ flex: 1, minHeight: 0 }}>
+      <SoftBox mt={3} sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden', backgroundColor: 'transparent' }}>
+        <Grid container spacing={3} alignItems="stretch" sx={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
           {/* Left column - tab menu + main content */}
-          <Grid item xs={12} lg={8} sx={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-            <SoftBox sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden', backgroundColor: 'transparent' }}>
+          <Grid item xs={12} lg={8} sx={{ display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden' }}>
+            <SoftBox sx={{ flex: '1 1 0%', display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden', backgroundColor: 'transparent' }}>
               {/* Horizontal tab navigation - same style as vertical main Sidenav */}
               <Box sx={{ position: 'sticky', top: 0, zIndex: 10, mb: 2, px: 3, pt: 0, flexShrink: 0, color: '#292F4D', backgroundColor: 'background.default', py: 1 }}>
                 <Tabs
@@ -183,7 +183,7 @@ const SiteDetailPage: React.FC = () => {
                   ))}
                 </Tabs>
               </Box>
-              <SoftBox px={3} pb={3} sx={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
+              <SoftBox px={3} pb={3} sx={{ flex: '1 1 0%', minHeight: 0, overflow: 'auto' }}>
                 <TabPanel value={tab} index={0}>
                   <SiteDetailsTab siteId={site.$id} onTabChange={setTab} />
                 </TabPanel>

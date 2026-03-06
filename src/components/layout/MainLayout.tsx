@@ -47,6 +47,11 @@ const MainLayout: React.FC = () => {
             display: 'flex',
             flexDirection: 'column',
             minHeight: '100vh',
+            ...(isSiteDetailPage && {
+              height: '100vh',
+              maxHeight: '100vh',
+              overflow: 'hidden',
+            }),
             position: 'relative',
             [breakpoints.up('xl')]: {
               marginLeft: miniSidenav ? pxToRem(120) : pxToRem(274),
