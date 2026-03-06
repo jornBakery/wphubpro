@@ -222,10 +222,11 @@ export const useTogglePlugin = (siteId: string | undefined) => {
   return useMutation<WordPressPlugin, Error, { pluginSlug: string; status: 'active' | 'inactive', pluginName: string }>({
     mutationFn: ({ pluginSlug, status }) => {
       const path = status === 'active' ? 'wphubpro/v1/plugins/manage/deactivate' : 'wphubpro/v1/plugins/manage/activate';
+      const endpointWithPlugin = `${path}?plugin=${encodeURIComponent(pluginSlug)}`;
       return executeWpProxy<WordPressPlugin>({
         siteId: siteId!,
         method: 'POST',
-        endpoint: path,
+        endpoint: endpointWithPlugin,
         body: { plugin: pluginSlug },
         userId: user?.$id,
         useApiKey: true,
@@ -257,10 +258,11 @@ export const useDeletePlugin = (siteId: string | undefined) => {
 
   return useMutation<void, Error, { pluginFile: string; pluginName: string }>({
     mutationFn: ({ pluginFile }) => {
+      const endpointWithPlugin = `wphubpro/v1/plugins/manage/uninstall?plugin=${encodeURIComponent(pluginFile)}`;
       return executeWpProxy<void>({
         siteId: siteId!,
         method: 'POST',
-        endpoint: 'wphubpro/v1/plugins/manage/uninstall',
+        endpoint: endpointWithPlugin,
         body: { plugin: pluginFile },
         userId: user?.$id,
         useApiKey: true,
