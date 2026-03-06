@@ -12,6 +12,37 @@ import Icon from '@mui/material/Icon';
 
 import { useAuth } from '../contexts/AuthContext';
 import { useSites, useAddSite, useUpdateSite } from '../hooks/useSites';
+import { account, APPWRITE_ENDPOINT, APPWRITE_PROJECT_ID } from '../services/appwrite';
+
+/** Save JWT and connection data to WordPress bridge */
+async function saveConnectionToWordPress(siteUrl: string, apiKey: string): Promise<void> {
+  let jwt: string;
+  try {
+    const res = await account.createJWT();
+    jwt = typeof res === 'string' ? res : (res as { jwt?: string }).jwt ?? '';
+  } catch {
+    return;
+  }
+  if (!jwt) return;
+  const base = siteUrl.replace(/\/$/, '');
+  const url = `${base}/wp-json/wphubpro/v1/save-connection`;
+  try {
+    await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-WPHub-Key': apiKey,
+      },
+      body: JSON.stringify({
+        jwt,
+        endpoint: APPWRITE_ENDPOINT,
+        project_id: APPWRITE_PROJECT_ID,
+      }),
+    });
+  } catch {
+    // Silently ignore - connection still works via API key
+  }
+}
 
 const normalizeUrl = (url: string) => {
   const s = (url || '').trim();
@@ -56,11 +87,16 @@ const ConnectSuccessPage: React.FC = () => {
       return existingNorm && existingNorm === normalized;
     });
 
+    const doNavigate = () => navigate('/sites', { replace: true });
+    const fullSiteUrl = siteUrl.startsWith('http') ? siteUrl : `https://${siteUrl}`;
+
     if (existing) {
       updateSite.mutate(
         { siteId: existing.$id, api_key: apiKey },
         {
-          onSuccess: () => navigate('/sites', { replace: true }),
+          onSuccess: () => {
+            saveConnectionToWordPress(fullSiteUrl, apiKey).then(doNavigate);
+          },
           onError: () => {},
         }
       );
@@ -80,7 +116,9 @@ const ConnectSuccessPage: React.FC = () => {
           api_key: apiKey,
         },
         {
-          onSuccess: () => navigate('/sites', { replace: true }),
+          onSuccess: () => {
+            saveConnectionToWordPress(fullSiteUrl, apiKey).then(doNavigate);
+          },
           onError: () => {},
         }
       );

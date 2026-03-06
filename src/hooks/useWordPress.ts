@@ -83,6 +83,32 @@ export const usePlugins = (siteId: string | undefined) => {
   });
 };
 
+// Site details (WordPress version, PHP version, plugin/theme counts)
+export interface SiteDetailsResponse {
+  wp_version: string;
+  wp_version_latest: string | null;
+  plugins_count: number;
+  themes_count: number;
+  php_version: string;
+  php_check: { recommended_version?: string; minimum_version?: string; is_supported?: boolean; is_secure?: boolean; is_acceptable?: boolean } | null;
+}
+
+export const useSiteDetails = (siteId: string | undefined) => {
+  const { user } = useAuth();
+  return useQuery<SiteDetailsResponse, Error>({
+    queryKey: ['site-details', siteId],
+    queryFn: () =>
+      executeWpProxy<SiteDetailsResponse>({
+        siteId: siteId!,
+        endpoint: 'wphubpro/v1/details',
+        userId: user?.$id,
+        useApiKey: true,
+      }),
+    enabled: !!siteId && !!user?.$id,
+    retry: 0,
+  });
+};
+
 // Use the new bridge endpoint for theme list
 // Bridge returns: { slug, name, version, active (boolean), update }
 // Frontend expects: { stylesheet (slug), name, version, status: 'active'|'inactive' }

@@ -72,6 +72,50 @@ class WPHubPro_Bridge {
 			},
 		) );
 
+		// Connection status (admin only)
+		register_rest_route( $namespace, '/connection-status', array(
+			'methods'             => 'GET',
+			'callback'            => function () {
+				return rest_ensure_response( WPHubPro_Bridge_Connection_Status::fetch() );
+			},
+			'permission_callback' => function () {
+				return current_user_can( 'manage_options' );
+			},
+		) );
+
+		// Disconnect (remove from hub, admin only)
+		register_rest_route( $namespace, '/disconnect', array(
+			'methods'             => 'POST',
+			'callback'            => array( $this->connect, 'handle_disconnect' ),
+			'permission_callback' => function () {
+				return current_user_can( 'manage_options' );
+			},
+		) );
+
+		// Save connection (jwt, endpoint, project) from platform - validates API key
+		register_rest_route( $namespace, '/save-connection', array(
+			'methods'             => 'POST',
+			'callback'            => array( $this->connect, 'handle_save_connection' ),
+			'permission_callback' => array( 'WPHubPro_Bridge_Connect', 'validate_api_key' ),
+			'args'                => array(
+				'jwt'        => array(
+					'required'          => true,
+					'type'              => 'string',
+					'sanitize_callback' => 'sanitize_text_field',
+				),
+				'endpoint'   => array(
+					'required'          => false,
+					'type'              => 'string',
+					'sanitize_callback' => 'esc_url_raw',
+				),
+				'project_id' => array(
+					'required'          => false,
+					'type'              => 'string',
+					'sanitize_callback' => 'sanitize_text_field',
+				),
+			),
+		) );
+
 		// Plugins
 		register_rest_route( $namespace, '/plugins', array(
 			'methods'             => 'GET',

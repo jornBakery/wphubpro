@@ -16,6 +16,7 @@ import SoftBox from 'components/SoftBox';
 import SoftTypography from 'components/SoftTypography';
 import { StatusIcon, HealthBadge } from '../sites/SitesTableCells';
 import { useCheckSiteHealth } from '../../hooks/useSites';
+import { useSiteDetails } from '../../hooks/useWordPress';
 import type { Site } from '../../types';
 
 const infoGradient = 'linear-gradient(310deg, #4F5482, #7a8ef0)';
@@ -44,6 +45,7 @@ const SiteDetailSidebar: React.FC<SiteDetailSidebarProps> = ({
   onRemove,
 }) => {
   const checkHealth = useCheckSiteHealth(site.$id);
+  const { data: details } = useSiteDetails(site.$id);
   const siteName = (site as any).siteName || (site as any).site_name || 'Naamloze site';
   const siteUrl = (site as any).siteUrl || (site as any).site_url || '';
   const fullUrl = siteUrl && !siteUrl.startsWith('http') ? `https://${siteUrl}` : siteUrl;
@@ -85,11 +87,11 @@ const SiteDetailSidebar: React.FC<SiteDetailSidebarProps> = ({
             <Grid container spacing={1}>
               <Grid item xs={6}>
                 <SoftTypography variant="caption" color="secondary">WordPress</SoftTypography>
-                <SoftTypography variant="button" display="block">{(site as any).wpVersion || site.wpVersion || '—'}</SoftTypography>
+                <SoftTypography variant="button" display="block">{details?.wp_version || (site as any).wpVersion || site.wpVersion || '—'}</SoftTypography>
               </Grid>
               <Grid item xs={6}>
                 <SoftTypography variant="caption" color="secondary">PHP</SoftTypography>
-                <SoftTypography variant="button" display="block">{(site as any).phpVersion || site.phpVersion || '—'}</SoftTypography>
+                <SoftTypography variant="button" display="block">{details?.php_version || (site as any).phpVersion || site.phpVersion || '—'}</SoftTypography>
               </Grid>
               <Grid item xs={6}>
                 <SoftTypography variant="caption" color="secondary">Schijfruimte</SoftTypography>

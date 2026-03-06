@@ -6,8 +6,8 @@ import { Client, Account, Databases, Functions, Storage, Teams, Avatars, ID } fr
  * * Deze waarden worden ingeladen vanuit de Vite omgevingsvariabelen.
  * Zorg dat deze aanwezig zijn in je .env file in de root van het project.
  */
-const APPWRITE_ENDPOINT = 'https://appwrite.code045.nl/v1';
-const APPWRITE_PROJECT_ID = '698a55ce00010497b136';
+export const APPWRITE_ENDPOINT = (import.meta as any).env?.VITE_APPWRITE_ENDPOINT || 'https://appwrite.code045.nl/v1';
+export const APPWRITE_PROJECT_ID = (import.meta as any).env?.VITE_APPWRITE_PROJECT_ID || '698a55ce00010497b136';
 
 if (!APPWRITE_ENDPOINT || !APPWRITE_PROJECT_ID) {
     console.error("Appwrite configuratie ontbreekt. Controleer je .env bestand.");
