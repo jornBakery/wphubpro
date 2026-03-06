@@ -217,7 +217,19 @@ export interface ParsedErrorLogEntry {
 }
 
 const PHP_ERROR_LINE_RE = /^\[([^\]]+)\]\s*PHP\s+(\w+(?:\s+\w+)?):\s*(.+)$/i;
-const FILE_LINE_RE = /\s+in\s+(.+?)\s+on\s+line\s+(\d+)\s*$/;
+// Match " in /path/file.php on line 123" or " thrown in /path/file.php on line 123"
+const FILE_LINE_RE = /\s+(?:thrown\s+)?in\s+(.+?)\s+on\s+line\s+(\d+)\s*$/;
+// Fallback: match "file.php(123)" or "file.php:123" in stack frames
+const FILE_LINE_FALLBACK_RE = /([^\s()]+\.php)[:(](\d+)\)?/;
+
+/** Extract file and line from a string (e.g. first line or full merged text). */
+function extractFileLine(text: string): { file: string; line: number } | null {
+  const m = FILE_LINE_RE.exec(text);
+  if (m) return { file: m[1].trim(), line: parseInt(m[2], 10) };
+  const m2 = FILE_LINE_FALLBACK_RE.exec(text);
+  if (m2) return { file: m2[1].trim(), line: parseInt(m2[2], 10) };
+  return null;
+}
 
 function parseSingleErrorLine(raw: string): Partial<ParsedErrorLogEntry> & { message: string } | null {
   const main = PHP_ERROR_LINE_RE.exec(raw);
@@ -225,15 +237,13 @@ function parseSingleErrorLine(raw: string): Partial<ParsedErrorLogEntry> & { mes
   const timestamp = main[1].trim();
   const logType = main[2].trim();
   let msg = main[3].trim();
-  let file: string | null = null;
-  let line: number | null = null;
-  const fileLine = FILE_LINE_RE.exec(msg);
+  const fileLine = extractFileLine(raw);
   if (fileLine) {
-    file = fileLine[1].trim();
-    line = parseInt(fileLine[2], 10);
-    msg = msg.slice(0, msg.length - fileLine[0].length).trim();
+    const suffixMatch = FILE_LINE_RE.exec(msg);
+    if (suffixMatch) msg = msg.slice(0, msg.length - suffixMatch[0].length).trim();
+    return { raw, timestamp, logType, file: fileLine.file, line: fileLine.line, message: msg };
   }
-  return { raw, timestamp, logType, file, line, message: msg };
+  return { raw, timestamp, logType, file: null, line: null, message: msg };
 }
 
 /** Parse lines and merge stack traces / continuation lines into the previous entry's message. */
@@ -255,6 +265,14 @@ function parseErrorLogLines(lines: string[]): ParsedErrorLogEntry[] {
     } else if (current) {
       current.message = current.message + '\n' + raw;
       current.raw = current.raw + '\n' + raw;
+      // Extract file/line from "thrown in ... on line N" in continuation if we don't have one yet
+      if (current.file == null && current.line == null) {
+        const fl = extractFileLine(current.raw);
+        if (fl) {
+          current.file = fl.file;
+          current.line = fl.line;
+        }
+      }
     }
   }
   if (current) entries.push(current);
@@ -292,7 +310,19 @@ const ErrorLogRow: React.FC<ErrorLogRowProps> = ({ entry }) => {
           </Typography>
         </DataTableBodyCell>
         <DataTableBodyCell>
-          <Typography component="span" sx={{ fontFamily: 'monospace', fontSize: '0.75rem', wordBreak: 'break-all' }}>{fileLine}</Typography>
+          <Typography
+            component="span"
+            sx={{
+              fontFamily: 'monospace',
+              fontSize: '0.75rem',
+              whiteSpace: 'normal',
+              wordBreak: 'break-all',
+              display: 'block',
+              lineHeight: 1.4,
+            }}
+          >
+            {fileLine}
+          </Typography>
         </DataTableBodyCell>
       </TableRow>
       <TableRow>
