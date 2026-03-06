@@ -221,12 +221,12 @@ export const useTogglePlugin = (siteId: string | undefined) => {
 
   return useMutation<WordPressPlugin, Error, { pluginSlug: string; status: 'active' | 'inactive', pluginName: string }>({
     mutationFn: ({ pluginSlug, status }) => {
-      const newStatus = status === 'active' ? 'deactivate' : 'activate';
+      const path = status === 'active' ? 'wphubpro/v1/plugins/manage/deactivate' : 'wphubpro/v1/plugins/manage/activate';
       return executeWpProxy<WordPressPlugin>({
         siteId: siteId!,
         method: 'POST',
-        endpoint: 'wphubpro/v1/plugins/manage',
-        body: { action: newStatus, plugin: pluginSlug },
+        endpoint: path,
+        body: { plugin: pluginSlug },
         userId: user?.$id,
         useApiKey: true,
       });
@@ -260,8 +260,8 @@ export const useDeletePlugin = (siteId: string | undefined) => {
       return executeWpProxy<void>({
         siteId: siteId!,
         method: 'POST',
-        endpoint: 'wphubpro/v1/plugins/manage',
-        body: { action: 'delete', plugin: pluginFile },
+        endpoint: 'wphubpro/v1/plugins/manage/uninstall',
+        body: { plugin: pluginFile },
         userId: user?.$id,
         useApiKey: true,
       });
