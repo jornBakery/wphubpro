@@ -5,9 +5,10 @@ import React, { useState } from 'react';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
+import ScrollableTableWrapper from 'components/ScrollableTableWrapper';
 import TableRow from '@mui/material/TableRow';
+import DataTableHeadCell from 'examples/Tables/DataTable/DataTableHeadCell';
+import DataTableBodyCell from 'examples/Tables/DataTable/DataTableBodyCell';
 import Card from '@mui/material/Card';
 import Icon from '@mui/material/Icon';
 import Collapse from '@mui/material/Collapse';
@@ -50,11 +51,17 @@ const LogRow: React.FC<LogRowProps> = ({ entry }) => {
           setResponseOpen(false);
         }}
       >
-        <TableCell sx={{ whiteSpace: 'nowrap', fontSize: '0.75rem' }}>{formatTime(entry.time)}</TableCell>
-        <TableCell sx={{ fontFamily: 'monospace', fontSize: '0.75rem', wordBreak: 'break-word' }}>{entry.endpoint}</TableCell>
-        <TableCell>{entry.type}</TableCell>
-        <TableCell sx={{ fontWeight: 600, color: codeOk ? 'success.main' : codeErr ? 'error.main' : 'text.primary' }}>{entry.code}</TableCell>
-        <TableCell sx={{ maxWidth: 160 }}>
+        <DataTableBodyCell>
+          <Typography component="span" sx={{ whiteSpace: 'nowrap', fontSize: '0.75rem' }}>{formatTime(entry.time)}</Typography>
+        </DataTableBodyCell>
+        <DataTableBodyCell>
+          <Typography component="span" sx={{ fontFamily: 'monospace', fontSize: '0.75rem', wordBreak: 'break-word' }}>{entry.endpoint}</Typography>
+        </DataTableBodyCell>
+        <DataTableBodyCell>{entry.type}</DataTableBodyCell>
+        <DataTableBodyCell>
+          <Typography component="span" sx={{ fontWeight: 600, color: codeOk ? 'success.main' : codeErr ? 'error.main' : 'text.primary' }}>{entry.code}</Typography>
+        </DataTableBodyCell>
+        <DataTableBodyCell>
           <Typography
             component="span"
             variant="caption"
@@ -63,8 +70,8 @@ const LogRow: React.FC<LogRowProps> = ({ entry }) => {
           >
             {requestOpen ? 'Hide' : 'Request'}
           </Typography>
-        </TableCell>
-        <TableCell sx={{ maxWidth: 160 }}>
+        </DataTableBodyCell>
+        <DataTableBodyCell>
           <Typography
             component="span"
             variant="caption"
@@ -73,7 +80,7 @@ const LogRow: React.FC<LogRowProps> = ({ entry }) => {
           >
             {responseOpen ? 'Hide' : 'Response'}
           </Typography>
-        </TableCell>
+        </DataTableBodyCell>
       </TableRow>
       <TableRow>
         <TableCell colSpan={6} sx={{ py: 0, borderBottom: requestOpen || responseOpen ? '1px solid' : 0, borderColor: 'divider' }}>
@@ -142,18 +149,39 @@ const LogsTab: React.FC<LogsTabProps> = ({ siteId }) => {
           Laatste 20 aanroepen naar het Bridge API (option WPHUBPRO_LOG). API: {site ? `${String(site.siteUrl).replace(/\/$/, '')}/wp-json/wphubpro/v1/logs` : '—'}
         </Typography>
       </Box>
-      <TableContainer>
-        <Table size="small">
-          <TableHead>
+      <ScrollableTableWrapper maxHeight="55vh">
+        <Table
+          size="small"
+          stickyHeader
+          sx={{
+            tableLayout: 'fixed',
+            width: '100%',
+            '& thead th': {
+              position: 'sticky',
+              top: 0,
+              zIndex: 2,
+              backgroundColor: 'background.paper',
+              boxShadow: '0 1px 0 0 rgba(0,0,0,0.08)',
+            },
+            '& tbody td:first-of-type': {
+              paddingLeft: (theme) => theme.spacing(5),
+              paddingRight: (theme) => theme.spacing(3),
+            },
+            '& thead th:last-of-type': { paddingRight: (theme) => theme.spacing(4) },
+            '& tbody td:last-of-type': { paddingRight: (theme) => theme.spacing(4) },
+          }}
+        >
+          <Box component="thead">
             <TableRow>
-              <TableCell><Typography variant="caption" fontWeight="bold">Tijd</Typography></TableCell>
-              <TableCell><Typography variant="caption" fontWeight="bold">Endpoint</Typography></TableCell>
-              <TableCell><Typography variant="caption" fontWeight="bold">Type</Typography></TableCell>
-              <TableCell><Typography variant="caption" fontWeight="bold">Code</Typography></TableCell>
-              <TableCell><Typography variant="caption" fontWeight="bold">Request</Typography></TableCell>
-              <TableCell><Typography variant="caption" fontWeight="bold">Response</Typography></TableCell>
+              {/* Column widths total 100%: 15 + 30 + 10 + 8 + 20 + 17 */}
+              <DataTableHeadCell width="15%" pl={5} color="#4F5482">Tijd</DataTableHeadCell>
+              <DataTableHeadCell width="30%" pl={undefined} color="#4F5482">Endpoint</DataTableHeadCell>
+              <DataTableHeadCell width="10%" pl={undefined} color="#4F5482">Type</DataTableHeadCell>
+              <DataTableHeadCell width="8%" pl={undefined} color="#4F5482">Code</DataTableHeadCell>
+              <DataTableHeadCell width="20%" pl={undefined} color="#4F5482">Request</DataTableHeadCell>
+              <DataTableHeadCell width="17%" pl={undefined} color="#4F5482">Response</DataTableHeadCell>
             </TableRow>
-          </TableHead>
+          </Box>
           <TableBody>
             {(!logs || logs.length === 0) ? (
               <TableRow>
@@ -166,7 +194,7 @@ const LogsTab: React.FC<LogsTabProps> = ({ siteId }) => {
             )}
           </TableBody>
         </Table>
-      </TableContainer>
+      </ScrollableTableWrapper>
     </Card>
   );
 };

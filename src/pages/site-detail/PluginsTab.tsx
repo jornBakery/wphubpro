@@ -1,13 +1,14 @@
 import React from 'react';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
+import ScrollableTableWrapper from 'components/ScrollableTableWrapper';
 import TableRow from '@mui/material/TableRow';
+import DataTableHeadCell from 'examples/Tables/DataTable/DataTableHeadCell';
+import DataTableBodyCell from 'examples/Tables/DataTable/DataTableBodyCell';
 import Card from '@mui/material/Card';
 import Icon from '@mui/material/Icon';
 import SoftBox from 'components/SoftBox';
+import { ActionIconButton } from '../../components/sites/SitesTableCells';
 import SoftTypography from 'components/SoftTypography';
 import SoftButton from 'components/SoftButton';
 import SoftBadge from 'components/SoftBadge';
@@ -70,39 +71,67 @@ const PluginsTab: React.FC<PluginsTabProps> = ({ siteId }) => {
           API: {site ? `${String(site.siteUrl).replace(/\/$/, '')}/wp-json/wphubpro/v1/plugins` : '-'}
         </SoftTypography>
       </SoftBox>
-      <TableContainer>
-        <Table>
-          <TableHead>
+      <ScrollableTableWrapper maxHeight="55vh">
+        <Table
+          stickyHeader
+          sx={{
+            tableLayout: 'fixed',
+            width: '100%',
+            '& thead th': {
+              position: 'sticky',
+              top: 0,
+              zIndex: 2,
+              backgroundColor: 'background.paper',
+              boxShadow: '0 1px 0 0 rgba(0,0,0,0.08)',
+            },
+            '& tbody td:first-of-type': {
+              paddingLeft: (theme) => theme.spacing(5),
+              paddingRight: (theme) => theme.spacing(3),
+            },
+            '& thead th:last-of-type': { paddingRight: (theme) => theme.spacing(4) },
+            '& tbody td:last-of-type': { paddingRight: (theme) => theme.spacing(4) },
+          }}
+        >
+          <SoftBox component="thead">
             <TableRow>
-              <TableCell><SoftTypography variant="caption" fontWeight="bold">Plugin</SoftTypography></TableCell>
-              <TableCell><SoftTypography variant="caption" fontWeight="bold">Status</SoftTypography></TableCell>
-              <TableCell><SoftTypography variant="caption" fontWeight="bold">Versie</SoftTypography></TableCell>
-              <TableCell align="right"><SoftTypography variant="caption" fontWeight="bold">Acties</SoftTypography></TableCell>
+              {/* Column widths total 100%: 50 + 20 + 20 + 10 */}
+              <DataTableHeadCell width="50%" pl={5} color="#4F5482">Plugin</DataTableHeadCell>
+              <DataTableHeadCell width="20%" pl={undefined} color="#4F5482">Status</DataTableHeadCell>
+              <DataTableHeadCell width="20%" pl={undefined} color="#4F5482">Versie</DataTableHeadCell>
+              <DataTableHeadCell width="10%" align="right" pl={undefined} color="#4F5482" sorted={false}>Acties</DataTableHeadCell>
             </TableRow>
-          </TableHead>
+          </SoftBox>
           <TableBody>
             {plugins?.map((plugin) => (
               <TableRow key={plugin.plugin}>
-                <TableCell><SoftTypography variant="button" fontWeight="medium">{plugin.name}</SoftTypography></TableCell>
-                <TableCell>
+                <DataTableBodyCell><SoftTypography variant="button" fontWeight="medium">{plugin.name}</SoftTypography></DataTableBodyCell>
+                <DataTableBodyCell>
                   <SoftBadge variant="contained" color={plugin.status === 'active' ? 'success' : 'secondary'} size="xs" badgeContent={plugin.status === 'active' ? 'Actief' : 'Inactief'} container />
-                </TableCell>
-                <TableCell><SoftTypography variant="caption">{plugin.version}</SoftTypography></TableCell>
-                <TableCell align="right">
-                  <SoftBox display="flex" gap={1} justifyContent="flex-end">
-                    <SoftButton variant="outlined" color="info" size="small" onClick={() => handleToggle(plugin)} disabled={(togglePluginMutation.isPending && togglePluginMutation.variables?.pluginSlug === plugin.plugin) || (deletePluginMutation.isPending && deletePluginMutation.variables?.pluginFile === plugin.plugin)}>
-                      {togglePluginMutation.isPending && togglePluginMutation.variables?.pluginSlug === plugin.plugin ? '...' : plugin.status === 'active' ? 'Deactiveren' : 'Activeren'}
-                    </SoftButton>
-                    <SoftButton variant="outlined" color="error" size="small" onClick={() => handleDelete(plugin)} disabled={(togglePluginMutation.isPending && togglePluginMutation.variables?.pluginSlug === plugin.plugin) || (deletePluginMutation.isPending && deletePluginMutation.variables?.pluginFile === plugin.plugin)}>
-                      {deletePluginMutation.isPending && deletePluginMutation.variables?.pluginFile === plugin.plugin ? '...' : 'Verwijderen'}
-                    </SoftButton>
+                </DataTableBodyCell>
+                <DataTableBodyCell><SoftTypography variant="caption">{plugin.version}</SoftTypography></DataTableBodyCell>
+                <DataTableBodyCell align="right">
+                  <SoftBox display="flex" gap={0.5} justifyContent="flex-end">
+                    <ActionIconButton
+                      icon={plugin.status === 'active' ? 'power_off' : 'power'}
+                      title={togglePluginMutation.isPending && togglePluginMutation.variables?.pluginSlug === plugin.plugin ? '...' : plugin.status === 'active' ? 'Deactiveren' : 'Activeren'}
+                      color="info"
+                      onClick={() => handleToggle(plugin)}
+                      disabled={(togglePluginMutation.isPending && togglePluginMutation.variables?.pluginSlug === plugin.plugin) || (deletePluginMutation.isPending && deletePluginMutation.variables?.pluginFile === plugin.plugin)}
+                    />
+                    <ActionIconButton
+                      icon="delete"
+                      title={deletePluginMutation.isPending && deletePluginMutation.variables?.pluginFile === plugin.plugin ? '...' : 'Verwijderen'}
+                      color="error"
+                      onClick={() => handleDelete(plugin)}
+                      disabled={(togglePluginMutation.isPending && togglePluginMutation.variables?.pluginSlug === plugin.plugin) || (deletePluginMutation.isPending && deletePluginMutation.variables?.pluginFile === plugin.plugin)}
+                    />
                   </SoftBox>
-                </TableCell>
+                </DataTableBodyCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
-      </TableContainer>
+      </ScrollableTableWrapper>
     </Card>
   );
 };

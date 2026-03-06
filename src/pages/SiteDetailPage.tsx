@@ -104,9 +104,9 @@ const SiteDetailPage: React.FC = () => {
         <Grid container spacing={3} alignItems="stretch" sx={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
           {/* Left column - tab menu + main content */}
           <Grid item xs={12} lg={8} sx={{ display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden' }}>
-            <SoftBox sx={{ flex: '1 1 0%', display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden', backgroundColor: 'transparent' }}>
+            <Box sx={{ flex: '1 1 0%', display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden' }}>
               {/* Horizontal tab navigation - same style as vertical main Sidenav */}
-              <Box sx={{ position: 'sticky', top: 0, zIndex: 10, mb: 2, px: 3, pt: 0, flexShrink: 0, color: '#292F4D', backgroundColor: 'background.default', py: 1 }}>
+              <Box sx={{ flexShrink: 0, mb: 2, px: 3, pt: 0, color: '#292F4D', backgroundColor: 'background.default', py: 1 }}>
                 <Tabs
                   value={tab}
                   onChange={(_, value: number) => setTab(value)}
@@ -183,7 +183,18 @@ const SiteDetailPage: React.FC = () => {
                   ))}
                 </Tabs>
               </Box>
-              <SoftBox px={3} pb={3} sx={{ flex: '1 1 0%', minHeight: 0, overflow: 'auto' }}>
+              <Box
+                sx={{
+                  flex: '1 1 0%',
+                  minHeight: 0,
+                  height: 0,
+                  overflow: 'auto',
+                  overflowX: 'hidden',
+                  WebkitOverflowScrolling: 'touch',
+                  px: 3,
+                  pb: 3,
+                }}
+              >
                 <TabPanel value={tab} index={0}>
                   <SiteDetailsTab siteId={site.$id} onTabChange={setTab} />
                 </TabPanel>
@@ -199,8 +210,8 @@ const SiteDetailPage: React.FC = () => {
                 <TabPanel value={tab} index={4}>
                   <LogsTab siteId={site.$id} />
                 </TabPanel>
-              </SoftBox>
-            </SoftBox>
+              </Box>
+            </Box>
           </Grid>
 
           {/* Right column - site details card only */}

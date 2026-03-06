@@ -5,9 +5,10 @@ import React, { useState } from 'react';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
+import ScrollableTableWrapper from 'components/ScrollableTableWrapper';
 import TableRow from '@mui/material/TableRow';
+import DataTableHeadCell from 'examples/Tables/DataTable/DataTableHeadCell';
+import DataTableBodyCell from 'examples/Tables/DataTable/DataTableBodyCell';
 import Card from '@mui/material/Card';
 import SoftBox from 'components/SoftBox';
 import SoftTypography from 'components/SoftTypography';
@@ -47,16 +48,36 @@ const SiteHealthTab: React.FC<SiteHealthTabProps> = ({ siteId }) => {
         <SoftTypography variant="h6" fontWeight="medium">Site Health &amp; Action Log</SoftTypography>
         <SoftTypography variant="caption" color="secondary">Overzicht van API-aanroepen en gezondheid</SoftTypography>
       </SoftBox>
-      <TableContainer>
-        <Table>
-          <TableHead>
+      <ScrollableTableWrapper maxHeight="55vh">
+        <Table
+          stickyHeader
+          sx={{
+            tableLayout: 'fixed',
+            width: '100%',
+            '& thead th': {
+              position: 'sticky',
+              top: 0,
+              zIndex: 2,
+              backgroundColor: 'background.paper',
+              boxShadow: '0 1px 0 0 rgba(0,0,0,0.08)',
+            },
+            '& tbody td:first-of-type': {
+              paddingLeft: (theme) => theme.spacing(5),
+              paddingRight: (theme) => theme.spacing(3),
+            },
+            '& thead th:last-of-type': { paddingRight: (theme) => theme.spacing(4) },
+            '& tbody td:last-of-type': { paddingRight: (theme) => theme.spacing(4) },
+          }}
+        >
+          <SoftBox component="thead">
             <TableRow>
-              <TableCell><SoftTypography variant="caption" fontWeight="bold">Actie</SoftTypography></TableCell>
-              <TableCell><SoftTypography variant="caption" fontWeight="bold">Endpoint</SoftTypography></TableCell>
-              <TableCell><SoftTypography variant="caption" fontWeight="bold">Datum/Tijd</SoftTypography></TableCell>
-              <TableCell />
+              {/* Column widths total 100%: 25 + 35 + 25 + 15 */}
+              <DataTableHeadCell width="25%" pl={5} color="#4F5482">Actie</DataTableHeadCell>
+              <DataTableHeadCell width="35%" pl={undefined} color="#4F5482">Endpoint</DataTableHeadCell>
+              <DataTableHeadCell width="25%" pl={undefined} color="#4F5482">Datum/Tijd</DataTableHeadCell>
+              <DataTableHeadCell width="15%" align="right" pl={undefined} color="#4F5482">{null}</DataTableHeadCell>
             </TableRow>
-          </TableHead>
+          </SoftBox>
           <TableBody>
             {log.length === 0 && (
               <TableRow>
@@ -68,10 +89,10 @@ const SiteHealthTab: React.FC<SiteHealthTabProps> = ({ siteId }) => {
             {log.map((entry, idx) => (
               <React.Fragment key={idx}>
                 <TableRow>
-                  <TableCell><SoftTypography variant="caption">{entry.action}</SoftTypography></TableCell>
-                  <TableCell><SoftTypography variant="caption" sx={{ wordBreak: 'break-all' }}>{entry.endpoint}</SoftTypography></TableCell>
-                  <TableCell><SoftTypography variant="caption">{new Date(entry.timestamp).toLocaleString('nl-NL')}</SoftTypography></TableCell>
-                  <TableCell align="right">
+                  <DataTableBodyCell><SoftTypography variant="caption">{entry.action}</SoftTypography></DataTableBodyCell>
+                  <DataTableBodyCell><SoftTypography variant="caption" sx={{ wordBreak: 'break-all' }}>{entry.endpoint}</SoftTypography></DataTableBodyCell>
+                  <DataTableBodyCell><SoftTypography variant="caption">{new Date(entry.timestamp).toLocaleString('nl-NL')}</SoftTypography></DataTableBodyCell>
+                  <DataTableBodyCell align="right">
                     <SoftButton
                       variant="text"
                       color="info"
@@ -80,7 +101,7 @@ const SiteHealthTab: React.FC<SiteHealthTabProps> = ({ siteId }) => {
                     >
                       {expanded === idx ? 'Verbergen' : 'Details'}
                     </SoftButton>
-                  </TableCell>
+                  </DataTableBodyCell>
                 </TableRow>
                 {expanded === idx && (
                   <TableRow>
@@ -99,7 +120,7 @@ const SiteHealthTab: React.FC<SiteHealthTabProps> = ({ siteId }) => {
             ))}
           </TableBody>
         </Table>
-      </TableContainer>
+      </ScrollableTableWrapper>
     </Card>
   );
 };

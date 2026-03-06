@@ -1,15 +1,16 @@
 import React from 'react';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
+import ScrollableTableWrapper from 'components/ScrollableTableWrapper';
 import TableRow from '@mui/material/TableRow';
+import DataTableHeadCell from 'examples/Tables/DataTable/DataTableHeadCell';
+import DataTableBodyCell from 'examples/Tables/DataTable/DataTableBodyCell';
 import Card from '@mui/material/Card';
 import Icon from '@mui/material/Icon';
 import SoftBox from 'components/SoftBox';
-import SoftTypography from 'components/SoftTypography';
 import SoftButton from 'components/SoftButton';
+import { ActionIconButton } from '../../components/sites/SitesTableCells';
+import SoftTypography from 'components/SoftTypography';
 import SoftBadge from 'components/SoftBadge';
 import { useThemes, useManageTheme } from '../../hooks/useWordPress';
 import { useSite } from '../../hooks/useSites';
@@ -65,34 +66,58 @@ const ThemesTab: React.FC<ThemesTabProps> = ({ siteId }) => {
           API: {site ? `${String(site.siteUrl).replace(/\/$/, '')}/wp-json/wphubpro/v1/themes` : '-'}
         </SoftTypography>
       </SoftBox>
-      <TableContainer>
-        <Table>
-          <TableHead>
+      <ScrollableTableWrapper maxHeight="55vh">
+        <Table
+          stickyHeader
+          sx={{
+            tableLayout: 'fixed',
+            width: '100%',
+            '& thead th': {
+              position: 'sticky',
+              top: 0,
+              zIndex: 2,
+              backgroundColor: 'background.paper',
+              boxShadow: '0 1px 0 0 rgba(0,0,0,0.08)',
+            },
+            '& tbody td:first-of-type': {
+              paddingLeft: (theme) => theme.spacing(5),
+              paddingRight: (theme) => theme.spacing(3),
+            },
+            '& thead th:last-of-type': { paddingRight: (theme) => theme.spacing(4) },
+            '& tbody td:last-of-type': { paddingRight: (theme) => theme.spacing(4) },
+          }}
+        >
+          <SoftBox component="thead">
             <TableRow>
-              <TableCell><SoftTypography variant="caption" fontWeight="bold">Thema</SoftTypography></TableCell>
-              <TableCell><SoftTypography variant="caption" fontWeight="bold">Status</SoftTypography></TableCell>
-              <TableCell><SoftTypography variant="caption" fontWeight="bold">Versie</SoftTypography></TableCell>
-              <TableCell align="right"><SoftTypography variant="caption" fontWeight="bold">Acties</SoftTypography></TableCell>
+              {/* Column widths total 100%: 50 + 20 + 20 + 10 */}
+              <DataTableHeadCell width="50%" pl={5} color="#4F5482">Thema</DataTableHeadCell>
+              <DataTableHeadCell width="20%" pl={undefined} color="#4F5482">Status</DataTableHeadCell>
+              <DataTableHeadCell width="20%" pl={undefined} color="#4F5482">Versie</DataTableHeadCell>
+              <DataTableHeadCell width="10%" align="right" pl={undefined} color="#4F5482" sorted={false}>Acties</DataTableHeadCell>
             </TableRow>
-          </TableHead>
+          </SoftBox>
           <TableBody>
             {themes?.map((theme) => (
               <TableRow key={theme.stylesheet}>
-                <TableCell><SoftTypography variant="button" fontWeight="medium">{theme.name}</SoftTypography></TableCell>
-                <TableCell>
+                <DataTableBodyCell><SoftTypography variant="button" fontWeight="medium">{theme.name}</SoftTypography></DataTableBodyCell>
+                <DataTableBodyCell>
                   <SoftBadge variant="contained" color={theme.status === 'active' ? 'success' : 'secondary'} size="xs" badgeContent={theme.status === 'active' ? 'Actief' : 'Inactief'} container />
-                </TableCell>
-                <TableCell><SoftTypography variant="caption">{theme.version}</SoftTypography></TableCell>
-                <TableCell align="right">
-                  <SoftButton variant="gradient" color="info" size="small" disabled={manageTheme.isPending || theme.status === 'active'} onClick={() => handleActivate(theme)}>
-                    {theme.status === 'active' ? 'Actief' : 'Activeren'}
-                  </SoftButton>
-                </TableCell>
+                </DataTableBodyCell>
+                <DataTableBodyCell><SoftTypography variant="caption">{theme.version}</SoftTypography></DataTableBodyCell>
+                <DataTableBodyCell align="right">
+                  <ActionIconButton
+                    icon="check_circle"
+                    title={theme.status === 'active' ? 'Actief' : 'Activeren'}
+                    color="info"
+                    onClick={() => handleActivate(theme)}
+                    disabled={manageTheme.isPending || theme.status === 'active'}
+                  />
+                </DataTableBodyCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
-      </TableContainer>
+      </ScrollableTableWrapper>
     </Card>
   );
 };

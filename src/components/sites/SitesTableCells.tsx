@@ -90,34 +90,39 @@ export const HealthBadge: React.FC<{ value: Site['healthStatus'] }> = ({ value }
   return <SoftBadge variant="gradient" color={c.color} size="xs" badgeContent={c.label} container />;
 };
 
-const ActionIconButton: React.FC<{
+export const ActionIconButton: React.FC<{
   icon: string;
   title: string;
   color?: 'info' | 'error' | 'success';
   onClick?: () => void;
-}> = ({ icon, title, color = 'info', onClick }) => {
+  disabled?: boolean;
+}> = ({ icon, title, color = 'info', onClick, disabled = false }) => {
   const bg = color === 'error' ? orangeGradient : color === 'success' ? orangeGradient : infoGradient;
   return (
     <Tooltip title={title} placement="top">
-      <SoftBox
-        sx={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          width: 32,
-          height: 32,
-          borderRadius: '50%',
-          background: bg,
-          color: 'white',
-          cursor: onClick ? 'pointer' : 'inherit',
-          '&:hover': { opacity: 0.9 },
-        }}
-        component={onClick ? 'button' : 'span'}
-        onClick={onClick}
-        {...(onClick && { type: 'button' as const })}
-      >
-        <Icon sx={{ fontSize: 18, color: 'white !important' }}>{icon}</Icon>
-      </SoftBox>
+      <span style={{ display: 'inline-flex' }}>
+        <SoftBox
+          sx={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: 32,
+            height: 32,
+            borderRadius: '50%',
+            background: bg,
+            color: 'white',
+            cursor: disabled ? 'default' : onClick ? 'pointer' : 'inherit',
+            opacity: disabled ? 0.6 : 1,
+            pointerEvents: disabled ? 'none' : undefined,
+            '&:hover': onClick && !disabled ? { opacity: 0.9 } : undefined,
+          }}
+          component={onClick && !disabled ? 'button' : 'span'}
+          onClick={disabled ? undefined : onClick}
+          {...(onClick && !disabled && { type: 'button' as const })}
+        >
+          <Icon sx={{ fontSize: 18, color: 'white !important' }}>{icon}</Icon>
+        </SoftBox>
+      </span>
     </Tooltip>
   );
 };
