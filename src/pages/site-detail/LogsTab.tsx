@@ -206,6 +206,7 @@ function BridgeLogsPanel({ siteId }: { siteId: string }) {
 }
 
 // PHP error log line: [date time] PHP Type: message [ in file.php on line N]
+// Lines that don't match (e.g. "Stack trace:", "#0 ...", "  thrown in ...") are merged into the previous entry's message.
 export interface ParsedErrorLogEntry {
   raw: string;
   timestamp: string;
@@ -215,22 +216,49 @@ export interface ParsedErrorLogEntry {
   message: string;
 }
 
-function parseErrorLogLine(raw: string): ParsedErrorLogEntry {
-  const entry: ParsedErrorLogEntry = { raw, timestamp: '', logType: '', file: null, line: null, message: raw };
-  const main = /^\[([^\]]+)\]\s*PHP\s+(\w+(?:\s+\w+)?):\s*(.+)$/i.exec(raw);
-  if (!main) return entry;
-  entry.timestamp = main[1].trim();
-  entry.logType = main[2].trim();
+const PHP_ERROR_LINE_RE = /^\[([^\]]+)\]\s*PHP\s+(\w+(?:\s+\w+)?):\s*(.+)$/i;
+const FILE_LINE_RE = /\s+in\s+(.+?)\s+on\s+line\s+(\d+)\s*$/;
+
+function parseSingleErrorLine(raw: string): Partial<ParsedErrorLogEntry> & { message: string } | null {
+  const main = PHP_ERROR_LINE_RE.exec(raw);
+  if (!main) return null;
+  const timestamp = main[1].trim();
+  const logType = main[2].trim();
   let msg = main[3].trim();
-  const fileLine = /\s+in\s+(.+?)\s+on\s+line\s+(\d+)\s*$/.exec(msg);
+  let file: string | null = null;
+  let line: number | null = null;
+  const fileLine = FILE_LINE_RE.exec(msg);
   if (fileLine) {
-    entry.file = fileLine[1].trim();
-    entry.line = parseInt(fileLine[2], 10);
-    entry.message = msg.slice(0, msg.length - fileLine[0].length).trim();
-  } else {
-    entry.message = msg;
+    file = fileLine[1].trim();
+    line = parseInt(fileLine[2], 10);
+    msg = msg.slice(0, msg.length - fileLine[0].length).trim();
   }
-  return entry;
+  return { raw, timestamp, logType, file, line, message: msg };
+}
+
+/** Parse lines and merge stack traces / continuation lines into the previous entry's message. */
+function parseErrorLogLines(lines: string[]): ParsedErrorLogEntry[] {
+  const entries: ParsedErrorLogEntry[] = [];
+  let current: ParsedErrorLogEntry | null = null;
+  for (const raw of lines) {
+    const parsed = parseSingleErrorLine(raw);
+    if (parsed) {
+      if (current) entries.push(current);
+      current = {
+        raw: parsed.raw,
+        timestamp: parsed.timestamp ?? '',
+        logType: parsed.logType ?? '',
+        file: parsed.file ?? null,
+        line: parsed.line ?? null,
+        message: parsed.message,
+      };
+    } else if (current) {
+      current.message = current.message + '\n' + raw;
+      current.raw = current.raw + '\n' + raw;
+    }
+  }
+  if (current) entries.push(current);
+  return entries;
 }
 
 function logTypeColor(type: string): string {
@@ -314,7 +342,7 @@ function ErrorLogsPanel({ siteId }: { siteId: string }) {
   const lines = rawLines.filter((line) => !line.includes('[WPHubPro Bridge]'));
   const fileInfo = data?.file ?? null;
   const errorMsg = data?.error;
-  const parsed = lines.map(parseErrorLogLine);
+  const parsed = parseErrorLogLines(lines);
 
   return (
     <>
