@@ -343,14 +343,14 @@ function ErrorLogsPanel({ siteId }: { siteId: string }) {
   const fileInfo = data?.file ?? null;
   const errorMsg = data?.error;
   const parsed = parseErrorLogLines(lines).filter(
-    (entry) => !entry.logType.toLowerCase().includes('deprecated')
+    (entry) => entry.logType.toLowerCase().includes('error')
   );
 
   return (
     <>
       <Box p={2} sx={{ borderBottom: '1px solid', borderColor: 'grey.200' }}>
         <Typography variant="caption" color="textSecondary" display="block">
-          Laatste 20 regels van de PHP error log van deze site. Klik op een rij om het bericht te tonen.
+          Laatste 200 regels van de PHP error log (alleen type error). Klik op een rij om het bericht te tonen.
         </Typography>
         {fileInfo && (
           <Typography variant="caption" color="textSecondary" display="block" sx={{ mt: 0.5, fontFamily: 'monospace' }}>
