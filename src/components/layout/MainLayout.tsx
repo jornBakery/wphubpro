@@ -69,7 +69,7 @@ const MainLayout: React.FC = () => {
               flexDirection: 'column',
               minHeight: 0,
               overflowX: 'hidden',
-              overflowY: 'auto',
+              overflowY: isSiteDetailPage ? 'hidden' : 'auto',
               backgroundColor: isSiteDetailPage ? 'transparent' : undefined,
               [breakpoints.down('sm')]: {
                 px: 2,

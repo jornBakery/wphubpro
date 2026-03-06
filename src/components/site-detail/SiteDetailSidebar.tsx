@@ -37,9 +37,9 @@ const SiteDetailSidebar: React.FC<SiteDetailSidebarProps> = ({
   const fullUrl = siteUrl && !siteUrl.startsWith('http') ? `https://${siteUrl}` : siteUrl;
 
   return (
-    <SoftBox display="flex" flexDirection="column" gap={2}>
-      {/* Site Details Card */}
-      <Card>
+    <SoftBox display="flex" flexDirection="column" gap={2} sx={{ alignSelf: 'flex-start' }}>
+      {/* Site Details Card - sticky on scroll */}
+      <Card sx={{ position: 'sticky', top: 8, zIndex: 1 }}>
         <SoftBox p={2}>
           <SoftTypography variant="h6" fontWeight="bold" mb={1}>
             {siteName}

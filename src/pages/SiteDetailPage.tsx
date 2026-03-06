@@ -101,45 +101,88 @@ const SiteDetailPage: React.FC = () => {
   return (
     <>
       <SoftBox mt={3} sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, backgroundColor: 'transparent' }}>
-        {/* Horizontal tab navigation at top */}
-        <Box
-          sx={{
-            borderBottom: 1,
-            borderColor: 'divider',
-            mb: 2,
-            backgroundColor: 'background.paper',
-            borderRadius: 1,
-            px: 1,
-          }}
-        >
-          <Tabs
-            value={tab}
-            onChange={(_, value: number) => setTab(value)}
-            variant="scrollable"
-            scrollButtons="auto"
-            allowScrollButtonsMobile
-            sx={{
-              minHeight: 48,
-              '& .MuiTab-root': { minHeight: 48, textTransform: 'none', fontWeight: 500 },
-              '& .Mui-selected': { fontWeight: 700 },
-            }}
-          >
-            {TAB_ITEMS.map(({ index, label, icon }) => (
-              <Tab
-                key={index}
-                label={label}
-                icon={<Icon sx={{ fontSize: 20 }}>{icon}</Icon>}
-                iconPosition="start"
-                value={index}
-              />
-            ))}
-          </Tabs>
-        </Box>
-
         <Grid container spacing={3} alignItems="stretch" sx={{ flex: 1, minHeight: 0 }}>
-          {/* Left column - main content */}
+          {/* Left column - tab menu + main content */}
           <Grid item xs={12} lg={8} sx={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
             <SoftBox sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden', backgroundColor: 'transparent' }}>
+              {/* Horizontal tab navigation - same style as vertical main Sidenav */}
+              <Box sx={{ position: 'sticky', top: 0, zIndex: 10, mb: 2, px: 3, pt: 0, flexShrink: 0, color: '#292F4D', backgroundColor: 'background.default', py: 1 }}>
+                <Tabs
+                  value={tab}
+                  onChange={(_, value: number) => setTab(value)}
+                  variant="scrollable"
+                  scrollButtons="auto"
+                  allowScrollButtonsMobile
+                  sx={{
+                    minHeight: 48,
+                    '& .MuiTabs-indicator': { display: 'none' },
+                    '& .MuiTabs-flexContainer': { overflow: 'visible' },
+                    '& .MuiTab-root': {
+                      minHeight: 48,
+                      minWidth: 100,
+                      padding: '6px 16px 6px 16px',
+                      marginRight: 8,
+                      justifyContent: 'flex-start',
+                      textAlign: 'left',
+                      fontSize: '0.875rem',
+                      fontWeight: 500,
+                      textTransform: 'none',
+                      color: '#292F4D !important',
+                      backgroundColor: 'transparent',
+                      borderRadius: '8px',
+                      transition: 'background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+                      '&.Mui-selected': {
+                        color: '#292F4D !important',
+                        fontWeight: 600,
+                        backgroundColor: '#ffffff',
+                        boxShadow: '0 20px 27px 0 rgba(0,0,0,0.05)',
+                      },
+                      // Ensure label text is visible (icon + label layout)
+                      '& > *:not(.MuiTab-iconWrapper)': {
+                        color: 'inherit',
+                        opacity: 1,
+                        visibility: 'visible',
+                        whiteSpace: 'nowrap',
+                        overflow: 'visible',
+                      },
+                    },
+                    '& .MuiTab-iconWrapper': {
+                      marginRight: 12.8,
+                      '& > *': {
+                        minWidth: 32,
+                        minHeight: 32,
+                        borderRadius: '8px',
+                        display: 'grid',
+                        placeItems: 'center',
+                        backgroundColor: '#ffffff',
+                        boxShadow: '0 4px 6px -1px rgba(0,0,0,0.12)',
+                        transition: 'background 0.2s ease-in-out',
+                        color: '#4F5482',
+                        fontSize: 18,
+                      },
+                    },
+                    '& .Mui-selected .MuiTab-iconWrapper > *': {
+                      background: 'linear-gradient(310deg, #f97316, #fb923c)',
+                      boxShadow: '0 4px 6px -1px rgba(0,0,0,0.12)',
+                      color: '#ffffff',
+                    },
+                  }}
+                >
+                  {TAB_ITEMS.map(({ index, label, icon }) => (
+                    <Tab
+                      key={index}
+                      label={label}
+                      icon={
+                        <Box component="span" sx={{ display: 'inherit' }}>
+                          <Icon sx={{ fontSize: 18 }}>{icon}</Icon>
+                        </Box>
+                      }
+                      iconPosition="start"
+                      value={index}
+                    />
+                  ))}
+                </Tabs>
+              </Box>
               <SoftBox px={3} pb={3} sx={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
                 <TabPanel value={tab} index={0}>
                   <SiteDetailsTab siteId={site.$id} onTabChange={setTab} />
