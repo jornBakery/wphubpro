@@ -1,10 +1,12 @@
 /**
- * Logs tab – bridge API log from site option WPHUBPRO_LOG (via wphubpro/v1/logs).
+ * Logs tab – sub-tabs: Bridge Logs (API calls) and Error Logs (PHP error log, last 20 lines).
  */
 import React, { useState } from 'react';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
 import ScrollableTableWrapper from 'components/ScrollableTableWrapper';
 import TableRow from '@mui/material/TableRow';
 import DataTableHeadCell from 'examples/Tables/DataTable/DataTableHeadCell';
@@ -15,7 +17,7 @@ import Collapse from '@mui/material/Collapse';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import { useSiteLogs, type BridgeLogEntry } from '../../hooks/useWordPress';
+import { useSiteLogs, useSiteErrorLog, type BridgeLogEntry } from '../../hooks/useWordPress';
 import { useSite } from '../../hooks/useSites';
 
 function formatTime(iso: string): string {
@@ -110,7 +112,7 @@ interface LogsTabProps {
   siteId: string;
 }
 
-const LogsTab: React.FC<LogsTabProps> = ({ siteId }) => {
+function BridgeLogsPanel({ siteId }: { siteId: string }) {
   const { data: logs, isLoading, isError, error, refetch } = useSiteLogs(siteId);
   const { data: site } = useSite(siteId);
 
@@ -118,7 +120,7 @@ const LogsTab: React.FC<LogsTabProps> = ({ siteId }) => {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" p={6}>
         <Icon sx={{ fontSize: 40, color: 'grey.400', mr: 2 }}>sync</Icon>
-        <Typography variant="body2" color="textSecondary">Logs laden...</Typography>
+        <Typography variant="body2" color="textSecondary">Bridge logs laden...</Typography>
       </Box>
     );
   }
@@ -126,24 +128,22 @@ const LogsTab: React.FC<LogsTabProps> = ({ siteId }) => {
   if (isError) {
     const apiUrl = site ? `${String(site.siteUrl).replace(/\/$/, '')}/wp-json/wphubpro/v1/logs` : 'unknown';
     return (
-      <Card>
-        <Box p={3}>
-          <Typography variant="caption" color="textSecondary" display="block" sx={{ mb: 2 }}>API: {apiUrl}</Typography>
-          <Box display="flex" alignItems="flex-start" gap={2}>
-            <Icon color="error" sx={{ mt: 0.5 }}>error</Icon>
-            <Box flex={1}>
-              <Typography variant="h6" fontWeight="medium" color="error" sx={{ mb: 1 }}>Fout bij laden van logs</Typography>
-              <Typography variant="caption" color="textSecondary" sx={{ mb: 2, display: 'block' }}>{error?.message || String(error)}</Typography>
-              <Button variant="outlined" color="info" size="small" onClick={() => refetch()}>Opnieuw proberen</Button>
-            </Box>
+      <Box p={3}>
+        <Typography variant="caption" color="textSecondary" display="block" sx={{ mb: 2 }}>API: {apiUrl}</Typography>
+        <Box display="flex" alignItems="flex-start" gap={2}>
+          <Icon color="error" sx={{ mt: 0.5 }}>error</Icon>
+          <Box flex={1}>
+            <Typography variant="h6" fontWeight="medium" color="error" sx={{ mb: 1 }}>Fout bij laden van bridge logs</Typography>
+            <Typography variant="caption" color="textSecondary" sx={{ mb: 2, display: 'block' }}>{error?.message || String(error)}</Typography>
+            <Button variant="outlined" color="info" size="small" onClick={() => refetch()}>Opnieuw proberen</Button>
           </Box>
         </Box>
-      </Card>
+      </Box>
     );
   }
 
   return (
-    <Card>
+    <>
       <Box p={2} sx={{ borderBottom: '1px solid', borderColor: 'grey.200' }}>
         <Typography variant="caption" color="textSecondary">
           Laatste 20 aanroepen naar het Bridge API (option WPHUBPRO_LOG). API: {site ? `${String(site.siteUrl).replace(/\/$/, '')}/wp-json/wphubpro/v1/logs` : '—'}
@@ -173,7 +173,6 @@ const LogsTab: React.FC<LogsTabProps> = ({ siteId }) => {
         >
           <Box component="thead">
             <TableRow>
-              {/* Column widths total 100%: 15 + 30 + 10 + 8 + 20 + 17 */}
               <DataTableHeadCell width="15%" pl={5} color="#4F5482">Tijd</DataTableHeadCell>
               <DataTableHeadCell width="30%" pl={undefined} color="#4F5482">Endpoint</DataTableHeadCell>
               <DataTableHeadCell width="10%" pl={undefined} color="#4F5482">Type</DataTableHeadCell>
@@ -195,6 +194,244 @@ const LogsTab: React.FC<LogsTabProps> = ({ siteId }) => {
           </TableBody>
         </Table>
       </ScrollableTableWrapper>
+    </>
+  );
+}
+
+// PHP error log line: [date time] PHP Type: message [ in file.php on line N]
+export interface ParsedErrorLogEntry {
+  raw: string;
+  timestamp: string;
+  logType: string;
+  file: string | null;
+  line: number | null;
+  message: string;
+}
+
+function parseErrorLogLine(raw: string): ParsedErrorLogEntry {
+  const entry: ParsedErrorLogEntry = { raw, timestamp: '', logType: '', file: null, line: null, message: raw };
+  const main = /^\[([^\]]+)\]\s*PHP\s+(\w+(?:\s+\w+)?):\s*(.+)$/i.exec(raw);
+  if (!main) return entry;
+  entry.timestamp = main[1].trim();
+  entry.logType = main[2].trim();
+  let msg = main[3].trim();
+  const fileLine = /\s+in\s+(.+?)\s+on\s+line\s+(\d+)\s*$/.exec(msg);
+  if (fileLine) {
+    entry.file = fileLine[1].trim();
+    entry.line = parseInt(fileLine[2], 10);
+    entry.message = msg.slice(0, msg.length - fileLine[0].length).trim();
+  } else {
+    entry.message = msg;
+  }
+  return entry;
+}
+
+function logTypeColor(type: string): string {
+  const t = type.toLowerCase();
+  if (t.includes('fatal') || t.includes('error') || t === 'error') return 'error.main';
+  if (t.includes('warning')) return 'warning.main';
+  if (t.includes('deprecated') || t.includes('notice')) return 'info.main';
+  return 'text.secondary';
+}
+
+interface ErrorLogRowProps {
+  entry: ParsedErrorLogEntry;
+}
+
+const ErrorLogRow: React.FC<ErrorLogRowProps> = ({ entry }) => {
+  const [open, setOpen] = useState(false);
+  const fileLine = entry.file != null && entry.line != null ? `${entry.file}:${entry.line}` : entry.file ?? '—';
+
+  return (
+    <>
+      <TableRow
+        sx={{ cursor: 'pointer', '&:hover': { bgcolor: 'action.hover' } }}
+        onClick={() => setOpen((o) => !o)}
+      >
+        <DataTableBodyCell>
+          <Typography component="span" sx={{ whiteSpace: 'nowrap', fontSize: '0.75rem' }}>{entry.timestamp || '—'}</Typography>
+        </DataTableBodyCell>
+        <DataTableBodyCell>
+          <Typography component="span" sx={{ fontSize: '0.75rem', fontWeight: 600, color: logTypeColor(entry.logType) }}>
+            {entry.logType || '—'}
+          </Typography>
+        </DataTableBodyCell>
+        <DataTableBodyCell>
+          <Typography component="span" sx={{ fontFamily: 'monospace', fontSize: '0.75rem', wordBreak: 'break-all' }}>{fileLine}</Typography>
+        </DataTableBodyCell>
+      </TableRow>
+      <TableRow>
+        <TableCell colSpan={3} sx={{ py: 0, borderBottom: open ? '1px solid' : 0, borderColor: 'divider' }}>
+          <Collapse in={open} timeout="auto" unmountOnExit>
+            <Box sx={{ py: 1.5, px: 2, bgcolor: 'grey.50' }}>
+              <Typography variant="caption" fontWeight="bold" color="textSecondary" display="block" sx={{ mb: 0.5 }}>Bericht</Typography>
+              <Box component="pre" sx={{ m: 0, p: 1.5, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, fontSize: '0.75rem', overflow: 'auto', maxHeight: 280, whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontFamily: 'monospace' }}>
+                {entry.message || '—'}
+              </Box>
+            </Box>
+          </Collapse>
+        </TableCell>
+      </TableRow>
+    </>
+  );
+};
+
+function ErrorLogsPanel({ siteId }: { siteId: string }) {
+  const { data, isLoading, isError, error, refetch } = useSiteErrorLog(siteId);
+
+  if (isLoading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" p={6}>
+        <Icon sx={{ fontSize: 40, color: 'grey.400', mr: 2 }}>sync</Icon>
+        <Typography variant="body2" color="textSecondary">Error log laden...</Typography>
+      </Box>
+    );
+  }
+
+  if (isError) {
+    return (
+      <Box p={3}>
+        <Box display="flex" alignItems="flex-start" gap={2}>
+          <Icon color="error" sx={{ mt: 0.5 }}>error</Icon>
+          <Box flex={1}>
+            <Typography variant="h6" fontWeight="medium" color="error" sx={{ mb: 1 }}>Fout bij laden van error log</Typography>
+            <Typography variant="caption" color="textSecondary" sx={{ mb: 2, display: 'block' }}>{error?.message || String(error)}</Typography>
+            <Button variant="outlined" color="info" size="small" onClick={() => refetch()}>Opnieuw proberen</Button>
+          </Box>
+        </Box>
+      </Box>
+    );
+  }
+
+  const rawLines = data?.lines ?? [];
+  const lines = rawLines.filter((line) => !line.includes('[WPHubPro Bridge]'));
+  const fileInfo = data?.file ?? null;
+  const errorMsg = data?.error;
+  const parsed = lines.map(parseErrorLogLine);
+
+  return (
+    <>
+      <Box p={2} sx={{ borderBottom: '1px solid', borderColor: 'grey.200' }}>
+        <Typography variant="caption" color="textSecondary" display="block">
+          Laatste 20 regels van de PHP error log van deze site. Klik op een rij om het bericht te tonen.
+        </Typography>
+        {fileInfo && (
+          <Typography variant="caption" color="textSecondary" display="block" sx={{ mt: 0.5, fontFamily: 'monospace' }}>
+            Bestand: {fileInfo}
+          </Typography>
+        )}
+        {errorMsg && (
+          <Typography variant="caption" color="warning.main" display="block" sx={{ mt: 0.5 }}>{errorMsg}</Typography>
+        )}
+      </Box>
+      {parsed.length === 0 ? (
+        <Box p={3}>
+          <Typography variant="body2" color="textSecondary">Geen regels of log niet leesbaar.</Typography>
+        </Box>
+      ) : (
+        <ScrollableTableWrapper maxHeight="55vh">
+          <Table
+            size="small"
+            stickyHeader
+            sx={{
+              tableLayout: 'fixed',
+              width: '100%',
+              '& thead th': {
+                position: 'sticky',
+                top: 0,
+                zIndex: 2,
+                backgroundColor: 'background.paper',
+                boxShadow: '0 1px 0 0 rgba(0,0,0,0.08)',
+              },
+              '& tbody td:first-of-type': {
+                paddingLeft: (theme) => theme.spacing(5),
+                paddingRight: (theme) => theme.spacing(3),
+              },
+              '& thead th:last-of-type': { paddingRight: (theme) => theme.spacing(4) },
+              '& tbody td:last-of-type': { paddingRight: (theme) => theme.spacing(4) },
+            }}
+          >
+            <Box component="thead">
+              <TableRow>
+                <DataTableHeadCell width="22%" pl={5} color="#4F5482">Tijd</DataTableHeadCell>
+                <DataTableHeadCell width="18%" pl={undefined} color="#4F5482">Type</DataTableHeadCell>
+                <DataTableHeadCell width="60%" pl={undefined} color="#4F5482">Bestand:regel</DataTableHeadCell>
+              </TableRow>
+            </Box>
+            <TableBody>
+              {parsed.map((entry, i) => (
+                <ErrorLogRow key={i} entry={entry} />
+              ))}
+            </TableBody>
+          </Table>
+        </ScrollableTableWrapper>
+      )}
+    </>
+  );
+}
+
+const LogsTab: React.FC<LogsTabProps> = ({ siteId }) => {
+  const [subTab, setSubTab] = useState(0);
+
+  return (
+    <Card>
+      <Tabs
+        value={subTab}
+        onChange={(_, v) => setSubTab(v)}
+        sx={{
+          px: 1,
+          minHeight: 36,
+          border: 'none',
+          backgroundColor: 'transparent !important',
+          '& .MuiTabs-scroller': { backgroundColor: 'transparent !important' },
+          '& .MuiTabs-flexContainer': { justifyContent: 'flex-end', backgroundColor: 'transparent !important' },
+          '& .MuiTabs-indicator': { display: 'none' },
+          '& .MuiTab-root': {
+            fontSize: '0.75rem',
+            fontWeight: 700,
+            minHeight: 36,
+            textTransform: 'none',
+            backgroundColor: 'transparent !important',
+            borderRadius: 0,
+          },
+          '& .MuiTab-root:hover': { backgroundColor: 'transparent !important', borderRadius: 0 },
+          '& .MuiTab-root.Mui-selected': { color: '#ed6c02 !important', backgroundColor: 'transparent !important', borderRadius: 0 },
+          '& .MuiTab-root.Mui-focusVisible': { backgroundColor: 'transparent !important', borderRadius: 0 },
+        }}
+      >
+        <Tab label="Bridge Logs" id="logs-bridge" aria-controls="logs-panel-bridge" />
+        <Tab label="Error Logs" id="logs-error" aria-controls="logs-panel-error" />
+      </Tabs>
+      <Box
+        role="tabpanel"
+        id="logs-panel-bridge"
+        aria-labelledby="logs-bridge"
+        hidden={subTab !== 0}
+        sx={{
+          height: '55vh',
+          overflow: 'auto',
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
+          '&::-webkit-scrollbar': { display: 'none' },
+        }}
+      >
+        {subTab === 0 && <BridgeLogsPanel siteId={siteId} />}
+      </Box>
+      <Box
+        role="tabpanel"
+        id="logs-panel-error"
+        aria-labelledby="logs-error"
+        hidden={subTab !== 1}
+        sx={{
+          height: '55vh',
+          overflow: 'auto',
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
+          '&::-webkit-scrollbar': { display: 'none' },
+        }}
+      >
+        {subTab === 1 && <ErrorLogsPanel siteId={siteId} />}
+      </Box>
     </Card>
   );
 };

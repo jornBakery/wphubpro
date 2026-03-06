@@ -114,6 +114,27 @@ export const useSiteLogs = (siteId: string | undefined) => {
   });
 };
 
+export interface SiteErrorLogResponse {
+  lines: string[];
+  file?: string | null;
+  error?: string;
+}
+
+export const useSiteErrorLog = (siteId: string | undefined) => {
+  const { user } = useAuth();
+  return useQuery<SiteErrorLogResponse, Error>({
+    queryKey: ['site-error-log', siteId],
+    queryFn: () =>
+      executeWpProxy<SiteErrorLogResponse>({
+        siteId: siteId!,
+        endpoint: 'wphubpro/v1/error-log',
+        userId: user?.$id,
+        useApiKey: true,
+      }),
+    enabled: !!siteId && !!user?.$id,
+  });
+};
+
 // Site details (WordPress version, PHP version, plugin/theme counts)
 export interface SiteDetailsResponse {
   wp_version: string;
