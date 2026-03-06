@@ -1,5 +1,6 @@
 /**
- * Site Detail Sidebar - Site Details card + vertical tab navigation
+ * Site Detail Sidebar - Site Details card (name, URL, technical info, actions)
+ * Tab navigation is rendered at the top of the page as a horizontal menu.
  */
 import React from 'react';
 import Card from '@mui/material/Card';
@@ -7,10 +8,6 @@ import Grid from '@mui/material/Grid';
 import Icon from '@mui/material/Icon';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
-import List from '@mui/material/List';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
 
 import SoftBox from 'components/SoftBox';
 import SoftTypography from 'components/SoftTypography';
@@ -22,25 +19,14 @@ import type { Site } from '../../types';
 const infoGradient = 'linear-gradient(310deg, #4F5482, #7a8ef0)';
 const orangeGradient = 'linear-gradient(310deg, #ea580c, #fb923c)';
 
-const TAB_ITEMS = [
-  { index: 0, label: 'Overview', icon: 'info' },
-  { index: 1, label: 'Plugins', icon: 'extension' },
-  { index: 2, label: "Thema's", icon: 'palette' },
-  { index: 3, label: 'Health', icon: 'health_and_safety' },
-];
-
 interface SiteDetailSidebarProps {
   site: Site;
-  tab: number;
-  onTabChange: (index: number) => void;
   onEdit: () => void;
   onRemove: () => void;
 }
 
 const SiteDetailSidebar: React.FC<SiteDetailSidebarProps> = ({
   site,
-  tab,
-  onTabChange,
   onEdit,
   onRemove,
 }) => {
@@ -155,50 +141,6 @@ const SiteDetailSidebar: React.FC<SiteDetailSidebarProps> = ({
             </Tooltip>
           </SoftBox>
         </SoftBox>
-      </Card>
-
-      {/* Vertical tab menu - info gradient to match app theme */}
-      <Card
-        sx={{
-          background: infoGradient,
-          boxShadow: '0 4px 14px 0 rgba(79, 84, 130, 0.25)',
-          overflow: 'hidden',
-        }}
-      >
-        <List disablePadding>
-          {TAB_ITEMS.map(({ index, label, icon }) => (
-            <ListItemButton
-              key={index}
-              selected={tab === index}
-              onClick={() => onTabChange(index)}
-              sx={{
-                py: 1.25,
-                color: 'rgba(255,255,255,0.85)',
-                '&:hover': {
-                  bgcolor: 'rgba(255,255,255,0.1)',
-                  color: 'white',
-                },
-                '&.Mui-selected': {
-                  bgcolor: 'rgba(255,255,255,0.2)',
-                  color: 'white',
-                  '&:hover': { bgcolor: 'rgba(255,255,255,0.25)' },
-                },
-              }}
-            >
-              <ListItemIcon sx={{ minWidth: 36, color: 'inherit' }}>
-                <Icon fontSize="small" sx={{ color: 'inherit' }}>{icon}</Icon>
-              </ListItemIcon>
-              <ListItemText
-                primary={label}
-                primaryTypographyProps={{
-                  variant: 'button',
-                  fontWeight: tab === index ? 'bold' : 'regular',
-                  color: 'inherit',
-                }}
-              />
-            </ListItemButton>
-          ))}
-        </List>
       </Card>
     </SoftBox>
   );

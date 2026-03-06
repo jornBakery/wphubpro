@@ -1,11 +1,14 @@
 /**
- * Site Detail page - Dashboard layout: main content left, sidebar right
- * Tabs: Overview, Plugins, Themes, Health
+ * Site Detail page - Horizontal tab menu at top, main content left, site card right
+ * Tabs: Overview, Plugins, Themes, Health, Logs
  */
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Grid from '@mui/material/Grid';
 import Icon from '@mui/material/Icon';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import Box from '@mui/material/Box';
 import SoftBox from 'components/SoftBox';
 import SoftTypography from 'components/SoftTypography';
 import SoftButton from 'components/SoftButton';
@@ -18,8 +21,17 @@ import SiteDetailsTab from './site-detail/SiteDetailsTab';
 import PluginsTab from './site-detail/PluginsTab';
 import ThemesTab from './site-detail/ThemesTab';
 import SiteHealthTab from './site-detail/SiteHealthTab';
+import LogsTab from './site-detail/LogsTab';
 import SiteDetailSidebar from '../components/site-detail/SiteDetailSidebar';
 import EditSiteModal from '../components/sites/EditSiteModal';
+
+const TAB_ITEMS = [
+  { index: 0, label: 'Overview', icon: 'info' },
+  { index: 1, label: 'Plugins', icon: 'extension' },
+  { index: 2, label: "Thema's", icon: 'palette' },
+  { index: 3, label: 'Health', icon: 'health_and_safety' },
+  { index: 4, label: 'Logs', icon: 'list_alt' },
+];
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -89,6 +101,41 @@ const SiteDetailPage: React.FC = () => {
   return (
     <>
       <SoftBox mt={3} sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, backgroundColor: 'transparent' }}>
+        {/* Horizontal tab navigation at top */}
+        <Box
+          sx={{
+            borderBottom: 1,
+            borderColor: 'divider',
+            mb: 2,
+            backgroundColor: 'background.paper',
+            borderRadius: 1,
+            px: 1,
+          }}
+        >
+          <Tabs
+            value={tab}
+            onChange={(_, value: number) => setTab(value)}
+            variant="scrollable"
+            scrollButtons="auto"
+            allowScrollButtonsMobile
+            sx={{
+              minHeight: 48,
+              '& .MuiTab-root': { minHeight: 48, textTransform: 'none', fontWeight: 500 },
+              '& .Mui-selected': { fontWeight: 700 },
+            }}
+          >
+            {TAB_ITEMS.map(({ index, label, icon }) => (
+              <Tab
+                key={index}
+                label={label}
+                icon={<Icon sx={{ fontSize: 20 }}>{icon}</Icon>}
+                iconPosition="start"
+                value={index}
+              />
+            ))}
+          </Tabs>
+        </Box>
+
         <Grid container spacing={3} alignItems="stretch" sx={{ flex: 1, minHeight: 0 }}>
           {/* Left column - main content */}
           <Grid item xs={12} lg={8} sx={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
@@ -106,16 +153,17 @@ const SiteDetailPage: React.FC = () => {
                 <TabPanel value={tab} index={3}>
                   <SiteHealthTab siteId={site.$id} />
                 </TabPanel>
+                <TabPanel value={tab} index={4}>
+                  <LogsTab siteId={site.$id} />
+                </TabPanel>
               </SoftBox>
             </SoftBox>
           </Grid>
 
-          {/* Right column - sidebar */}
+          {/* Right column - site details card only */}
           <Grid item xs={12} lg={4} sx={{ pr: { lg: 4 } }}>
             <SiteDetailSidebar
               site={site}
-              tab={tab}
-              onTabChange={setTab}
               onEdit={() => setEditModalOpen(true)}
               onRemove={handleRemove}
             />

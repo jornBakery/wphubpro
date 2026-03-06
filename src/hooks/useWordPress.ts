@@ -83,6 +83,37 @@ export const usePlugins = (siteId: string | undefined) => {
   });
 };
 
+// Bridge API log entry (from option WPHUBPRO_LOG)
+export interface BridgeLogEntry {
+  time: string;
+  endpoint: string;
+  type: string;
+  code: number;
+  request: Record<string, unknown> | unknown;
+  response: unknown;
+}
+
+export interface SiteLogsResponse {
+  logs: BridgeLogEntry[];
+}
+
+export const useSiteLogs = (siteId: string | undefined) => {
+  const { user } = useAuth();
+  return useQuery<BridgeLogEntry[], Error>({
+    queryKey: ['site-logs', siteId],
+    queryFn: async () => {
+      const data = await executeWpProxy<SiteLogsResponse>({
+        siteId: siteId!,
+        endpoint: 'wphubpro/v1/logs',
+        userId: user?.$id,
+        useApiKey: true,
+      });
+      return data?.logs ?? [];
+    },
+    enabled: !!siteId && !!user?.$id,
+  });
+};
+
 // Site details (WordPress version, PHP version, plugin/theme counts)
 export interface SiteDetailsResponse {
   wp_version: string;

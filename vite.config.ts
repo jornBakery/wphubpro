@@ -9,6 +9,7 @@ export default defineConfig({
     allowedHosts: ['wphubpro.code045.nl', 'wphub.pro', 'app.wphub.pro', 'dev.wphub.pro']
   },
   plugins: [
+    react(),
     {
       name: 'jsx-in-js',
       async transform(code, id) {
@@ -16,15 +17,15 @@ export default defineConfig({
           return transformWithEsbuild(code, id.replace(/\.js$/, '.jsx'), {
             loader: 'jsx',
             jsx: 'automatic',
+            jsxImportSource: 'react',
           })
         }
       },
     },
     tailwindcss(),
-    react(),
   ],
   resolve: {
-    dedupe: ['react', 'react-dom'],
+    dedupe: ['react', 'react-dom', 'react/jsx-runtime', 'react/jsx-dev-runtime'],
     alias: {
       assets: path.resolve(__dirname, './src/assets'),
       components: path.resolve(__dirname, './src/components'),
@@ -38,6 +39,7 @@ export default defineConfig({
     emptyOutDir: true,
   },
   optimizeDeps: {
+    include: ['react', 'react-dom', 'react/jsx-runtime', 'react/jsx-dev-runtime'],
     esbuildOptions: {
       loader: { '.js': 'jsx' },
     },
