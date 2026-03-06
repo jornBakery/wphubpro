@@ -135,6 +135,40 @@ export const useSiteErrorLog = (siteId: string | undefined) => {
   });
 };
 
+// Appwrite function execution (wp-proxy) for a site – from listExecutions, filtered by siteId in request path
+export interface AppwriteExecution {
+  $id: string;
+  $createdAt: string;
+  functionId: string;
+  trigger: string;
+  status: string;
+  requestMethod: string;
+  requestPath: string;
+  responseStatusCode: number;
+  responseBody: string;
+  logs: string;
+  errors: string;
+  duration: number;
+}
+
+export const useSiteExecutionLogs = (siteId: string | undefined) => {
+  const { user } = useAuth();
+  return useQuery<AppwriteExecution[], Error>({
+    queryKey: ['site-execution-logs', siteId],
+    queryFn: async () => {
+      const list = await functions.listExecutions(FUNCTION_ID, ['limit(50)']);
+      const executions = (list as { executions?: AppwriteExecution[] }).executions ?? [];
+      return executions.filter((e) => {
+        if (!e.requestPath || !e.requestPath.includes('?')) return false;
+        const qs = e.requestPath.slice(e.requestPath.indexOf('?') + 1);
+        const param = new URLSearchParams(qs).get('siteId');
+        return param === siteId;
+      });
+    },
+    enabled: !!siteId && !!user?.$id,
+  });
+};
+
 // Site details (WordPress version, PHP version, plugin/theme counts)
 export interface SiteDetailsResponse {
   wp_version: string;

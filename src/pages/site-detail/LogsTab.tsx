@@ -1,5 +1,5 @@
 /**
- * Logs tab – sub-tabs: Bridge Logs (API calls) and Error Logs (PHP error log, last 20 lines).
+ * Logs tab – sub-tabs: Bridge Logs, Error Logs, Execution Logs (Appwrite wp-proxy for this site).
  */
 import React, { useState } from 'react';
 import Table from '@mui/material/Table';
@@ -17,8 +17,15 @@ import Collapse from '@mui/material/Collapse';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import { useSiteLogs, useSiteErrorLog, type BridgeLogEntry } from '../../hooks/useWordPress';
+import { useSiteLogs, useSiteErrorLog, useSiteExecutionLogs, type BridgeLogEntry, type AppwriteExecution } from '../../hooks/useWordPress';
 import { useSite } from '../../hooks/useSites';
+
+function parseExecutionEndpoint(requestPath: string): string {
+  if (!requestPath || !requestPath.includes('?')) return requestPath || '—';
+  const qs = requestPath.slice(requestPath.indexOf('?') + 1);
+  const endpoint = new URLSearchParams(qs).get('endpoint');
+  return endpoint ? decodeURIComponent(endpoint) : requestPath;
+}
 
 function formatTime(iso: string): string {
   try {
@@ -370,6 +377,162 @@ function ErrorLogsPanel({ siteId }: { siteId: string }) {
   );
 }
 
+interface ExecutionLogRowProps {
+  execution: AppwriteExecution;
+}
+
+const ExecutionLogRow: React.FC<ExecutionLogRowProps> = ({ execution }) => {
+  const [open, setOpen] = useState(false);
+  const endpoint = parseExecutionEndpoint(execution.requestPath);
+  const statusOk = execution.responseStatusCode >= 200 && execution.responseStatusCode < 300;
+  const statusErr = execution.responseStatusCode >= 400;
+  const statusColor = statusOk ? 'success.main' : statusErr ? 'error.main' : 'text.primary';
+
+  return (
+    <>
+      <TableRow sx={{ cursor: 'pointer', '&:hover': { bgcolor: 'action.hover' } }} onClick={() => setOpen((o) => !o)}>
+        <DataTableBodyCell>
+          <Typography component="span" sx={{ whiteSpace: 'nowrap', fontSize: '0.75rem' }}>{formatTime(execution.$createdAt)}</Typography>
+        </DataTableBodyCell>
+        <DataTableBodyCell>
+          <Typography component="span" sx={{ fontSize: '0.75rem', fontWeight: 600, color: execution.status === 'completed' ? 'success.main' : execution.status === 'failed' ? 'error.main' : 'text.secondary' }}>
+            {execution.status}
+          </Typography>
+        </DataTableBodyCell>
+        <DataTableBodyCell>
+          <Typography component="span" sx={{ fontSize: '0.75rem' }}>{execution.requestMethod || 'GET'}</Typography>
+        </DataTableBodyCell>
+        <DataTableBodyCell>
+          <Typography component="span" sx={{ fontFamily: 'monospace', fontSize: '0.75rem', wordBreak: 'break-all' }}>{endpoint}</Typography>
+        </DataTableBodyCell>
+        <DataTableBodyCell>
+          <Typography component="span" sx={{ fontWeight: 600, fontSize: '0.75rem', color: statusColor }}>{execution.responseStatusCode ?? '—'}</Typography>
+        </DataTableBodyCell>
+        <DataTableBodyCell>
+          <Typography component="span" sx={{ fontSize: '0.75rem' }}>{typeof execution.duration === 'number' ? `${execution.duration}s` : '—'}</Typography>
+        </DataTableBodyCell>
+      </TableRow>
+      <TableRow>
+        <TableCell colSpan={6} sx={{ py: 0, borderBottom: open ? '1px solid' : 0, borderColor: 'divider' }}>
+          <Collapse in={open} timeout="auto" unmountOnExit>
+            <Box sx={{ py: 1.5, px: 2, bgcolor: 'grey.50', display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+              {execution.responseBody && (
+                <>
+                  <Typography variant="caption" fontWeight="bold" color="textSecondary">Response</Typography>
+                  <Box component="pre" sx={{ m: 0, p: 1.5, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, fontSize: '0.75rem', overflow: 'auto', maxHeight: 200, whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontFamily: 'monospace' }}>
+                    {execution.responseBody.length > 2000 ? `${execution.responseBody.slice(0, 2000)}…` : execution.responseBody || '—'}
+                  </Box>
+                </>
+              )}
+              {execution.logs && (
+                <>
+                  <Typography variant="caption" fontWeight="bold" color="textSecondary">Logs</Typography>
+                  <Box component="pre" sx={{ m: 0, p: 1.5, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, fontSize: '0.75rem', overflow: 'auto', maxHeight: 150, whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontFamily: 'monospace' }}>
+                    {execution.logs}
+                  </Box>
+                </>
+              )}
+              {execution.errors && (
+                <>
+                  <Typography variant="caption" fontWeight="bold" color="error.main">Errors</Typography>
+                  <Box component="pre" sx={{ m: 0, p: 1.5, bgcolor: 'error.light', color: 'error.contrastText', border: '1px solid', borderColor: 'divider', borderRadius: 1, fontSize: '0.75rem', overflow: 'auto', maxHeight: 150, whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontFamily: 'monospace' }}>
+                    {execution.errors}
+                  </Box>
+                </>
+              )}
+              {!execution.responseBody && !execution.logs && !execution.errors && (
+                <Typography variant="caption" color="textSecondary">Geen details beschikbaar (async execution).</Typography>
+              )}
+            </Box>
+          </Collapse>
+        </TableCell>
+      </TableRow>
+    </>
+  );
+};
+
+function ExecutionLogsPanel({ siteId }: { siteId: string }) {
+  const { data: executions, isLoading, isError, error, refetch } = useSiteExecutionLogs(siteId);
+
+  if (isLoading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" p={6}>
+        <Icon sx={{ fontSize: 40, color: 'grey.400', mr: 2 }}>sync</Icon>
+        <Typography variant="body2" color="textSecondary">Execution logs laden...</Typography>
+      </Box>
+    );
+  }
+
+  if (isError) {
+    return (
+      <Box p={3}>
+        <Box display="flex" alignItems="flex-start" gap={2}>
+          <Icon color="error" sx={{ mt: 0.5 }}>error</Icon>
+          <Box flex={1}>
+            <Typography variant="h6" fontWeight="medium" color="error" sx={{ mb: 1 }}>Fout bij laden van execution logs</Typography>
+            <Typography variant="caption" color="textSecondary" sx={{ mb: 2, display: 'block' }}>{error?.message || String(error)}</Typography>
+            <Button variant="outlined" color="info" size="small" onClick={() => refetch()}>Opnieuw proberen</Button>
+          </Box>
+        </Box>
+      </Box>
+    );
+  }
+
+  const list = executions ?? [];
+
+  return (
+    <>
+      <Box p={2} sx={{ borderBottom: '1px solid', borderColor: 'grey.200' }}>
+        <Typography variant="caption" color="textSecondary">
+          Appwrite wp-proxy executions voor deze site (laatste 50, gefilterd op siteId). Klik op een rij voor details.
+        </Typography>
+      </Box>
+      {list.length === 0 ? (
+        <Box p={3}>
+          <Typography variant="body2" color="textSecondary">Geen executions voor deze site.</Typography>
+        </Box>
+      ) : (
+        <ScrollableTableWrapper maxHeight="55vh">
+          <Table
+            size="small"
+            stickyHeader
+            sx={{
+              tableLayout: 'fixed',
+              width: '100%',
+              '& thead th': {
+                position: 'sticky',
+                top: 0,
+                zIndex: 2,
+                backgroundColor: 'background.paper',
+                boxShadow: '0 1px 0 0 rgba(0,0,0,0.08)',
+              },
+              '& tbody td:first-of-type': { paddingLeft: (theme) => theme.spacing(5), paddingRight: (theme) => theme.spacing(3) },
+              '& thead th:last-of-type': { paddingRight: (theme) => theme.spacing(4) },
+              '& tbody td:last-of-type': { paddingRight: (theme) => theme.spacing(4) },
+            }}
+          >
+            <Box component="thead">
+              <TableRow>
+                <DataTableHeadCell width="18%" pl={5} color="#4F5482">Tijd</DataTableHeadCell>
+                <DataTableHeadCell width="12%" pl={undefined} color="#4F5482">Status</DataTableHeadCell>
+                <DataTableHeadCell width="8%" pl={undefined} color="#4F5482">Method</DataTableHeadCell>
+                <DataTableHeadCell width="38%" pl={undefined} color="#4F5482">Endpoint</DataTableHeadCell>
+                <DataTableHeadCell width="10%" pl={undefined} color="#4F5482">Code</DataTableHeadCell>
+                <DataTableHeadCell width="14%" pl={undefined} color="#4F5482">Duur</DataTableHeadCell>
+              </TableRow>
+            </Box>
+            <TableBody>
+              {list.map((exec) => (
+                <ExecutionLogRow key={exec.$id} execution={exec} />
+              ))}
+            </TableBody>
+          </Table>
+        </ScrollableTableWrapper>
+      )}
+    </>
+  );
+}
+
 const LogsTab: React.FC<LogsTabProps> = ({ siteId }) => {
   const [subTab, setSubTab] = useState(0);
 
@@ -401,6 +564,7 @@ const LogsTab: React.FC<LogsTabProps> = ({ siteId }) => {
       >
         <Tab label="Bridge Logs" id="logs-bridge" aria-controls="logs-panel-bridge" />
         <Tab label="Error Logs" id="logs-error" aria-controls="logs-panel-error" />
+        <Tab label="Execution Logs" id="logs-execution" aria-controls="logs-panel-execution" />
       </Tabs>
       <Box
         role="tabpanel"
@@ -431,6 +595,21 @@ const LogsTab: React.FC<LogsTabProps> = ({ siteId }) => {
         }}
       >
         {subTab === 1 && <ErrorLogsPanel siteId={siteId} />}
+      </Box>
+      <Box
+        role="tabpanel"
+        id="logs-panel-execution"
+        aria-labelledby="logs-execution"
+        hidden={subTab !== 2}
+        sx={{
+          height: '55vh',
+          overflow: 'auto',
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
+          '&::-webkit-scrollbar': { display: 'none' },
+        }}
+      >
+        {subTab === 2 && <ExecutionLogsPanel siteId={siteId} />}
       </Box>
     </Card>
   );
