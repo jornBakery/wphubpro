@@ -342,7 +342,9 @@ function ErrorLogsPanel({ siteId }: { siteId: string }) {
   const lines = rawLines.filter((line) => !line.includes('[WPHubPro Bridge]'));
   const fileInfo = data?.file ?? null;
   const errorMsg = data?.error;
-  const parsed = parseErrorLogLines(lines);
+  const parsed = parseErrorLogLines(lines).filter(
+    (entry) => !entry.logType.toLowerCase().includes('deprecated')
+  );
 
   return (
     <>
