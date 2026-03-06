@@ -31,6 +31,10 @@ const ThemesTab: React.FC<ThemesTabProps> = ({ siteId }) => {
     }
   };
 
+  const handleUpdate = (theme: WordPressTheme) => {
+    manageTheme.mutate({ themeSlug: theme.stylesheet, action: 'update', themeName: theme.name });
+  };
+
   if (isLoading) {
     return (
       <SoftBox display="flex" justifyContent="center" alignItems="center" p={6}>
@@ -105,13 +109,24 @@ const ThemesTab: React.FC<ThemesTabProps> = ({ siteId }) => {
                 </DataTableBodyCell>
                 <DataTableBodyCell><SoftTypography variant="caption">{theme.version}</SoftTypography></DataTableBodyCell>
                 <DataTableBodyCell align="right">
-                  <ActionIconButton
-                    icon="check_circle"
-                    title={theme.status === 'active' ? 'Actief' : 'Activeren'}
-                    color="info"
-                    onClick={() => handleActivate(theme)}
-                    disabled={manageTheme.isPending || theme.status === 'active'}
-                  />
+                  <SoftBox display="flex" gap={0.5} justifyContent="flex-end">
+                    {theme.update != null && theme.update !== '' && (
+                      <ActionIconButton
+                        icon="system_update"
+                        title={manageTheme.isPending ? '...' : `Bijwerken naar ${theme.update}`}
+                        color="success"
+                        onClick={() => handleUpdate(theme)}
+                        disabled={manageTheme.isPending}
+                      />
+                    )}
+                    <ActionIconButton
+                      icon="check_circle"
+                      title={theme.status === 'active' ? 'Actief' : 'Activeren'}
+                      color="info"
+                      onClick={() => handleActivate(theme)}
+                      disabled={manageTheme.isPending || theme.status === 'active'}
+                    />
+                  </SoftBox>
                 </DataTableBodyCell>
               </TableRow>
             ))}

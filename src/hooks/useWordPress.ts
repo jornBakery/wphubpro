@@ -251,6 +251,41 @@ export const useTogglePlugin = (siteId: string | undefined) => {
   });
 };
 
+export const useUpdatePlugin = (siteId: string | undefined) => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const { user } = useAuth();
+
+  return useMutation<WordPressPlugin, Error, { pluginFile: string; pluginName: string }>({
+    mutationFn: ({ pluginFile }) => {
+      const endpointWithPlugin = `wphubpro/v1/plugins/manage/update?plugin=${encodeURIComponent(pluginFile)}`;
+      return executeWpProxy<WordPressPlugin>({
+        siteId: siteId!,
+        method: 'POST',
+        endpoint: endpointWithPlugin,
+        body: { plugin: pluginFile },
+        userId: user?.$id,
+        useApiKey: true,
+      });
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['plugins', siteId] });
+      toast({
+        title: 'Success',
+        description: `Plugin "${variables.pluginName}" is bijgewerkt.`,
+        variant: 'success',
+      });
+    },
+    onError: (error, variables) => {
+      toast({
+        title: 'Update mislukt',
+        description: `Kon plugin "${variables.pluginName}" niet bijwerken: ${error.message}`,
+        variant: 'destructive',
+      });
+    },
+  });
+};
+
 export const useDeletePlugin = (siteId: string | undefined) => {
   const queryClient = useQueryClient();
   const { toast } = useToast();

@@ -128,8 +128,10 @@ export interface WordPressPlugin {
   status: 'active' | 'inactive';
   version: string;
   plugin: string; // e.g., 'akismet/akismet.php'
-  author: string;
-  description: string;
+  author?: string;
+  description?: string;
+  /** New version string when an update is available */
+  update?: string | null;
 }
 
 export interface WordPressTheme {
@@ -137,6 +139,8 @@ export interface WordPressTheme {
   status: 'active' | 'inactive';
   version: string;
   stylesheet: string;
+  /** New version string when an update is available */
+  update?: string | null;
 }
 
 export interface SiteHealth {
