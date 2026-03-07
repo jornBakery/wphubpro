@@ -47,7 +47,7 @@ You are a specialist for Appwrite functions and the WPHubPro app's Appwrite inte
 ## Key files
 
 - `src/services/appwrite.ts` – client, services, DATABASE_ID, COLLECTIONS  
-- `src/hooks/useStripe.ts`, `useSites.ts`, `useSubscription.ts`, `useLibrary.ts`, `usePlatformSettings.ts` – function call patterns  
+- `src/domains/billing/hooks.ts`, `src/domains/sites/hooks.ts`, `src/hooks/useLibrary.ts`, `src/hooks/usePlatformSettings.ts` – function call patterns  
 - `src/hooks/useWordPress.ts` – wp-proxy execution with path and method  
 - `functions/*/index.js` – Cloud Function implementations  
 - `appwrite.config.json` – function definitions, database schema, teams  
