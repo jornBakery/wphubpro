@@ -14,9 +14,10 @@ import SoftTypography from 'components/SoftTypography';
 import SoftButton from 'components/SoftButton';
 import Footer from 'examples/Footer';
 
-import { useSite, useDeleteSite, useCheckSiteHealth } from '../domains/sites';
+import { useSite, useDeleteSite, useCheckSiteHealth, useUpdateSite } from '../domains/sites';
 import { usePageBreadcrumb } from '../contexts/PageBreadcrumbContext';
 
+import { usePlugins } from '../hooks/useWordPress';
 import SiteDetailsTab from './site-detail/SiteDetailsTab';
 import PluginsTab from './site-detail/PluginsTab';
 import ThemesTab from './site-detail/ThemesTab';
@@ -60,6 +61,8 @@ const SiteDetailPage: React.FC = () => {
   const { data: site, isLoading, isError, error } = useSite(id);
   const deleteSite = useDeleteSite();
   const checkHealth = useCheckSiteHealth(id);
+  const updateSite = useUpdateSite();
+  const { isSuccess: pluginsSuccess } = usePlugins(id);
 
   useEffect(() => {
     if (site) {
@@ -73,6 +76,13 @@ const SiteDetailPage: React.FC = () => {
     if (!id || !site) return;
     checkHealth.mutate({ silent: true });
   }, [id, site?.$id]);
+
+  useEffect(() => {
+    if (!id || !site || site.status === 'connected') return;
+    if (pluginsSuccess) {
+      updateSite.mutate({ siteId: id, status: 'connected', silent: true });
+    }
+  }, [id, site, pluginsSuccess, updateSite]);
 
   const handleRemove = () => {
     if (!id) return;
