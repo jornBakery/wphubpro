@@ -33,8 +33,8 @@ import Sidenav from "examples/Sidenav";
 // Soft UI Dashboard PRO React context
 import { useSoftUIController, setMiniSidenav, setLayout, setTransparentSidenav } from "context";
 
-// Soft UI Dashboard PRO React routes
-import routes from "routes";
+// Use current sidenav route source of truth
+import { getSidenavRoutes } from "../../../../../config/sidenavRoutes";
 
 // Custom styles for the BaseLayout
 import {
@@ -51,6 +51,7 @@ function BaseLayout({ children }) {
   const { miniSidenav, sidenavColor } = controller;
   const [onMouseEnter, setOnMouseEnter] = useState(false);
   const { pathname } = useLocation();
+  const routes = getSidenavRoutes(false);
 
   // Open sidenav when mouse enter on mini sidenav
   const handleOnMouseEnter = () => {
