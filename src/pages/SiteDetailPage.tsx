@@ -150,7 +150,7 @@ const SiteDetailPage: React.FC = () => {
                       },
                     },
                     '& .MuiTab-iconWrapper': {
-                      marginRight: 0,
+                      marginRight: 1,
                       '& .material-icons-round, & .material-icons, & .MuiIcon-root': {
                         fontSize: '24px !important',
                         color: '#ffffff !important',
