@@ -11,10 +11,12 @@ import SoftBox from 'components/SoftBox';
 import SoftButton from 'components/SoftButton';
 import { ActionIconButton } from '../../components/sites/SitesTableCells';
 import SoftTypography from 'components/SoftTypography';
-import SoftBadge from 'components/SoftBadge';
 import { useThemes, useManageTheme } from '../../hooks/useWordPress';
 import { useSite } from '../../domains/sites';
 import type { WordPressTheme } from '../../types';
+
+const infoGradient = 'linear-gradient(310deg, #4F5482, #7a8ef0)';
+const orangeGradient = 'linear-gradient(310deg, #ea580c, #fb923c)';
 
 interface ThemesTabProps {
   siteId: string;
@@ -105,7 +107,21 @@ const ThemesTab: React.FC<ThemesTabProps> = ({ siteId }) => {
               <TableRow key={theme.stylesheet}>
                 <DataTableBodyCell><SoftTypography variant="button" fontWeight="medium">{theme.name}</SoftTypography></DataTableBodyCell>
                 <DataTableBodyCell>
-                  <SoftBadge variant="contained" color={theme.status === 'active' ? 'success' : 'secondary'} size="xs" badgeContent={theme.status === 'active' ? 'Actief' : 'Inactief'} container />
+                  <SoftBox
+                  component="span"
+                  sx={{
+                    display: 'inline-block',
+                    px: 1.5,
+                    py: 0.5,
+                    borderRadius: 1,
+                    background: theme.status === 'active' ? orangeGradient : infoGradient,
+                    color: '#ffffff',
+                    fontSize: '0.7rem',
+                    fontWeight: 600,
+                  }}
+                >
+                  {theme.status === 'active' ? 'Actief' : 'Inactief'}
+                </SoftBox>
                 </DataTableBodyCell>
                 <DataTableBodyCell><SoftTypography variant="caption">{theme.version}</SoftTypography></DataTableBodyCell>
                 <DataTableBodyCell align="right">
