@@ -13,6 +13,7 @@ import Icon from '@mui/material/Icon';
 import Footer from 'examples/Footer';
 
 import { useSites } from '../domains/sites';
+import { useSitesUpdateStats } from '../hooks/useWordPress';
 import { usePinnedSites } from '../hooks/usePinnedSites';
 import AddSiteModal from '../components/sites/AddSiteModal';
 import ResponsiveSitesTable from '../components/sites/ResponsiveSitesTable';
@@ -21,6 +22,7 @@ import { Site } from '../types';
 const SitesPage: React.FC = () => {
   const [addModalOpen, setAddModalOpen] = useState(false);
   const { data: sites, isLoading, isError, error } = useSites();
+  useSitesUpdateStats(sites ?? []);
   const { togglePin, isPinned } = usePinnedSites(sites ?? []);
 
   return (
