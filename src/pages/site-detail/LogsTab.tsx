@@ -605,33 +605,33 @@ const LogsTab: React.FC<LogsTabProps> = ({ siteId }) => {
     }
   };
 
-  return (
-    <Card sx={{ p: 3 }}>
-      <SoftTypography variant="h6">Noodherstel & Error Logs</SoftTypography>
-      
-      {fatalError ? (
-        <Alert severity="error" sx={{ mt: 2 }}>
-          <strong>Fatal Error:</strong> {fatalError.message} <br />
-          <em>Bestand: {fatalError.file} op regel {fatalError.line}</em>
-          <Button 
-            variant="contained" 
-            color="warning" 
-            onClick={() => executeRecovery(site.$id, 'rollback_plugin', 'naam-van-plugin')}
-            sx={{ mt: 1 }}
-          >
-            Deactiveer plugin
-          </Button>
-        </Alert>
-      ) : (
-        <SoftButton onClick={fetchFatalLog} disabled={loading}>
-          Scan op Fatal Errors
-        </SoftButton>
-      )}
-    </Card>
-  );
-};
+
 
   return (
+      <Card sx={{ p: 3 }}>
+        <SoftTypography variant="h6">Noodherstel & Error Logs</SoftTypography>
+        
+        {fatalError ? (
+          <Alert severity="error" sx={{ mt: 2 }}>
+            <strong>Fatal Error:</strong> {fatalError.message} <br />
+            <em>Bestand: {fatalError.file} op regel {fatalError.line}</em>
+            <Button 
+              variant="contained" 
+              color="warning" 
+              onClick={() => executeRecovery(site.$id, 'rollback_plugin', 'naam-van-plugin')}
+              sx={{ mt: 1 }}
+            >
+              Deactiveer plugin
+            </Button>
+          </Alert>
+        ) : (
+          <SoftButton onClick={fetchFatalLog} disabled={loading}>
+            Scan op Fatal Errors
+          </SoftButton>
+        )}
+      </Card>
+    );
+  
     <Card>
       <Tabs
         value={subTab}
