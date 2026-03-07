@@ -40,8 +40,8 @@ export default async ({ req, res, log, error }) => {
     );
 
     // Bepaal de URL en de geheime sleutel (Shared Secret)
-    const targetUrl = site.siteUrl || site.url;
-    const siteApiKey = site.wphubpro_api_key;
+    const targetUrl = site.site_url;
+    const siteApiKey = site.api_key;
 
     if (!targetUrl) throw new Error('Site URL niet gevonden in database.');
     if (!siteApiKey) throw new Error('Geen WPHubPro API key gevonden voor deze site.');
