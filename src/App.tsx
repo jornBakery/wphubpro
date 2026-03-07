@@ -13,6 +13,7 @@ import ProtectedRoute from './components/layout/ProtectedRoute';
 import AdminRoute from './components/layout/AdminRoute';
 import Toaster from './components/ui/Toaster';
 import { Loader2 } from 'lucide-react';
+import { ROUTE_PATHS, ADMIN_CHILD_PATHS } from './config/routePaths';
 
 import theme from 'assets/theme';
 
@@ -44,31 +45,37 @@ const AppRoutes: React.FC = () => {
 
   return (
     <Routes>
-      <Route path="/login" element={user ? <Navigate to="/dashboard" replace /> : <LoginPage />} />
-      <Route path="/register" element={user ? <Navigate to="/dashboard" replace /> : <RegisterPage />} />
-      <Route path="/connect-success" element={<ConnectSuccessPage />} />
+      <Route
+        path={ROUTE_PATHS.LOGIN}
+        element={user ? <Navigate to={ROUTE_PATHS.DASHBOARD} replace /> : <LoginPage />}
+      />
+      <Route
+        path={ROUTE_PATHS.REGISTER}
+        element={user ? <Navigate to={ROUTE_PATHS.DASHBOARD} replace /> : <RegisterPage />}
+      />
+      <Route path={ROUTE_PATHS.CONNECT_SUCCESS} element={<ConnectSuccessPage />} />
 
       <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/sites" element={<SitesPage />} />
-        <Route path="/sites/:id" element={<SiteDetailPage />} />
-        <Route path="/library" element={<PlaceholderPage name="Bibliotheek" />} />
-        <Route path="/account" element={<PlaceholderPage name="Mijn Account" />} />
-        <Route path="/subscription" element={<PlaceholderPage name="Abonnement" />} />
-        <Route path="/subscription/plans" element={<PlaceholderPage name="Plannen" />} />
+        <Route path={ROUTE_PATHS.ROOT} element={<Navigate to={ROUTE_PATHS.DASHBOARD} replace />} />
+        <Route path={ROUTE_PATHS.DASHBOARD} element={<DashboardPage />} />
+        <Route path={ROUTE_PATHS.SITES} element={<SitesPage />} />
+        <Route path={ROUTE_PATHS.SITE_DETAIL} element={<SiteDetailPage />} />
+        <Route path={ROUTE_PATHS.LIBRARY} element={<PlaceholderPage name="Bibliotheek" />} />
+        <Route path={ROUTE_PATHS.ACCOUNT} element={<PlaceholderPage name="Mijn Account" />} />
+        <Route path={ROUTE_PATHS.SUBSCRIPTION} element={<PlaceholderPage name="Abonnement" />} />
+        <Route path={ROUTE_PATHS.SUBSCRIPTION_PLANS} element={<PlaceholderPage name="Plannen" />} />
 
-        <Route path="/admin" element={<AdminRoute><Outlet /></AdminRoute>}>
-          <Route index element={<Navigate to="/admin/dashboard" replace />} />
-          <Route path="dashboard" element={<PlaceholderPage name="Admin Dashboard" />} />
-          <Route path="users" element={<PlaceholderPage name="User Manager" />} />
-          <Route path="users/:userId" element={<PlaceholderPage name="User Detail" />} />
-          <Route path="orders" element={<PlaceholderPage name="Orders" />} />
-          <Route path="plans" element={<PlaceholderPage name="Plan Management" />} />
-          <Route path="plans/:planId" element={<PlaceholderPage name="Plan Detail" />} />
-          <Route path="subscriptions" element={<PlaceholderPage name="Subscriptions" />} />
-          <Route path="subscriptions/:subscriptionId" element={<PlaceholderPage name="Subscription Detail" />} />
-          <Route path="settings" element={<PlaceholderPage name="Admin Settings" />} />
+        <Route path={ROUTE_PATHS.ADMIN_ROOT} element={<AdminRoute><Outlet /></AdminRoute>}>
+          <Route index element={<Navigate to={ROUTE_PATHS.ADMIN_DASHBOARD} replace />} />
+          <Route path={ADMIN_CHILD_PATHS.DASHBOARD} element={<PlaceholderPage name="Admin Dashboard" />} />
+          <Route path={ADMIN_CHILD_PATHS.USERS} element={<PlaceholderPage name="User Manager" />} />
+          <Route path={ADMIN_CHILD_PATHS.USER_DETAIL} element={<PlaceholderPage name="User Detail" />} />
+          <Route path={ADMIN_CHILD_PATHS.ORDERS} element={<PlaceholderPage name="Orders" />} />
+          <Route path={ADMIN_CHILD_PATHS.PLANS} element={<PlaceholderPage name="Plan Management" />} />
+          <Route path={ADMIN_CHILD_PATHS.PLAN_DETAIL} element={<PlaceholderPage name="Plan Detail" />} />
+          <Route path={ADMIN_CHILD_PATHS.SUBSCRIPTIONS} element={<PlaceholderPage name="Subscriptions" />} />
+          <Route path={ADMIN_CHILD_PATHS.SUBSCRIPTION_DETAIL} element={<PlaceholderPage name="Subscription Detail" />} />
+          <Route path={ADMIN_CHILD_PATHS.SETTINGS} element={<PlaceholderPage name="Admin Settings" />} />
         </Route>
 
         <Route path="*" element={<NotFoundPage />} />
