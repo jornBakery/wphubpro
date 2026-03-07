@@ -600,7 +600,7 @@
                 "documents.read"
             ],
             "specification": "s-1vcpu-512mb"
-        },
+        }
     ],
     "tablesDB": [
         {
