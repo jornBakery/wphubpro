@@ -25,6 +25,8 @@ import LogsTab from './site-detail/LogsTab';
 import SiteDetailSidebar from '../components/site-detail/SiteDetailSidebar';
 import EditSiteModal from '../components/sites/EditSiteModal';
 
+const blueGradient = 'linear-gradient(310deg, #4F5482, #7a8ef0)';
+
 const TAB_ITEMS = [
   { index: 0, label: 'Overview', icon: 'info' },
   { index: 1, label: 'Plugins', icon: 'extension' },
@@ -150,6 +152,7 @@ const SiteDetailPage: React.FC = () => {
                       marginRight: 0,
                       '& .material-icons-round, & .material-icons, & .MuiIcon-root': {
                         fontSize: '24px !important',
+                        color: '#ffffff !important',
                       },
                       '& > *': {
                         minWidth: 38,
@@ -157,15 +160,15 @@ const SiteDetailPage: React.FC = () => {
                         borderRadius: '8px',
                         display: 'grid',
                         placeItems: 'center',
-                        backgroundColor: '#ffffff',
+                        background: blueGradient,
                         boxShadow: '0 4px 6px -1px rgba(0,0,0,0.12)',
                         transition: 'background 0.2s ease-in-out',
-                        color: '#4F5482',
+                        color: '#ffffff',
                         fontSize: '24px !important',
                       },
                     },
                     '& .Mui-selected .MuiTab-iconWrapper > *': {
-                      background: 'linear-gradient(310deg, #f97316, #fb923c)',
+                      background: blueGradient,
                       boxShadow: '0 4px 6px -1px rgba(0,0,0,0.12)',
                       color: '#ffffff',
                     },
@@ -177,7 +180,7 @@ const SiteDetailPage: React.FC = () => {
                       label={label}
                       icon={
                         <Box component="span" sx={{ display: 'inherit' }}>
-                          <Icon sx={{ fontSize: '24px !important' }}>{icon}</Icon>
+                          <Icon sx={{ fontSize: '24px !important', color: '#ffffff !important' }}>{icon}</Icon>
                         </Box>
                       }
                       iconPosition="start"
