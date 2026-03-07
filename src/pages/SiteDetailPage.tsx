@@ -114,13 +114,13 @@ const SiteDetailPage: React.FC = () => {
                   scrollButtons="auto"
                   allowScrollButtonsMobile
                     sx={{
-                    minHeight: 40,
+                    minHeight: 52,
                     '& .MuiTabs-indicator': { display: 'none' },
                     '& .MuiTabs-flexContainer': { overflow: 'visible' },
                     '& .MuiTab-root': {
-                      minHeight: 40,
-                      minWidth: 80,
-                      padding: '4px 8px 4px 8px',
+                      minHeight: 52,
+                      minWidth: 90,
+                      padding: '6px 12px 6px 12px',
                       marginRight: 8,
                       justifyContent: 'flex-start',
                       textAlign: 'left',
@@ -149,8 +149,8 @@ const SiteDetailPage: React.FC = () => {
                     '& .MuiTab-iconWrapper': {
                       marginRight: 0,
                       '& > *': {
-                        minWidth: 28,
-                        minHeight: 28,
+                        minWidth: 38,
+                        minHeight: 38,
                         borderRadius: '8px',
                         display: 'grid',
                         placeItems: 'center',
@@ -158,7 +158,7 @@ const SiteDetailPage: React.FC = () => {
                         boxShadow: '0 4px 6px -1px rgba(0,0,0,0.12)',
                         transition: 'background 0.2s ease-in-out',
                         color: '#4F5482',
-                        fontSize: 24,
+                        fontSize: 28,
                       },
                     },
                     '& .Mui-selected .MuiTab-iconWrapper > *': {
@@ -174,7 +174,7 @@ const SiteDetailPage: React.FC = () => {
                       label={label}
                       icon={
                         <Box component="span" sx={{ display: 'inherit' }}>
-                          <Icon sx={{ fontSize: 24 }}>{icon}</Icon>
+                          <Icon sx={{ fontSize: 28 }}>{icon}</Icon>
                         </Box>
                       }
                       iconPosition="start"
