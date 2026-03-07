@@ -316,13 +316,23 @@ export const useManageTheme = (siteId: string | undefined) => {
   const { toast } = useToast();
   const { user } = useAuth();
 
+  const themeEndpoints: Record<string, string> = {
+    activate: 'wphubpro/v1/themes/manage/activate',
+    update: 'wphubpro/v1/themes/manage/update',
+    delete: 'wphubpro/v1/themes/manage/delete',
+  };
+
   return useMutation<WordPressTheme, Error, { themeSlug: string; action: 'activate' | 'deactivate' | 'delete' | 'update'; themeName: string }>({
     mutationFn: ({ themeSlug, action }) => {
+      const endpoint = themeEndpoints[action];
+      if (!endpoint) {
+        return Promise.reject(new Error(`Theme action "${action}" is not supported. Use activate, update, or delete.`));
+      }
       return executeWpProxy<WordPressTheme>({
         siteId: siteId!,
         method: 'POST',
-        endpoint: 'wphubpro/v1/themes/manage',
-        body: { action, slug: themeSlug },
+        endpoint,
+        body: { slug: themeSlug },
         userId: user?.$id,
         useApiKey: true,
       });
