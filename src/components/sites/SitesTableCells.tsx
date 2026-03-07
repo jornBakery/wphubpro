@@ -86,7 +86,7 @@ export const StatusIcon: React.FC<{ value: Site['status'] }> = ({ value }) => {
                 }),
           }}
         >
-          bolt
+          {isConnected ? 'flash_on' : 'flash_off'}
         </Icon>
       </SoftBox>
     </Tooltip>
