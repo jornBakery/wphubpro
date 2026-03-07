@@ -74,7 +74,7 @@ export const StatusIcon: React.FC<{ value: Site['status'] }> = ({ value }) => {
             fontSize: '1.5rem !important',
           }}
         >
-          {isConnected ? 'bolt' : 'power_off'}
+          bolt
         </Icon>
       </SoftBox>
     </Tooltip>
