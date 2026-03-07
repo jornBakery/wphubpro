@@ -124,7 +124,19 @@ const SiteDetailSidebar: React.FC<SiteDetailSidebarProps> = ({
             </a>
           )}
           <SoftBox display="flex" alignItems="center" gap={1} mt={1.5} mb={1.5}>
-            <StatusIcon value={site.status} />
+            <SoftBox
+              sx={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 36,
+                height: 36,
+                borderRadius: '50%',
+                background: 'white',
+              }}
+            >
+              <StatusIcon value={site.status} />
+            </SoftBox>
             <HealthBadge value={site.healthStatus} />
           </SoftBox>
 
