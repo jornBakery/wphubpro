@@ -1,9 +1,9 @@
 /* eslint-disable no-unused-vars */
 const sdk = require("node-appwrite");
-const { getEnv, getAppwriteConfig } = require("../_shared/env");
-const { parsePayload } = require("../_shared/request");
-const { createClient } = require("../_shared/appwrite");
-const { fail, ok } = require("../_shared/response");
+const { getEnv, getAppwriteConfig } = require("./_shared/env");
+const { parsePayload } = require("./_shared/request");
+const { createClient } = require("./_shared/appwrite");
+const { fail, ok } = require("./_shared/response");
 
 module.exports = async ({ req, res, log, error }) => {
   const env = getEnv(req);
