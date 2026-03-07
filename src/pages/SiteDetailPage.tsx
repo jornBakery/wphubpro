@@ -26,6 +26,7 @@ import SiteDetailSidebar from '../components/site-detail/SiteDetailSidebar';
 import EditSiteModal from '../components/sites/EditSiteModal';
 
 const orangeGradient = 'linear-gradient(310deg, #ea580c, #fb923c)';
+const blueGradient = 'linear-gradient(310deg, #4F5482, #7a8ef0)';
 
 const TAB_ITEMS = [
   { index: 0, label: 'Overview', icon: 'info' },
@@ -134,7 +135,7 @@ const SiteDetailPage: React.FC = () => {
                       fontSize: '0.875rem',
                       fontWeight: 500,
                       textTransform: 'none',
-                      color: 'rgba(255,255,255,0.9) !important',
+                      color: '#ffffff !important',
                       backgroundColor: 'transparent',
                       borderRadius: '8px',
                       transition: 'background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, color 0.2s ease-in-out',
@@ -167,7 +168,7 @@ const SiteDetailPage: React.FC = () => {
                       },
                     },
                     '& .Mui-selected .MuiTab-iconWrapper > *': {
-                      backgroundColor: '#dc2626',
+                      background: blueGradient,
                       color: '#ffffff',
                       boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
                     },
