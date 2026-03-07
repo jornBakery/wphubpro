@@ -161,7 +161,7 @@ const SiteDetailPage: React.FC = () => {
                         borderRadius: '8px',
                         display: 'grid',
                         placeItems: 'center',
-                        background: blueGradient,
+                        background: orangeGradient,
                         boxShadow: '0 4px 6px -1px rgba(0,0,0,0.12)',
                         transition: 'background 0.2s ease-in-out',
                         color: '#ffffff',
