@@ -3,7 +3,7 @@ import { Query } from 'appwrite';
 import { redirectToBillingPortal } from '../../services/stripe';
 import { useToast } from '../../contexts/ToastContext';
 import { StripeInvoice, StripePlan, Subscription, UsageMetrics } from '../../types';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../auth/context';
 import { executeFunction } from '../../integrations/appwrite/executeFunction';
 import { databases, DATABASE_ID, COLLECTIONS } from '../../services/appwrite';
 import { useLibraryItems } from '../../hooks/useLibrary';
