@@ -2,10 +2,10 @@
 const sdk = require('node-appwrite');
 const fetch = require('node-fetch');
 const crypto = require('crypto');
-
-function safeCompare(a, b) {
-  return String(a || '') === String(b || '');
-}
+const { getEnv, getAppwriteConfig } = require('../_shared/env');
+const { parsePayload } = require('../_shared/request');
+const { createClient } = require('../_shared/appwrite');
+const { fail, ok } = require('../_shared/response');
 
 /** Decrypt api_key stored in format iv:encrypted:tag */
 function decryptApiKey(encrypted, key) {
@@ -26,28 +26,22 @@ function decryptApiKey(encrypted, key) {
 }
 
 module.exports = async ({ req, res, log, error }) => {
-  const client = new sdk.Client();
-  const databases = new sdk.Databases(client);
-
-  const env = (req && req.variables && Object.keys(req.variables).length) ? req.variables : process.env;
-
-  const APPWRITE_FUNCTION_ENDPOINT = env.APPWRITE_FUNCTION_ENDPOINT || env.APPWRITE_ENDPOINT;
-  const APPWRITE_FUNCTION_PROJECT_ID = env.APPWRITE_FUNCTION_PROJECT_ID || env.APPWRITE_PROJECT_ID;
-  const APPWRITE_FUNCTION_API_KEY = env.APPWRITE_FUNCTION_API_KEY || env.APPWRITE_API_KEY || env.APPWRITE_KEY;
+  const env = getEnv(req);
+  const { endpoint: appwriteEndpoint, projectId, apiKey, missing } = getAppwriteConfig(req);
   const ENCRYPTION_KEY = env.ENCRYPTION_KEY;
 
-  client
-    .setEndpoint(APPWRITE_FUNCTION_ENDPOINT)
-    .setProject(APPWRITE_FUNCTION_PROJECT_ID)
-    .setKey(APPWRITE_FUNCTION_API_KEY);
+  if (missing.length > 0) {
+    return fail(res, 'Function environment is not configured.', 500);
+  }
+
+  const client = createClient(sdk, { endpoint: appwriteEndpoint, projectId, apiKey });
+  const databases = new sdk.Databases(client);
 
   let payload = {};
   try {
-    // Appwrite levert data soms in req.body, soms in req.payload
-    const rawData = req.payload || req.body || {};
-    payload = typeof rawData === 'string' ? JSON.parse(rawData) : rawData;
+    payload = parsePayload(req);
   } catch (e) {
-    return res.json({ success: false, message: 'Invalid JSON payload.' }, 400);
+    return fail(res, 'Invalid JSON payload.', 400);
   }
 
   const siteId = payload.siteId || (req.query && req.query.siteId);
@@ -55,7 +49,7 @@ module.exports = async ({ req, res, log, error }) => {
   const method = (payload.method || (req.query && req.query.method) || 'GET').toUpperCase();
 
   if (!siteId || !endpoint) {
-    return res.json({ success: false, message: 'Missing siteId or endpoint.' }, 400);
+    return fail(res, 'Missing siteId or endpoint.', 400);
   }
 
   // --- CRUCIALE FIX: Zoek action/plugin op meerdere niveaus ---
@@ -87,7 +81,10 @@ module.exports = async ({ req, res, log, error }) => {
 
     if (['POST', 'PUT', 'PATCH'].includes(method)) {
         // Stuur alleen de relevante body door naar WP (zonder proxy metadata)
-        const bodyData = payload.body || payload;
+        let bodyData = payload.body || payload;
+        if ((!bodyData || Object.keys(bodyData).length === 0) && req.query && req.query.body) {
+          bodyData = req.query.body;
+        }
         const { siteId: _s, endpoint: _e, method: _m, userId: _u, ...restBody } = (typeof bodyData === 'string' ? JSON.parse(bodyData) : bodyData);
         fetchOptions.body = JSON.stringify(restBody);
     }
@@ -106,17 +103,16 @@ module.exports = async ({ req, res, log, error }) => {
     }
 
     if (!proxyResponse.ok) {
-        return res.json({ 
+        return fail(res, (responseData && responseData.message) ? responseData.message : `WP API Error: ${proxyResponse.status}`, proxyResponse.status, {
             success: false, 
-            message: (responseData && responseData.message) ? responseData.message : `WP API Error: ${proxyResponse.status}`,
             details: responseData 
-        }, proxyResponse.status);
+        });
     }
 
-    return res.json(responseData);
+    return ok(res, responseData);
 
   } catch (e) {
     error(`[wp-proxy] Error: ${e.message}`);
-    return res.json({ success: false, message: e.message }, 500);
+    return fail(res, e.message, 500);
   }
 };

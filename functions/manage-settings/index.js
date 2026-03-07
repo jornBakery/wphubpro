@@ -1,53 +1,33 @@
 /* eslint-disable no-unused-vars */
 const sdk = require("node-appwrite");
+const { getEnv, getAppwriteConfig } = require("../_shared/env");
+const { parsePayload } = require("../_shared/request");
+const { createClient } = require("../_shared/appwrite");
+const { fail, ok } = require("../_shared/response");
 
 module.exports = async ({ req, res, log, error }) => {
-  const client = new sdk.Client();
+  const env = getEnv(req);
+  const { endpoint, projectId, apiKey, missing } = getAppwriteConfig(req);
+
+  if (missing.length > 0) {
+    error("Function environment variables are not configured correctly.");
+    const available = Object.keys(env || {});
+    return fail(res, "Function environment is not configured.", 500, { availableEnvKeys: available });
+  }
+
+  const client = createClient(sdk, { endpoint, projectId, apiKey });
   const databases = new sdk.Databases(client);
   const users = new sdk.Users(client);
   const teams = new sdk.Teams(client);
-
-  // Some Appwrite runtimes inject variables on `req.variables` rather than `process.env`.
-  const env =
-    req && req.variables && Object.keys(req.variables).length ? req.variables : process.env;
-
-  const APPWRITE_FUNCTION_ENDPOINT = env.APPWRITE_FUNCTION_ENDPOINT || env.APPWRITE_ENDPOINT;
-  const APPWRITE_FUNCTION_PROJECT_ID = env.APPWRITE_FUNCTION_PROJECT_ID || env.APPWRITE_PROJECT_ID;
-  const APPWRITE_API_KEY =
-    env.APPWRITE_FUNCTION_API_KEY || env.APPWRITE_API_KEY || env.APPWRITE_KEY;
-
-  if (!APPWRITE_FUNCTION_ENDPOINT || !APPWRITE_FUNCTION_PROJECT_ID || !APPWRITE_API_KEY) {
-    error("Function environment variables are not configured correctly.");
-    const available = Object.keys(env || {});
-    return res.json(
-      {
-        success: false,
-        message: "Function environment is not configured.",
-        availableEnvKeys: available,
-      },
-      500
-    );
-  }
-
-  client
-    .setEndpoint(APPWRITE_FUNCTION_ENDPOINT)
-    .setProject(APPWRITE_FUNCTION_PROJECT_ID)
-    .setKey(APPWRITE_API_KEY);
 
   // Parse payload from request body
   let payload = {};
 
   try {
-    if (req.body && typeof req.body === "object") {
-      payload = req.body;
-    } else if (req.bodyRaw) {
-      payload = JSON.parse(req.bodyRaw);
-    } else if (req.payload) {
-      payload = typeof req.payload === "string" ? JSON.parse(req.payload) : req.payload;
-    }
+    payload = parsePayload(req);
   } catch (e) {
     error("Failed to parse request body: " + e.message);
-    return res.json({ success: false, message: "Invalid request body" }, 400);
+    return fail(res, "Invalid request body", 400);
   }
 
   const { category, settings, userId } = payload;
@@ -58,10 +38,7 @@ module.exports = async ({ req, res, log, error }) => {
         settings
       )}`
     );
-    return res.json(
-      { success: false, message: "Missing category, settings, or userId in request body" },
-      400
-    );
+    return fail(res, "Missing category, settings, or userId in request body", 400);
   }
 
   log("Updating settings for category: " + category);
@@ -94,7 +71,7 @@ module.exports = async ({ req, res, log, error }) => {
 
     if (!isAdmin) {
       log("User " + userId + " is not an admin");
-      return res.json({ success: false, message: "Forbidden: Admin access required" }, 403);
+      return fail(res, "Forbidden: Admin access required", 403);
     }
 
     log("User is admin, proceeding with settings update");
@@ -117,7 +94,7 @@ module.exports = async ({ req, res, log, error }) => {
         value: valueStr,
       });
       log("Settings updated successfully for category: " + category);
-      return res.json({ success: true, message: "Settings updated" });
+      return ok(res, { success: true, message: "Settings updated" });
     } else {
       log("Creating new document for category: " + category);
       const newDoc = await databases.createDocument(DATABASE_ID, COLLECTION_ID, sdk.ID.unique(), {
@@ -125,10 +102,10 @@ module.exports = async ({ req, res, log, error }) => {
         value: valueStr,
       });
       log("Settings created successfully with ID: " + newDoc.$id);
-      return res.json({ success: true, message: "Settings created" });
+      return ok(res, { success: true, message: "Settings created" });
     }
   } catch (e) {
     error(e.message);
-    return res.json({ success: false, message: e.message }, 500);
+    return fail(res, e.message, 500);
   }
 };
