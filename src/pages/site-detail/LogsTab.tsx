@@ -18,7 +18,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import { useSiteLogs, useSiteErrorLog, useSiteExecutionLogs, type BridgeLogEntry, type AppwriteExecution } from '../../hooks/useWordPress';
-import { useSite } from '../../hooks/useSites';
+import { useSite } from '../../domains/sites/hooks';
 
 function parseExecutionEndpoint(requestPath: string): string {
   if (!requestPath || !requestPath.includes('?')) return requestPath || '—';

@@ -16,7 +16,7 @@ import SoftInput from 'components/SoftInput';
 import Breadcrumbs from 'examples/Breadcrumbs';
 
 import { useSoftUIController, setTransparentNavbar } from 'context';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../domains/auth/context';
 import { usePageBreadcrumb } from '../../contexts/PageBreadcrumbContext';
 
 

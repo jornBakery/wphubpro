@@ -7,7 +7,7 @@ import MainLayout from './components/layout/MainLayout';
 import QueryProvider from './QueryProvider';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { ToastProvider } from './contexts/ToastContext';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { AuthProvider, useAuth } from './domains/auth/context';
 import { SoftUIControllerProvider } from './context';
 import ProtectedRoute from './components/layout/ProtectedRoute';
 import AdminRoute from './components/layout/AdminRoute';
