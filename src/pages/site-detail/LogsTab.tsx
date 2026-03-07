@@ -27,7 +27,7 @@ import {
   type BridgeLogEntry, 
   type AppwriteExecution 
 } from '../../hooks/useWordPress';
-import { useSite } from '../../hooks/useSites';
+import { useSite } from '../../domains/sites';
 import SoftTypography from 'components/SoftTypography';
 import SoftButton from 'components/SoftButton';
 import { functions } from '../../services/appwrite';
