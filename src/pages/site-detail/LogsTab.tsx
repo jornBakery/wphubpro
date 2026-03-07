@@ -19,7 +19,6 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import { useSiteLogs, useSiteErrorLog, useSiteExecutionLogs, type BridgeLogEntry, type AppwriteExecution } from '../../hooks/useWordPress';
 import { useSite } from '../../hooks/useSites';
-// Voorbeeld van hoe je dit in LogsTab.tsx gebruikt
 
 function parseExecutionEndpoint(requestPath: string): string {
   if (!requestPath || !requestPath.includes('?')) return requestPath || '—';
@@ -596,44 +595,8 @@ function ExecutionLogsPanel({ siteId }: { siteId: string }) {
 
 const LogsTab: React.FC<LogsTabProps> = ({ siteId }) => {
   const [subTab, setSubTab] = useState(0);
-  const { executeRecovery, loading } = useWordPress();
-  const [fatalError, setFatalError] = useState<any>(null);
-  const fetchFatalLog = async () => {
-    const data = await executeRecovery(site.$id, 'get_error_log');
-    if (data.success) {
-      setFatalError(data.data);
-    }
-  };
-
-
 
   return (
-      <Card sx={{ p: 3 }}>
-        <SoftTypography variant="h6">Noodherstel & Error Logs</SoftTypography>
-        
-        {fatalError ? (
-          <Alert severity="error" sx={{ mt: 2 }}>
-            <strong>Fatal Error:</strong> {fatalError.message} <br />
-            <em>Bestand: {fatalError.file} op regel {fatalError.line}</em>
-            <Button 
-              variant="contained" 
-              color="warning" 
-              onClick={() => executeRecovery(site.$id, 'rollback_plugin', 'naam-van-plugin')}
-              sx={{ mt: 1 }}
-            >
-              Deactiveer plugin
-            </Button>
-          </Alert>
-        ) : (
-          <SoftButton onClick={fetchFatalLog} disabled={loading}>
-            Scan op Fatal Errors
-          </SoftButton>
-        )}
-      </Card>
-  );
-};
-
-export default LogsTab;
     <Card>
       <Tabs
         value={subTab}
@@ -709,3 +672,7 @@ export default LogsTab;
         {subTab === 2 && <ExecutionLogsPanel siteId={siteId} />}
       </Box>
     </Card>
+  );
+};
+
+export default LogsTab;
