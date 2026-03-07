@@ -79,7 +79,7 @@ export const StatusIcon: React.FC<{ value: Site['status'] }> = ({ value }) => {
                   color: 'transparent',
                 }
               : {
-                  background: 'none',
+                  background: 'none !important',
                   backgroundClip: 'unset',
                   WebkitBackgroundClip: 'unset',
                   color: '#9e9e9e !important',
