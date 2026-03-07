@@ -148,6 +148,9 @@ const SiteDetailPage: React.FC = () => {
                     },
                     '& .MuiTab-iconWrapper': {
                       marginRight: 0,
+                      '& .material-icons-round, & .material-icons, & .MuiIcon-root': {
+                        fontSize: '24px !important',
+                      },
                       '& > *': {
                         minWidth: 38,
                         minHeight: 38,
@@ -158,7 +161,7 @@ const SiteDetailPage: React.FC = () => {
                         boxShadow: '0 4px 6px -1px rgba(0,0,0,0.12)',
                         transition: 'background 0.2s ease-in-out',
                         color: '#4F5482',
-                        fontSize: 28,
+                        fontSize: '24px !important',
                       },
                     },
                     '& .Mui-selected .MuiTab-iconWrapper > *': {
@@ -174,7 +177,7 @@ const SiteDetailPage: React.FC = () => {
                       label={label}
                       icon={
                         <Box component="span" sx={{ display: 'inherit' }}>
-                          <Icon sx={{ fontSize: 28 }}>{icon}</Icon>
+                          <Icon sx={{ fontSize: '24px !important' }}>{icon}</Icon>
                         </Box>
                       }
                       iconPosition="start"
