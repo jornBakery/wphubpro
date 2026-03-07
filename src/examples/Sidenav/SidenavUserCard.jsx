@@ -85,6 +85,7 @@ function SidenavUserCard() {
             color: "white !important",
             textDecoration: "none",
             fontWeight: 600,
+            "& .MuiTypography-root": { color: "white !important" },
           }}
         >
           Inloggen
@@ -109,6 +110,7 @@ function SidenavUserCard() {
             flexDirection: "column",
             alignItems: "center",
             gap: 0.5,
+            "& .MuiTypography-root": { color: "white !important" },
           }}
         >
           <ActionButton icon="person" title="Profile" to="/account" />
@@ -124,18 +126,20 @@ function SidenavUserCard() {
 
   return (
     <SoftBox pt={2} my={1} mx={2} sx={{ flexShrink: 0, mr: 1.5 }}>
-      <SoftBox
+        <SoftBox
         sx={{
           background: infoGradient,
           borderRadius: 2,
           p: 2,
           pr: 3,
           color: "white",
+          "& .MuiTypography-root": { color: "white !important" },
         }}
       >
         <SoftBox display="flex" justifyContent="space-between" alignItems="flex-start" mb={1.5}>
           <SoftTypography
             variant="caption"
+            color="white"
             sx={{
               display: "inline-block",
               px: 1,

@@ -14,7 +14,7 @@ import SoftTypography from 'components/SoftTypography';
 import SoftButton from 'components/SoftButton';
 import Footer from 'examples/Footer';
 
-import { useSite, useDeleteSite, useCheckSiteHealth, useUpdateSite } from '../domains/sites';
+import { useSite, useDeleteSite, useCheckSiteHealth, useUpdateSite, useSiteConnectionPing } from '../domains/sites';
 import { usePageBreadcrumb } from '../contexts/PageBreadcrumbContext';
 
 import { usePlugins } from '../hooks/useWordPress';
@@ -62,6 +62,7 @@ const SiteDetailPage: React.FC = () => {
   const deleteSite = useDeleteSite();
   const checkHealth = useCheckSiteHealth(id);
   const updateSite = useUpdateSite();
+  useSiteConnectionPing(id);
   const { isSuccess: pluginsSuccess } = usePlugins(id);
 
   useEffect(() => {

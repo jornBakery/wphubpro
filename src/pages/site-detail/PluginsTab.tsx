@@ -168,6 +168,8 @@ const PluginsTab: React.FC<PluginsTabProps> = ({ siteId }) => {
                   component="span"
                   sx={{
                     display: 'inline-block',
+                    minWidth: 72,
+                    textAlign: 'center',
                     px: 1.5,
                     py: 0.5,
                     borderRadius: 1,
