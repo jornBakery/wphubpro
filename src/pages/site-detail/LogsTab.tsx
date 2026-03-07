@@ -630,7 +630,6 @@ const LogsTab: React.FC<LogsTabProps> = ({ siteId }) => {
           </SoftButton>
         )}
       </Card>
-    </>
   );
 };
 
