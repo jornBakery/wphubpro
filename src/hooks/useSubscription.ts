@@ -3,10 +3,11 @@ import { useQuery } from '@tanstack/react-query';
 import { useLibraryItems } from './useLibrary';
 import { useSites } from './useSites';
 import { useAuth } from '../contexts/AuthContext';
-import { functions, databases } from '../services/appwrite';
+import { databases } from '../services/appwrite';
 import { Subscription, UsageMetrics } from '../types';
 import { DATABASE_ID, COLLECTIONS } from '../services/appwrite';
 import { Query } from 'appwrite';
+import { executeFunction } from '../integrations/appwrite/executeFunction';
 
 const GET_SUBSCRIPTION_FUNCTION_ID = 'stripe-get-subscription';
 
@@ -16,6 +17,21 @@ export const useSubscription = () => {
         queryKey: ['subscription', user?.$id],
         queryFn: async () => {
             if (!user?.$id) return null;
+            const fetchStripeSubscription = async (errorLogPrefix: string): Promise<Subscription | null> => {
+                try {
+                    const responseBody = await executeFunction<any>(GET_SUBSCRIPTION_FUNCTION_ID);
+                    if (responseBody && responseBody.status !== 'canceled') {
+                        return {
+                            ...responseBody,
+                            source: 'stripe',
+                        } as Subscription;
+                    }
+                    return null;
+                } catch (e) {
+                    console.error(errorLogPrefix, e);
+                    return null;
+                }
+            };
 
             // First, check the accounts table for current_plan_id
             let currentPlanId: string | null = null;
@@ -63,29 +79,9 @@ export const useSubscription = () => {
 
                 // If not a custom plan and user has Stripe customer ID, assume it's a Stripe product label
                 if (stripeCustomerId) {
-                    try {
-                        const execution = await functions.createExecution(
-                            GET_SUBSCRIPTION_FUNCTION_ID,
-                            '', // No body needed
-                            false // isAsync
-                        );
-
-                        if (execution.responseStatusCode >= 400) {
-                            const errorBody = JSON.parse(execution.responseBody);
-                            throw new Error(errorBody.error || 'Failed to fetch subscription.');
-                        }
-                        
-                        const responseBody = execution.responseBody ? JSON.parse(execution.responseBody) : null;
-                        
-                        // Return Stripe subscription if it exists and is not canceled
-                        if (responseBody && responseBody.status !== 'canceled') {
-                            return {
-                                ...responseBody,
-                                source: 'stripe',
-                            };
-                        }
-                    } catch (e) {
-                        console.error('Failed to fetch Stripe subscription:', e);
+                    const stripeSubscription = await fetchStripeSubscription('Failed to fetch Stripe subscription:');
+                    if (stripeSubscription) {
+                        return stripeSubscription;
                     }
                 }
             }
@@ -122,28 +118,9 @@ export const useSubscription = () => {
 
                 // If not custom plan, try fetching Stripe subscription
                 if (stripeCustomerId) {
-                    try {
-                        const execution = await functions.createExecution(
-                            GET_SUBSCRIPTION_FUNCTION_ID,
-                            '', // No body needed
-                            false // isAsync
-                        );
-
-                        if (execution.responseStatusCode >= 400) {
-                            const errorBody = JSON.parse(execution.responseBody);
-                            throw new Error(errorBody.error || 'Failed to fetch subscription.');
-                        }
-                        
-                        const responseBody = execution.responseBody ? JSON.parse(execution.responseBody) : null;
-                        
-                        if (responseBody && responseBody.status !== 'canceled') {
-                            return {
-                                ...responseBody,
-                                source: 'stripe',
-                            };
-                        }
-                    } catch (e) {
-                        console.error('Failed to fetch Stripe subscription from label:', e);
+                    const stripeSubscription = await fetchStripeSubscription('Failed to fetch Stripe subscription from label:');
+                    if (stripeSubscription) {
+                        return stripeSubscription;
                     }
                 }
             }

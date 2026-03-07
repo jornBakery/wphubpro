@@ -1,9 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { databases, functions } from '../services/appwrite';
+import { databases } from '../services/appwrite';
 import { Query } from 'appwrite';
 import { Site } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
+import { executeFunction, executeFunctionWithMeta } from '../integrations/appwrite/executeFunction';
 
 const DATABASE_ID = 'platform_db';
 const SITES_COLLECTION_ID = 'sites';
@@ -114,17 +115,7 @@ export const useAddSite = () => {
             if (newSiteData.meta_data !== undefined) payload.meta_data = newSiteData.meta_data;
 
             const path = `/?userId=${user.$id}`;
-            const exec = await functions.createExecution('create-site', JSON.stringify(payload), false, path);
-            const status = exec.responseStatusCode || 0;
-            const body = exec.responseBody || '';
-            let parsed: any = null;
-            try { parsed = body ? JSON.parse(body) : null; } catch { parsed = body; }
-
-            if (status >= 400) {
-                const msg = (parsed && parsed.message) ? parsed.message : (typeof parsed === 'string' ? parsed : 'Failed to create site');
-                throw new Error(msg);
-            }
-
+            const parsed = await executeFunction<{ document?: Site }>('create-site', payload, { path });
             return (parsed && parsed.document) ? (parsed.document as unknown as Site) : (parsed as unknown as Site);
         },
         onSuccess: (data) => {
@@ -178,17 +169,7 @@ export const useUpdateSite = () => {
             // Gebruik de 'update-site' functie voor gevoelige data (password/username)
             const payload = { siteId, updates, userId: user.$id };
             const path = `/?userId=${user.$id}`;
-            const exec = await functions.createExecution('update-site', JSON.stringify(payload), false, path);
-            
-            const status = exec.responseStatusCode || 0;
-            const body = exec.responseBody || '';
-            let parsed: any = null;
-            try { parsed = body ? JSON.parse(body) : null; } catch { parsed = body; }
-            
-            if (status >= 400) {
-                const msg = (parsed && parsed.message) ? parsed.message : 'Fout bij bijwerken site';
-                throw new Error(msg);
-            }
+            const parsed = await executeFunction<{ document?: any }>('update-site', payload, { path });
             return (parsed && parsed.document) ? parsed.document : parsed;
         },
         onSuccess: (_, variables) => {
@@ -215,17 +196,18 @@ export const useCheckSiteHealth = (siteId: string | undefined) => {
             if (!siteId || !user) throw new Error('Site ID required.');
             // Probeer de plugins endpoint via wp-proxy
             const path = `/?siteId=${siteId}&endpoint=wphubpro/v1/plugins&userId=${user.$id}&useApiKey=1`;
-            const exec = await functions.createExecution('wp-proxy', undefined, false, path);
-            const status = exec.responseStatusCode || 0;
-            const success = exec.status === 'completed' && status >= 200 && status < 400;
+            const exec = await executeFunctionWithMeta<unknown>('wp-proxy', undefined, {
+                path,
+                throwOnHttpError: false
+            });
+            const status = exec.statusCode || 0;
+            const success = exec.executionStatus === 'completed' && status >= 200 && status < 400;
             await databases.updateDocument(DATABASE_ID, SITES_COLLECTION_ID, siteId, {
                 health_status: success ? 'healthy' : 'bad',
                 last_checked: new Date().toISOString(),
             });
             if (!success) {
-                const body = exec.responseBody || '';
-                let parsed: any = null;
-                try { parsed = body ? JSON.parse(body) : null; } catch { parsed = body; }
+                const parsed = exec.data as any;
                 const msg = (parsed && parsed.message) ? parsed.message : 'Verbinding mislukt';
                 throw new Error(msg);
             }
