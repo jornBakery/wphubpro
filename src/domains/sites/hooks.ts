@@ -187,6 +187,7 @@ export const useCheckSiteHealth = (siteId: string | undefined) => {
       const status = exec.statusCode || 0;
       const success = exec.executionStatus === 'completed' && status >= 200 && status < 400;
       await databases.updateDocument(DATABASE_ID, SITES_COLLECTION_ID, siteId, {
+        status: success ? 'connected' : 'disconnected',
         health_status: success ? 'healthy' : 'bad',
         last_checked: new Date().toISOString(),
       });
