@@ -73,6 +73,7 @@ export const useAddSite = () => {
       if (!user) throw new Error('User not authenticated.');
 
       const payload: Record<string, unknown> = {
+        action: 'create',
         site_url: newSiteData.siteUrl,
         site_name: newSiteData.siteName,
         username: newSiteData.username,
@@ -83,7 +84,7 @@ export const useAddSite = () => {
       if (newSiteData.meta_data !== undefined) payload.meta_data = newSiteData.meta_data;
 
       const path = `/?userId=${user.$id}`;
-      const parsed = await executeFunction<{ document?: Site }>('create-site', payload, { path });
+      const parsed = await executeFunction<{ document?: Site }>('wphub-sites', payload, { path });
       const rawSite = parsed && parsed.document ? parsed.document : parsed;
       return mapSiteDocumentToSite(rawSite as any);
     },
@@ -148,10 +149,10 @@ export const useUpdateSite = () => {
         return mapSiteDocumentToSite(updated as any);
       }
 
-      // Gebruik de 'update-site' functie voor gevoelige data (password/username)
-      const payload = { siteId, updates, userId: user.$id };
+      // Use wphub-sites for sensitive data (password/username)
+      const payload = { action: 'update', siteId, updates, userId: user.$id };
       const path = `/?userId=${user.$id}`;
-      const parsed = await executeFunction<{ document?: any }>('update-site', payload, { path });
+      const parsed = await executeFunction<{ document?: any }>('wphub-sites', payload, { path });
       const rawSite = parsed && parsed.document ? parsed.document : parsed;
       return mapSiteDocumentToSite(rawSite as any);
     },

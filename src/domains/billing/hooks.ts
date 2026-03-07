@@ -9,11 +9,11 @@ import { databases, DATABASE_ID, COLLECTIONS } from '../../services/appwrite';
 import { useLibraryItems } from '../../hooks/useLibrary';
 import { useSites } from '../sites/hooks';
 
-const STRIPE_LIST_PRODUCTS_FUNCTION_ID = 'stripe-list-products';
-const STRIPE_CREATE_CHECKOUT_SESSION_FUNCTION_ID = 'stripe-create-checkout-session';
-const STRIPE_CANCEL_SUBSCRIPTION_FUNCTION_ID = 'stripe-cancel-subscription';
-const LIST_INVOICES_FUNCTION_ID = 'stripe-list-invoices';
-const GET_SUBSCRIPTION_FUNCTION_ID = 'stripe-get-subscription';
+const STRIPE_LIST_PRODUCTS_FUNCTION_ID = 'stripe-products';
+const STRIPE_CREATE_CHECKOUT_SESSION_FUNCTION_ID = 'stripe-order-payments';
+const STRIPE_CANCEL_SUBSCRIPTION_FUNCTION_ID = 'stripe-subscriptions';
+const LIST_INVOICES_FUNCTION_ID = 'stripe-invoices';
+const GET_SUBSCRIPTION_FUNCTION_ID = 'stripe-subscriptions';
 
 export const useManageSubscription = () => {
   const { toast } = useToast();
@@ -82,7 +82,7 @@ export const useCancelSubscription = () => {
     mutationFn: async () => {
       return await executeFunction<{ success: boolean }>(
         STRIPE_CANCEL_SUBSCRIPTION_FUNCTION_ID,
-        undefined
+        { action: 'cancel' }
       );
     },
     onSuccess: () => {
@@ -111,7 +111,9 @@ export const useSubscription = () => {
 
       const fetchStripeSubscription = async (errorLogPrefix: string): Promise<Subscription | null> => {
         try {
-          const responseBody = await executeFunction<any>(GET_SUBSCRIPTION_FUNCTION_ID);
+          const responseBody = await executeFunction<any>(GET_SUBSCRIPTION_FUNCTION_ID, {
+            action: 'get',
+          });
           if (responseBody && responseBody.status !== 'canceled') {
             return {
               ...responseBody,
