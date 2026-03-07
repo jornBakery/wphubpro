@@ -13,6 +13,21 @@ const SITES_COLLECTION_ID = 'sites';
 
 const PING_INTERVAL_MS = 10_000;
 
+function parseMetaData(doc: { meta_data?: string; metaData?: string }): Record<string, unknown> {
+  const raw = doc.meta_data ?? doc.metaData;
+  if (!raw) return {};
+  try {
+    const parsed = JSON.parse(raw);
+    return typeof parsed === 'object' && parsed !== null ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function mergeMetaDataConnected(meta: Record<string, unknown>, connected: boolean): string {
+  return JSON.stringify({ ...meta, connected });
+}
+
 /** Ping bridge API and update site connection status in DB. Throws on failure (for checkHealth); returns false when disconnected (for background ping). */
 async function pingSiteConnection(
   siteId: string,
@@ -26,10 +41,16 @@ async function pingSiteConnection(
   });
   const status = exec.statusCode || 0;
   const success = exec.executionStatus === 'completed' && status >= 200 && status < 400;
+
+  const doc = await databases.getDocument(DATABASE_ID, SITES_COLLECTION_ID, siteId);
+  const meta = parseMetaData(doc as any);
+  const meta_data = mergeMetaDataConnected(meta, success);
+
   await databases.updateDocument(DATABASE_ID, SITES_COLLECTION_ID, siteId, {
     status: success ? 'connected' : 'disconnected',
     health_status: success ? 'healthy' : 'bad',
     last_checked: new Date().toISOString(),
+    meta_data,
   });
   if (!success && options?.throwOnFail) {
     const parsed = exec.data as any;
@@ -172,6 +193,12 @@ export const useUpdateSite = () => {
         if (updates.health_status) dbUpdates.health_status = updates.health_status;
         if (updates.last_checked) dbUpdates.last_checked = updates.last_checked;
         if (updates.meta_data !== undefined) dbUpdates.meta_data = updates.meta_data;
+        // When status changes, persist connected in meta_data
+        if (updates.status !== undefined) {
+          const doc = await databases.getDocument(DATABASE_ID, SITES_COLLECTION_ID, siteId);
+          const meta = parseMetaData(doc as any);
+          dbUpdates.meta_data = mergeMetaDataConnected(meta, updates.status === 'connected');
+        }
         // If there are no dbUpdates, avoid calling updateDocument with empty payload
         if (Object.keys(dbUpdates).length === 0) {
           throw new Error('No fields to update.');
