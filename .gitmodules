@@ -1,0 +1,3 @@
+[submodule "wphubpro-bridge"]
+	path = wphubpro-bridge
+	url = https://github.com/WeAreCode045/wphubpro-bridge.git
