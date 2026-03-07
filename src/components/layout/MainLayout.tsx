@@ -10,7 +10,7 @@ import { useSoftUIController, setLayout } from 'context';
 
 import WPHubNavbar from './WPHubNavbar';
 import { PageBreadcrumbProvider } from '../../contexts/PageBreadcrumbContext';
-import { getSidenavRoutes } from '../../config/sidenavRoutes';
+import { userRoutes, adminRoutes } from '../../config/sidenavRoutes';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePlatformSettings } from '../../hooks/usePlatformSettings';
 import Toaster from '../ui/Toaster';
@@ -31,15 +31,15 @@ const MainLayout: React.FC = () => {
     setLayout(dispatch, 'dashboard');
   }, []);
 
-  const routes = getSidenavRoutes(isAdmin);
-
   return (
     <>
       <Sidenav
         color="info"
         brand={brandLogo}
         brandName={brandName}
-        routes={routes}
+        userRoutes={userRoutes}
+        adminRoutes={adminRoutes}
+        isAdmin={isAdmin}
       />
       <PageBreadcrumbProvider>
         <SoftBox
@@ -47,6 +47,7 @@ const MainLayout: React.FC = () => {
             display: 'flex',
             flexDirection: 'column',
             minHeight: '100vh',
+            paddingRight: pxToRem(24),
             ...(isSiteDetailPage && {
               height: '100vh',
               maxHeight: '100vh',

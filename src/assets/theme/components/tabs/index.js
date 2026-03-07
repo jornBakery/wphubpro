@@ -21,7 +21,7 @@ import boxShadows from "assets/theme/base/boxShadows";
 // Soft UI Dashboard PRO React helper functions
 import pxToRem from "assets/theme/functions/pxToRem";
 
-const { grey, white } = colors;
+const { white } = colors;
 const { borderRadius } = borders;
 const { tabsBoxShadow } = boxShadows;
 
@@ -29,7 +29,6 @@ const tabs = {
   styleOverrides: {
     root: {
       position: "relative",
-      backgroundColor: grey[100],
       borderRadius: borderRadius.lg,
       minHeight: "unset",
       padding: pxToRem(4),

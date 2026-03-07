@@ -39,9 +39,9 @@ const SiteDetailSidebar: React.FC<SiteDetailSidebarProps> = ({
   return (
     <SoftBox display="flex" flexDirection="column" gap={2} sx={{ alignSelf: 'flex-start' }}>
       {/* Site Details Card - sticky on scroll */}
-      <Card sx={{ position: 'sticky', top: 8, zIndex: 1 }}>
-        <SoftBox p={2}>
-          <SoftTypography variant="h6" fontWeight="bold" mb={1}>
+      <Card sx={{ position: 'sticky', top: 8, zIndex: 1, background: infoGradient, color: 'white' }}>
+        <SoftBox p={2} sx={{ color: 'white' }}>
+          <SoftTypography variant="h6" fontWeight="bold" mb={1} sx={{ color: 'white' }}>
             {siteName}
           </SoftTypography>
           {siteUrl && (
@@ -49,12 +49,11 @@ const SiteDetailSidebar: React.FC<SiteDetailSidebarProps> = ({
               href={fullUrl}
               target="_blank"
               rel="noreferrer"
-              style={{ textDecoration: 'none', color: 'inherit' }}
+              style={{ textDecoration: 'none', color: 'white' }}
             >
               <SoftTypography
                 variant="caption"
-                color="secondary"
-                sx={{ display: 'block', wordBreak: 'break-all', '&:hover': { textDecoration: 'underline' } }}
+                sx={{ display: 'block', wordBreak: 'break-all', color: 'rgba(255,255,255,0.9)', '&:hover': { textDecoration: 'underline' } }}
               >
                 {siteUrl}
               </SoftTypography>
@@ -66,26 +65,26 @@ const SiteDetailSidebar: React.FC<SiteDetailSidebarProps> = ({
           </SoftBox>
 
           {/* Technical details */}
-          <SoftBox mt={2} pt={2} borderTop="1px solid" borderColor="grey.200">
-            <SoftTypography variant="caption" fontWeight="bold" color="secondary" sx={{ display: 'block', mb: 1 }}>
+          <SoftBox mt={2} pt={2} borderTop="1px solid rgba(255,255,255,0.3)">
+            <SoftTypography variant="caption" fontWeight="bold" sx={{ display: 'block', mb: 1, color: 'rgba(255,255,255,0.9)' }}>
               Technische gegevens
             </SoftTypography>
             <Grid container spacing={1}>
               <Grid item xs={6}>
-                <SoftTypography variant="caption" color="secondary">WordPress</SoftTypography>
-                <SoftTypography variant="button" display="block">{details?.wp_version || (site as any).wpVersion || site.wpVersion || '—'}</SoftTypography>
+                <SoftTypography variant="caption" sx={{ color: 'rgba(255,255,255,0.9)' }}>WordPress</SoftTypography>
+                <SoftTypography variant="button" display="block" sx={{ color: 'white' }}>{details?.wp_version || (site as any).wpVersion || site.wpVersion || '—'}</SoftTypography>
               </Grid>
               <Grid item xs={6}>
-                <SoftTypography variant="caption" color="secondary">PHP</SoftTypography>
-                <SoftTypography variant="button" display="block">{details?.php_version || (site as any).phpVersion || site.phpVersion || '—'}</SoftTypography>
+                <SoftTypography variant="caption" sx={{ color: 'rgba(255,255,255,0.9)' }}>PHP</SoftTypography>
+                <SoftTypography variant="button" display="block" sx={{ color: 'white' }}>{details?.php_version || (site as any).phpVersion || site.phpVersion || '—'}</SoftTypography>
               </Grid>
               <Grid item xs={6}>
-                <SoftTypography variant="caption" color="secondary">Schijfruimte</SoftTypography>
-                <SoftTypography variant="button" display="block">—</SoftTypography>
+                <SoftTypography variant="caption" sx={{ color: 'rgba(255,255,255,0.9)' }}>Schijfruimte</SoftTypography>
+                <SoftTypography variant="button" display="block" sx={{ color: 'white' }}>—</SoftTypography>
               </Grid>
               <Grid item xs={6}>
-                <SoftTypography variant="caption" color="secondary">Memory limit</SoftTypography>
-                <SoftTypography variant="button" display="block">—</SoftTypography>
+                <SoftTypography variant="caption" sx={{ color: 'rgba(255,255,255,0.9)' }}>Memory limit</SoftTypography>
+                <SoftTypography variant="button" display="block" sx={{ color: 'white' }}>—</SoftTypography>
               </Grid>
             </Grid>
           </SoftBox>

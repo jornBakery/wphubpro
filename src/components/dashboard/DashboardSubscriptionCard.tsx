@@ -17,6 +17,8 @@ const ARC_CENTER_X = ARC_SIZE / 2;
 const ARC_CENTER_Y = ARC_RADIUS + 6;
 const ARC_HEIGHT = ARC_RADIUS * 2 + ARC_STROKE + 24;
 
+const blueGradient = 'linear-gradient(310deg, #4F5482, #7a8ef0)';
+
 function CircleProgress({
   label,
   used,
@@ -54,7 +56,7 @@ function CircleProgress({
     >
       <SoftTypography
         variant="caption"
-        sx={{ fontSize: '0.7rem', lineHeight: 1.2, color: '#6A7B8D', mb: 0.25 }}
+        sx={{ fontSize: '0.7rem', lineHeight: 1.2, color: 'white', mb: 0.25 }}
       >
         {label}
       </SoftTypography>
@@ -99,7 +101,7 @@ function CircleProgress({
           <SoftTypography
             variant="button"
             fontWeight="bold"
-            sx={{ fontSize: '0.75rem', lineHeight: 1.2, color: '#333333' }}
+            sx={{ fontSize: '0.75rem', lineHeight: 1.2, color: 'white' }}
           >
             {used} of {limit >= 9999 ? '∞' : limit}
           </SoftTypography>
@@ -142,39 +144,39 @@ const DashboardSubscriptionCard: React.FC<DashboardSubscriptionCardProps> = ({
     : `${((sub?.priceAmount ?? 0) / 100).toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} / ${sub?.interval === 'year' ? 'year' : 'month'}`;
 
   return (
-    <Card>
-      <SoftBox p={2}>
-        <SoftTypography variant="h6" fontWeight="bold" mb={1.5}>
+    <Card sx={{ background: blueGradient, color: 'white' }}>
+      <SoftBox p={2} sx={{ color: 'white' }}>
+        <SoftTypography variant="h6" fontWeight="bold" mb={1.5} sx={{ color: 'white' }}>
           Subscription Plan Details
         </SoftTypography>
         <SoftBox display="flex" justifyContent="space-between" alignItems="flex-start" mb={1}>
           <SoftBox>
-            <SoftTypography variant="button" fontWeight="medium">
+            <SoftTypography variant="button" fontWeight="medium" sx={{ color: 'white' }}>
               {sub?.planId ?? 'FREE'}
             </SoftTypography>
             {periodStart && (
-              <SoftTypography variant="caption" color="secondary" display="block">
+              <SoftTypography variant="caption" display="block" sx={{ color: 'rgba(255,255,255,0.9)' }}>
                 {periodStart.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })} – {periodEnd?.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' }) ?? '-'}
               </SoftTypography>
             )}
           </SoftBox>
-          <SoftTypography variant="button" fontWeight="medium" color="text">
+          <SoftTypography variant="button" fontWeight="medium" sx={{ color: 'white' }}>
             {priceLabel}
           </SoftTypography>
         </SoftBox>
         {isLoading ? (
-          <SoftTypography variant="caption" color="secondary">Laden...</SoftTypography>
+          <SoftTypography variant="caption" sx={{ color: 'rgba(255,255,255,0.9)' }}>Laden...</SoftTypography>
         ) : (
           <>
             {!isFree && (
-              <SoftTypography variant="caption" color="secondary" display="block" mb={1.5}>{billingPeriod}</SoftTypography>
+              <SoftTypography variant="caption" display="block" mb={1.5} sx={{ color: 'rgba(255,255,255,0.9)' }}>{billingPeriod}</SoftTypography>
             )}
             <SoftBox display="flex" flexDirection="row" justifyContent="space-between" alignItems="center" mb={1.5} flexWrap="nowrap" gap={1}>
               <CircleProgress label="Sites" used={u.sitesUsed} limit={sitesLimit} valuePct={sitesPct} />
               <CircleProgress label="Bibliotheek" used={u.libraryUsed} limit={libraryLimit} valuePct={libraryPct} />
               <CircleProgress label="Opslag" used={u.storageUsed} limit={storageLimit} valuePct={storagePct} />
             </SoftBox>
-            <SoftButton variant="gradient" color="info" size="small" component={Link} to="/subscription" fullWidth>
+            <SoftButton variant="outlined" size="small" component={Link} to="/subscription" fullWidth sx={{ borderColor: 'white', color: 'white', '&:hover': { borderColor: 'white', color: 'white', backgroundColor: 'rgba(255,255,255,0.15)' } }}>
               <Icon sx={{ mr: 0.5, fontSize: 16 }}>credit_card</Icon>
               Beheren
             </SoftButton>

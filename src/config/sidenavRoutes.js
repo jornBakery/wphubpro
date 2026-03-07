@@ -34,5 +34,9 @@ export const getSidenavRoutes = (isAdmin = false) => {
       ]
     : [];
 
-  return [...mainRoutes, ...adminRoutes];
+/** @deprecated Use userRoutes and adminRoutes with Sidenav tabs instead */
+export const getSidenavRoutes = (isAdmin = false) => {
+  const main = [...userRoutes, { type: 'divider', key: 'divider-1' }];
+  const admin = isAdmin ? [{ type: 'title', title: 'Admin', key: 'admin-title' }, ...adminRoutes] : [];
+  return [...main, ...admin];
 };
