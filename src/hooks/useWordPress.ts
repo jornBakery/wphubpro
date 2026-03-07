@@ -228,6 +228,16 @@ const themeEndpoints: Record<string, string> = {
   delete: 'wphubpro/v1/themes/manage/delete',
 };
 
+/** Site details (WP version, PHP version, etc.) - exported for SiteDetailSidebar */
+export const useSiteDetails = (siteId: string | undefined) => {
+  const { user } = useAuth();
+  return useQuery<{ wp_version?: string; php_version?: string; [key: string]: unknown }>({
+    queryKey: ['site-details', siteId],
+    queryFn: () => wpProxy(siteId!, user?.$id, 'wphubpro/v1/details'),
+    enabled: !!siteId,
+  });
+};
+
 /** Manage theme (activate/update/delete) - exported for ThemesTab */
 export const useManageTheme = (siteId: string | undefined) => {
   const queryClient = useQueryClient();
