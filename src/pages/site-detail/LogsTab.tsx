@@ -21,7 +21,6 @@ import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
 // Gebruik de centrale functions instantie uit services/appwrite
-import { functions } from '../../services/appwrite';
 import { 
   useSiteLogs, 
   useSiteErrorLog, 
@@ -687,6 +686,7 @@ function ExecutionLogsPanel({ siteId }: { siteId: string }) {
 
 const LogsTab: React.FC<LogsTabProps> = ({ siteId }) => {
   const [subTab, setSubTab] = useState(0);
+  const { executeRecovery } = useWordPress();
 
   return (
     <Card>
