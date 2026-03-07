@@ -24,13 +24,13 @@ import {
   useSiteLogs, 
   useSiteErrorLog, 
   useSiteExecutionLogs, 
-  executeRecovery,
   type BridgeLogEntry, 
   type AppwriteExecution 
 } from '../../hooks/useWordPress';
 import { useSite } from '../../hooks/useSites';
 import SoftTypography from 'components/SoftTypography';
 import SoftButton from 'components/SoftButton';
+import { functions } from '../../services/appwrite';
 
 function parseExecutionEndpoint(requestPath: string): string {
   if (!requestPath || !requestPath.includes('?')) return requestPath || '—';
