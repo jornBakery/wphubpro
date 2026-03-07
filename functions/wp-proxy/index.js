@@ -44,9 +44,19 @@ module.exports = async ({ req, res, log, error }) => {
     return fail(res, 'Invalid JSON payload.', 400);
   }
 
-  const siteId = payload.siteId || (req.query && req.query.siteId);
-  const endpoint = payload.endpoint || (req.query && req.query.endpoint);
-  const method = (payload.method || (req.query && req.query.method) || 'GET').toUpperCase();
+  let query = req.query ? { ...req.query } : {};
+  const pathStr = req.path || req.url || '';
+  if (pathStr.includes('?')) {
+    const idx = pathStr.indexOf('?');
+    const qs = pathStr.slice(idx + 1);
+    try {
+      const params = new URLSearchParams(qs);
+      params.forEach((v, k) => { if (!query[k]) query[k] = v; });
+    } catch (_) {}
+  }
+  const siteId = payload.siteId || query.siteId;
+  const endpoint = payload.endpoint || query.endpoint;
+  const method = (payload.method || query.method || 'GET').toUpperCase();
 
   if (!siteId || !endpoint) {
     return fail(res, 'Missing siteId or endpoint.', 400);
@@ -60,25 +70,36 @@ module.exports = async ({ req, res, log, error }) => {
     const siteDocument = await databases.getDocument('platform_db', 'sites', siteId);
     const site_url = siteDocument.site_url;
 
-    let apiKey = siteDocument.api_key || siteDocument.apiKey || siteDocument.password;
-    const looksEncrypted = apiKey && typeof apiKey === 'string' && apiKey.includes(':') && apiKey.split(':').length === 3;
+    let wpApiKey = siteDocument.api_key ?? siteDocument.apiKey ?? siteDocument.password;
+    if (siteDocument.data && typeof siteDocument.data === 'object') {
+      wpApiKey = wpApiKey ?? siteDocument.data.api_key ?? siteDocument.data.apiKey;
+    }
+    const docKeys = Object.keys(siteDocument).filter((k) => !k.startsWith('$'));
+    log(`[wp-proxy] site doc keys: ${docKeys.join(', ')}`);
+
+    const looksEncrypted = wpApiKey && typeof wpApiKey === 'string' && wpApiKey.includes(':') && wpApiKey.split(':').length === 3;
     const hasEncKey = !!ENCRYPTION_KEY;
-    if (apiKey && looksEncrypted && hasEncKey) {
-      const before = apiKey;
-      apiKey = decryptApiKey(apiKey, ENCRYPTION_KEY);
-      const decryptionOk = apiKey !== before && /^[a-zA-Z0-9]+$/.test(apiKey || '');
-      log(`[wp-proxy] api_key: present, encrypted=${looksEncrypted}, decrypted=${decryptionOk}, len=${(apiKey || '').length}`);
+    if (wpApiKey && looksEncrypted && hasEncKey) {
+      const before = wpApiKey;
+      wpApiKey = decryptApiKey(wpApiKey, ENCRYPTION_KEY);
+      const decryptionOk = wpApiKey !== before && /^[a-zA-Z0-9]+$/.test(wpApiKey || '');
+      log(`[wp-proxy] api_key: present, encrypted=${looksEncrypted}, decrypted=${decryptionOk}, len=${(wpApiKey || '').length}`);
       if (!decryptionOk) {
         error('[wp-proxy] api_key decryption may have failed - key format unexpected. Check ENCRYPTION_KEY matches create-site/update-site.');
       }
     } else {
-      log(`[wp-proxy] api_key: present=${!!apiKey}, encrypted=${looksEncrypted}, hasEncKey=${hasEncKey}`);
+      log(`[wp-proxy] api_key: present=${!!wpApiKey}, encrypted=${looksEncrypted}, hasEncKey=${hasEncKey}`);
+    }
+
+    if (!wpApiKey || typeof wpApiKey !== 'string' || !wpApiKey.trim()) {
+      error('[wp-proxy] No api_key found for site. Connect the site via WPHubPro Bridge (Nu Koppelen) and ensure the platform saves the key.');
+      return fail(res, 'Site has no API key. Connect via WPHubPro Bridge first.', 400);
     }
 
     const headers = {
       'Accept': 'application/json',
       'Content-Type': 'application/json',
-      'X-WPHub-Key': apiKey,
+      'X-WPHub-Key': wpApiKey,
       'X-WPHub-Action': wpAction || '',
       'X-WPHub-Plugin': wpPlugin || '',
       'User-Agent': 'WPHub-Proxy/1.0'
@@ -92,8 +113,8 @@ module.exports = async ({ req, res, log, error }) => {
     if (['POST', 'PUT', 'PATCH'].includes(method)) {
         // Stuur alleen de relevante body door naar WP (zonder proxy metadata)
         let bodyData = payload.body || payload;
-        if ((!bodyData || Object.keys(bodyData).length === 0) && req.query && req.query.body) {
-          bodyData = req.query.body;
+        if ((!bodyData || Object.keys(bodyData).length === 0) && query.body) {
+          bodyData = typeof query.body === 'string' ? JSON.parse(query.body) : query.body;
         }
         const { siteId: _s, endpoint: _e, method: _m, userId: _u, ...restBody } = (typeof bodyData === 'string' ? JSON.parse(bodyData) : bodyData);
         fetchOptions.body = JSON.stringify(restBody);
