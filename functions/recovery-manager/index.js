@@ -13,6 +13,13 @@ export default async ({ req, res, log, error }) => {
   const { siteId, action, plugin_slug } = JSON.parse(req.body);
 
   try {
+    // Voeg dit toe bovenaan je try-block in de Appwrite Function index.js
+log(`Start herstelactie voor site: ${siteId}`);
+log(`Actie: ${action}`);
+
+// Vlak voor de fetch:
+log(`Request versturen naar: ${siteUrl}`);
+
     // 1. Haal de site doc op uit de collectie (bevat de API key)
     const site = await databases.getDocument(
       process.env.APPWRITE_DATABASE_ID,
