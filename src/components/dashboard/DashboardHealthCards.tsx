@@ -69,14 +69,11 @@ const DashboardHealthCards: React.FC<DashboardHealthCardsProps> = ({
   const healthyCount = sites.filter(isHealthy).length;
   const disconnectedCount = sites.filter((s) => s.status === 'disconnected').length;
   const healthyPct = total > 0 ? Math.round((healthyCount / total) * 100) : 0;
-  const connectedPct = total > 0 ? Math.round(((total - disconnectedCount) / total) * 100) : 0;
+  const connectedPct = total > 0 ? Math.round((connectedCount / total) * 100) : 0;
+  // Updates score: % of connected sites that do not need an update (aligned with Updates card)
   const updatesScore =
-    pluginTotalCount + themeTotalCount > 0
-      ? Math.round(
-          (1 -
-            (pluginUpdatesCount + themeUpdatesCount) / (pluginTotalCount + themeTotalCount)) *
-            100
-        )
+    connectedCount > 0
+      ? Math.round((1 - sitesNeedingUpdatesCount / connectedCount) * 100)
       : 100;
   const totalHealthScore =
     total > 0 ? Math.round((updatesScore + healthyPct + connectedPct) / 3) : 0;
