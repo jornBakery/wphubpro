@@ -21,8 +21,8 @@ const SiteDetailsTab: React.FC<SiteDetailsTabProps> = ({ siteId, onTabChange }) 
   const { data: plugins } = usePlugins(siteId);
   const { data: themes } = useThemes(siteId);
 
-  const pluginsNeedingUpdate = plugins?.filter((p) => Boolean((p as any).update)).length ?? 0;
-  const themesNeedingUpdate = themes?.filter((t) => Boolean((t as any).update)).length ?? 0;
+  const pluginsNeedingUpdate = plugins?.filter((p) => p.update != null && String(p.update).trim() !== '').length ?? 0;
+  const themesNeedingUpdate = themes?.filter((t) => t.update != null && String(t.update ?? '').trim() !== '').length ?? 0;
   const logCount = Array.isArray((site as any)?.action_log) ? (site as any).action_log.length : 0;
   const healthStatus = site?.healthStatus ?? 'unknown';
 
