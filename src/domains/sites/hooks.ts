@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { databases } from '../../services/appwrite';
 import { Query } from 'appwrite';
@@ -9,6 +10,34 @@ import { mapSiteDocumentToSite } from './mappers';
 
 const DATABASE_ID = 'platform_db';
 const SITES_COLLECTION_ID = 'sites';
+
+const PING_INTERVAL_MS = 10_000;
+
+/** Ping bridge API and update site connection status in DB. Throws on failure (for checkHealth); returns false when disconnected (for background ping). */
+async function pingSiteConnection(
+  siteId: string,
+  userId: string,
+  options?: { throwOnFail?: boolean }
+): Promise<boolean> {
+  const path = `/?siteId=${siteId}&endpoint=wphubpro/v1/plugins&userId=${userId}&useApiKey=1`;
+  const exec = await executeFunctionWithMeta<unknown>('wp-proxy', undefined, {
+    path,
+    throwOnHttpError: false,
+  });
+  const status = exec.statusCode || 0;
+  const success = exec.executionStatus === 'completed' && status >= 200 && status < 400;
+  await databases.updateDocument(DATABASE_ID, SITES_COLLECTION_ID, siteId, {
+    status: success ? 'connected' : 'disconnected',
+    health_status: success ? 'healthy' : 'bad',
+    last_checked: new Date().toISOString(),
+  });
+  if (!success && options?.throwOnFail) {
+    const parsed = exec.data as any;
+    const msg = parsed && parsed.message ? parsed.message : 'Verbinding mislukt';
+    throw new Error(msg);
+  }
+  return success;
+}
 
 export const useSites = () => {
   const { user } = useAuth();
@@ -124,8 +153,10 @@ export const useUpdateSite = () => {
     health_status?: 'healthy' | 'bad';
     last_checked?: string;
     meta_data?: string;
+    /** When true, skip success toast (e.g. for background connection-status corrections) */
+    silent?: boolean;
   }>({
-    mutationFn: async ({ siteId, ...updates }) => {
+    mutationFn: async ({ siteId, silent: _silent, ...updates }) => {
       if (!user) throw new Error('User not authenticated.');
 
       // Decide if server processing is needed. Use property presence (not truthiness)
@@ -162,7 +193,9 @@ export const useUpdateSite = () => {
       // Invalidate plugins/themes for this site so the UI refetches using updated credentials
       queryClient.invalidateQueries({ queryKey: ['plugins', variables.siteId] });
       queryClient.invalidateQueries({ queryKey: ['themes', variables.siteId] });
-      toast({ title: 'Site bijgewerkt', description: 'De gegevens zijn succesvol opgeslagen.', variant: 'success' });
+      if (!variables.silent) {
+        toast({ title: 'Site bijgewerkt', description: 'De gegevens zijn succesvol opgeslagen.', variant: 'success' });
+      }
     },
     onError: (err) => {
       toast({ title: 'Update mislukt', description: err.message, variant: 'destructive' });
@@ -178,24 +211,7 @@ export const useCheckSiteHealth = (siteId: string | undefined) => {
   return useMutation<void, Error, { silent?: boolean } | void>({
     mutationFn: async () => {
       if (!siteId || !user) throw new Error('Site ID required.');
-      // Probeer de plugins endpoint via wp-proxy
-      const path = `/?siteId=${siteId}&endpoint=wphubpro/v1/plugins&userId=${user.$id}&useApiKey=1`;
-      const exec = await executeFunctionWithMeta<unknown>('wp-proxy', undefined, {
-        path,
-        throwOnHttpError: false,
-      });
-      const status = exec.statusCode || 0;
-      const success = exec.executionStatus === 'completed' && status >= 200 && status < 400;
-      await databases.updateDocument(DATABASE_ID, SITES_COLLECTION_ID, siteId, {
-        status: success ? 'connected' : 'disconnected',
-        health_status: success ? 'healthy' : 'bad',
-        last_checked: new Date().toISOString(),
-      });
-      if (!success) {
-        const parsed = exec.data as any;
-        const msg = parsed && parsed.message ? parsed.message : 'Verbinding mislukt';
-        throw new Error(msg);
-      }
+      await pingSiteConnection(siteId, user.$id, { throwOnFail: true });
     },
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['sites', user?.$id] });
@@ -230,4 +246,43 @@ export const useDeleteSite = () => {
       toast({ title: 'Verwijderen mislukt', description: err.message, variant: 'destructive' });
     },
   });
+};
+
+/** Background ping: probes bridge API every 10s and updates connection status. Use on Site Detail. */
+export const useSiteConnectionPing = (siteId: string | undefined, intervalMs = PING_INTERVAL_MS) => {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (!siteId || !user) return;
+    const run = async () => {
+      try {
+        await pingSiteConnection(siteId, user.$id);
+      } finally {
+        queryClient.invalidateQueries({ queryKey: ['sites', user.$id] });
+        queryClient.invalidateQueries({ queryKey: ['site', siteId] });
+      }
+    };
+    run();
+    const id = setInterval(run, intervalMs);
+    return () => clearInterval(id);
+  }, [siteId, user?.$id, intervalMs, queryClient]);
+};
+
+/** Background ping: probes bridge API for all sites every 10s and updates statuses. Use on Dashboard/Sites. */
+export const useSitesConnectionPing = (siteIds: string[], intervalMs = PING_INTERVAL_MS) => {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (!user || siteIds.length === 0) return;
+    const run = async () => {
+      await Promise.all(siteIds.map((sid) => pingSiteConnection(sid, user.$id)));
+      queryClient.invalidateQueries({ queryKey: ['sites', user.$id] });
+      siteIds.forEach((sid) => queryClient.invalidateQueries({ queryKey: ['site', sid] }));
+    };
+    run();
+    const id = setInterval(run, intervalMs);
+    return () => clearInterval(id);
+  }, [siteIds.join(','), user?.$id, intervalMs, queryClient]);
 };

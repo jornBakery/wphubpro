@@ -19,7 +19,6 @@ import InputLabel from '@mui/material/InputLabel';
 import SoftBox from 'components/SoftBox';
 import SoftTypography from 'components/SoftTypography';
 import SoftButton from 'components/SoftButton';
-import SoftBadge from 'components/SoftBadge';
 import { usePlugins, useTogglePlugin, useUpdatePlugin, useDeletePlugin } from '../../hooks/useWordPress';
 import { useSite } from '../../domains/sites';
 import { WordPressPlugin } from '../../types';
@@ -165,7 +164,21 @@ const PluginsTab: React.FC<PluginsTabProps> = ({ siteId }) => {
               <TableRow key={plugin.plugin}>
                 <DataTableBodyCell><SoftTypography variant="button" fontWeight="medium">{plugin.name}</SoftTypography></DataTableBodyCell>
                 <DataTableBodyCell>
-                  <SoftBadge variant="contained" color={plugin.status === 'active' ? 'success' : 'secondary'} size="xs" badgeContent={plugin.status === 'active' ? 'Actief' : 'Inactief'} container />
+                  <SoftBox
+                  component="span"
+                  sx={{
+                    display: 'inline-block',
+                    px: 1.5,
+                    py: 0.5,
+                    borderRadius: 1,
+                    background: plugin.status === 'active' ? orangeGradient : infoGradient,
+                    color: '#ffffff',
+                    fontSize: '0.7rem',
+                    fontWeight: 600,
+                  }}
+                >
+                  {plugin.status === 'active' ? 'Actief' : 'Inactief'}
+                </SoftBox>
                 </DataTableBodyCell>
                 <DataTableBodyCell>
                   <SoftBox display="flex" alignItems="center" gap={0.5}>
