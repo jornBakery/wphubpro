@@ -155,7 +155,7 @@ const DashboardSubscriptionCard: React.FC<DashboardSubscriptionCardProps> = ({
               {sub?.planId ?? 'FREE'}
             </SoftTypography>
             {periodStart && (
-              <SoftTypography variant="caption" display="block" sx={{ color: 'rgba(255,255,255,0.9)' }}>
+              <SoftTypography variant="caption" display="block" sx={{ color: 'white' }}>
                 {periodStart.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })} – {periodEnd?.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' }) ?? '-'}
               </SoftTypography>
             )}
@@ -165,11 +165,11 @@ const DashboardSubscriptionCard: React.FC<DashboardSubscriptionCardProps> = ({
           </SoftTypography>
         </SoftBox>
         {isLoading ? (
-          <SoftTypography variant="caption" sx={{ color: 'rgba(255,255,255,0.9)' }}>Laden...</SoftTypography>
+          <SoftTypography variant="caption" sx={{ color: 'white' }}>Laden...</SoftTypography>
         ) : (
           <>
             {!isFree && (
-              <SoftTypography variant="caption" display="block" mb={1.5} sx={{ color: 'rgba(255,255,255,0.9)' }}>{billingPeriod}</SoftTypography>
+              <SoftTypography variant="caption" display="block" mb={1.5} sx={{ color: 'white' }}>{billingPeriod}</SoftTypography>
             )}
             <SoftBox display="flex" flexDirection="row" justifyContent="space-between" alignItems="center" mb={1.5} flexWrap="nowrap" gap={1}>
               <CircleProgress label="Sites" used={u.sitesUsed} limit={sitesLimit} valuePct={sitesPct} />
