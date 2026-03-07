@@ -14,7 +14,7 @@ function parseMetaData(doc: Record<string, any>): Record<string, unknown> {
 export const mapSiteDocumentToSite = (doc: Record<string, any>): Site => {
   const hasCredentials = !!(doc.api_key || doc.apiKey || doc.password);
   const meta = parseMetaData(doc);
-  const metaConnected = meta.connected;
+  const metaConnected = meta.connected ?? meta.connection;
   const status: 'connected' | 'disconnected' =
     metaConnected === true
       ? 'connected'
