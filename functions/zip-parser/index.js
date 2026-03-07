@@ -237,10 +237,9 @@ module.exports = async ({ req, res, log, error }) => {
       author: extractedMetadata.author || "",
       source: "local",
       type: itemType,
-      s3_key: s3Location,
+      s3_path: s3Location,
       user_id: uid,
       wpSlug: extractedMetadata.slug || (fileName ? fileName.replace(".zip", "") : ""),
-      created_at: new Date().toISOString(),
     };
 
     let savedDoc;

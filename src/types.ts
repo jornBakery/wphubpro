@@ -63,7 +63,8 @@ export interface SubscriptionSyncResult {
 }
 
 export interface Subscription {
-  stripeSubscriptionId: boolean;
+  stripeSubscriptionId?: string | null;
+  stripe_subscription_id?: string | null;
   userId: string;
   planId: string;
   status: 'active' | 'trialing' | 'canceled' | 'past_due';

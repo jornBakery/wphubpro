@@ -4,6 +4,7 @@ import { functions } from '../services/appwrite';
 import { WordPressPlugin, WordPressTheme } from '../types';
 import { useToast } from '../contexts/ToastContext';
 import { useAuth } from '../contexts/AuthContext';
+import { executeFunctionWithMeta } from '../integrations/appwrite/executeFunction';
 
 const FUNCTION_ID = 'wp-proxy';
 
@@ -22,19 +23,13 @@ const executeWpProxy = async <T>(payload: { siteId: string; method?: string; end
     const path = `/?${qs.toString()}`;
 
     const execMethod = payload.method ? String(payload.method) : 'GET';
-    const result = await functions.createExecution(FUNCTION_ID, undefined, false, path, execMethod as any);
-
-    // Appwrite Execution response properties
-    const responseBody = result.responseBody || '';
-    const statusCode = result.responseStatusCode || 0;
-
-    // Safely attempt to parse JSON; if it fails, keep raw text
-    let data: any = null;
-    try {
-      data = responseBody ? JSON.parse(responseBody) : null;
-    } catch {
-      data = responseBody;
-    }
+    const result = await executeFunctionWithMeta<any>(FUNCTION_ID, undefined, {
+      path,
+      method: execMethod as any,
+      throwOnHttpError: false,
+    });
+    const statusCode = result.statusCode || 0;
+    const data = result.data;
 
     if (statusCode < 200 || statusCode >= 300) {
       const message = (data && typeof data === 'object' && data.message) ? data.message : (typeof data === 'string' ? data : `Request failed with status ${statusCode}`);
@@ -48,17 +43,7 @@ const executeWpProxy = async <T>(payload: { siteId: string; method?: string; end
 
     return data as T;
     } catch (error) {
-    // Try to surface function execution details if present
-    const err: any = error;
-    if (err && err.response) {
-      try {
-        const parsed = JSON.parse(err.response);
-        throw new Error(parsed.message || 'An unknown error occurred while executing the function.');
-      } catch {
-        throw err;
-      }
-    }
-    throw err;
+    throw error;
   }
 };
 

@@ -1,9 +1,9 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { redirectToBillingPortal } from '../services/stripe';
 import { useToast } from '../contexts/ToastContext';
-import { functions } from '../services/appwrite';
 import { StripeInvoice, StripePlan } from '../types';
 import { useAuth } from '../contexts/AuthContext';
+import { executeFunction } from '../integrations/appwrite/executeFunction';
 
 const STRIPE_LIST_PRODUCTS_FUNCTION_ID = 'stripe-list-products';
 const STRIPE_CREATE_CHECKOUT_SESSION_FUNCTION_ID = 'stripe-create-checkout-session';
@@ -33,14 +33,8 @@ export const useInvoices = () => {
         queryKey: ['invoices', user?.$id],
         queryFn: async () => {
             if (!user) return [];
-            const result = await functions.createExecution(LIST_INVOICES_FUNCTION_ID);
-            // FIX: The Appwrite Execution model uses `responseStatusCode`.
-            if (result.responseStatusCode >= 400) {
-                // FIX: The Appwrite Execution model uses `responseBody`.
-                throw new Error(JSON.parse(result.responseBody).message || 'Failed to fetch invoices.');
-            }
-            // FIX: The Appwrite Execution model uses `responseBody`.
-            return JSON.parse(result.responseBody).invoices;
+            const result = await executeFunction<{ invoices: StripeInvoice[] }>(LIST_INVOICES_FUNCTION_ID);
+            return result?.invoices ?? [];
         },
         enabled: !!user,
     });
@@ -51,15 +45,7 @@ export const useStripePlans = () => {
   return useQuery<StripePlan[], Error>({
     queryKey: ['stripePlans'],
     queryFn: async () => {
-      const execution = await functions.createExecution(
-        STRIPE_LIST_PRODUCTS_FUNCTION_ID,
-        '', // No body needed
-        false // Not async
-      );
-      if (execution.responseStatusCode >= 400) {
-        throw new Error(JSON.parse(execution.responseBody).error || 'Failed to fetch plans.');
-      }
-      const response = JSON.parse(execution.responseBody);
+      const response = await executeFunction<{ plans: StripePlan[] }>(STRIPE_LIST_PRODUCTS_FUNCTION_ID);
       return response.plans || []; // Extract the 'plans' array and fallback to an empty array
     },
     enabled: !!user, // Only fetch if the user is logged in
@@ -73,39 +59,12 @@ export const useCreateCheckoutSession = () => {
         mutationFn: async ({ priceId }) => {
             // Get current origin for dynamic redirect URLs
             const returnUrl = window.location.origin;
-            
-            const execution = await functions.createExecution(
+
+            const response = await executeFunction<{ sessionId: string; url: string }>(
                 STRIPE_CREATE_CHECKOUT_SESSION_FUNCTION_ID,
-                JSON.stringify({ priceId, returnUrl }),
-                false // Not async
+                { priceId, returnUrl }
             );
-
-            console.log('Stripe checkout execution:', {
-                statusCode: execution.responseStatusCode,
-                body: execution.responseBody
-            });
-
-            if (execution.responseStatusCode >= 400) {
-                let errorMessage = 'Failed to create checkout session.';
-                try {
-                    const errorData = JSON.parse(execution.responseBody);
-                    errorMessage = errorData.error || errorMessage;
-                } catch {
-                    errorMessage = execution.responseBody || errorMessage;
-                }
-                throw new Error(errorMessage);
-            }
-
-            if (!execution.responseBody) {
-                throw new Error('Function returned empty response. Check function logs in Appwrite Console.');
-            }
-
-            try {
-                return JSON.parse(execution.responseBody);
-            } catch {
-                console.error('Failed to parse response:', execution.responseBody);
-                throw new Error(`Invalid response from server: ${execution.responseBody}`);
-            }
+            return response;
         },
         onError: (error) => {
             toast({
@@ -121,18 +80,11 @@ export const useCancelSubscription = () => {
     const { toast } = useToast();
     return useMutation<{ success: boolean }, Error, void>({
         mutationFn: async () => {
-            const execution = await functions.createExecution(
+            const response = await executeFunction<{ success: boolean }>(
                 STRIPE_CANCEL_SUBSCRIPTION_FUNCTION_ID,
-                '',
-                false
+                undefined
             );
-
-            if (execution.responseStatusCode >= 400) {
-                const errorData = JSON.parse(execution.responseBody);
-                throw new Error(errorData.error || 'Failed to cancel subscription.');
-            }
-
-            return JSON.parse(execution.responseBody);
+            return response;
         },
         onSuccess: () => {
             toast({

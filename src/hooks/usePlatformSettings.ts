@@ -1,7 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { databases, functions, DATABASE_ID, COLLECTIONS } from '../services/appwrite';
+import { databases, DATABASE_ID, COLLECTIONS } from '../services/appwrite';
 import { Query } from 'appwrite';
 import { useAuth } from '../contexts/AuthContext';
+import { executeFunction } from '../integrations/appwrite/executeFunction';
 
 /**
  * Hook to fetch platform settings by category.
@@ -43,18 +44,12 @@ export const useUpdatePlatformSettings = () => {
             if (!user) {
                 throw new Error("User is not authenticated.");
             }
-            
-            const response = await functions.createExecution(
-                'manage-settings',
-                JSON.stringify({ category, settings, userId: user.$id })
-            );
 
-            if (response.responseStatusCode >= 400) {
-                const errorData = JSON.parse(response.responseBody || '{}');
-                throw new Error(errorData.message || 'Failed to update settings via function.');
-            }
-
-            return JSON.parse(response.responseBody);
+            return await executeFunction<{ success: boolean; message?: string }>('manage-settings', {
+                category,
+                settings,
+                userId: user.$id
+            });
         },
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: ['platformSettings', variables.category] });
