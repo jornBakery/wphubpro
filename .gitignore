@@ -6,3 +6,4 @@ functions/.env
 functions/.env.local
 !*.env.example
 !functions/.env.example
+wphubpro-bridge
