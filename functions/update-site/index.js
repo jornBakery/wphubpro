@@ -1,10 +1,10 @@
 /* eslint-disable no-unused-vars */
 const sdk = require('node-appwrite');
 const crypto = require('crypto');
-const { getEnv, getAppwriteConfig } = require('../_shared/env');
-const { parsePayload } = require('../_shared/request');
-const { createClient } = require('../_shared/appwrite');
-const { fail, ok } = require('../_shared/response');
+const { getEnv, getAppwriteConfig } = require('./_shared/env');
+const { parsePayload } = require('./_shared/request');
+const { createClient } = require('./_shared/appwrite');
+const { fail, ok } = require('./_shared/response');
 
 function encrypt(text, key) {
   const iv = crypto.randomBytes(12);
