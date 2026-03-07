@@ -3,8 +3,8 @@ import jwt from 'jsonwebtoken';
 
 /**
  * WPHubPro Recovery Manager
- * Deze functie faciliteert noodherstel acties (logs ophalen/plugins deactiveren)
- * via een beveiligde JWT verbinding met de WordPress MU-plugin.
+ * Deze functie faciliteert noodherstel acties via een beveiligde JWT verbinding.
+ * Werkt met Nginx door het token zowel in de header als in de URL mee te sturen.
  */
 export default async ({ req, res, log, error }) => {
   // Initialiseer Appwrite Client
@@ -39,15 +39,14 @@ export default async ({ req, res, log, error }) => {
       siteId
     );
 
-    // Bepaal de URL en de geheime sleutel
-    const targetUrl = site.site_url;
-    const siteApiKey = site.api_key;
+    // Bepaal de URL en de geheime sleutel (Shared Secret)
+    const targetUrl = site.siteUrl || site.url;
+    const siteApiKey = site.wphubpro_api_key;
 
     if (!targetUrl) throw new Error('Site URL niet gevonden in database.');
     if (!siteApiKey) throw new Error('Geen WPHubPro API key gevonden voor deze site.');
 
-    // 3. Genereer de JWT (Shared Secret Authentication)
-    // We sturen de actie en eventueel de plugin_slug mee in de payload
+    // 3. Genereer de JWT
     const token = jwt.sign(
       {
         action,
@@ -57,47 +56,18 @@ export default async ({ req, res, log, error }) => {
       siteApiKey
     );
 
-    log(`Verbinding maken met: ${targetUrl}`);
+    // 4. Bereid de URL voor met token parameter (Fallback voor Nginx/Hostings die headers strippen)
+    const urlWithToken = new URL(targetUrl);
+    urlWithToken.searchParams.append('wphub_token', token);
 
-    // 4. Voer het request uit naar de WordPress site
-    const response = await fetch(targetUrl, {
+    log(`Verbinding maken met: ${urlWithToken.origin} (via URL parameter fallback)`);
+
+    // 5. Voer het request uit naar de WordPress site
+    const response = await fetch(urlWithToken.toString(), {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${token}`,
+        'Authorization': `Bearer ${token}`, // Altijd meesturen voor servers die het wel ondersteunen
         'X-WPHubPro-Recovery': 'true',
         'Accept': 'application/json'
       }
     });
-
-    // Haal de rauwe tekst op om HTML-vervuiling te kunnen debuggen
-    const responseText = await response.text();
-    
-    try {
-      // Probeer de response te parsen als JSON
-      const data = JSON.parse(responseText);
-      
-      log(`Succesvolle communicatie met WordPress agent.`);
-      return res.json({ 
-        success: true, 
-        data: data 
-      });
-
-    } catch (parseError) {
-      // Als parsen mislukt, is er waarschijnlijk HTML (error output) teruggestuurd
-      error(`JSON Parse fout. Ontvangen data: ${responseText.substring(0, 500)}`);
-      
-      return res.json({ 
-        success: false, 
-        message: 'De WordPress site stuurde HTML terug in plaats van JSON. Dit gebeurt vaak bij Fatal Errors die de output vervuilen.',
-        rawResponse: responseText.substring(0, 200)
-      }, 500);
-    }
-
-  } catch (err) {
-    error(`Recovery Manager Fout: ${err.message}`);
-    return res.json({ 
-      success: false, 
-      message: err.message 
-    }, 500);
-  }
-};
