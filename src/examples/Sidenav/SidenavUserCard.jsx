@@ -9,7 +9,7 @@ import SoftTypography from "components/SoftTypography";
 import SoftAvatar from "components/SoftAvatar";
 import Icon from "@mui/material/Icon";
 import { useSoftUIController } from "context";
-import { useAuth } from "../../domains/auth/context";
+import { useAuth } from "../../domains/auth";
 import { avatars } from "../../services/appwrite";
 import colors from "assets/theme/base/colors";
 

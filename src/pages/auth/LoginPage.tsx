@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import Card from '@mui/material/Card';
 import Icon from '@mui/material/Icon';
 import CircularProgress from '@mui/material/CircularProgress';
-import { useAuth } from '../../domains/auth/context';
+import { useAuth } from '../../domains/auth';
 import { usePlatformSettings } from '../../hooks/usePlatformSettings';
 import SoftBox from 'components/SoftBox';
 import SoftTypography from 'components/SoftTypography';

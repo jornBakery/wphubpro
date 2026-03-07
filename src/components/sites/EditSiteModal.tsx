@@ -8,7 +8,7 @@ import SoftTypography from 'components/SoftTypography';
 import SoftButton from 'components/SoftButton';
 import SoftInput from 'components/SoftInput';
 import Icon from '@mui/material/Icon';
-import { useUpdateSite } from '../../domains/sites/hooks';
+import { useUpdateSite } from '../../domains/sites';
 
 interface SiteForEdit {
   $id: string;
