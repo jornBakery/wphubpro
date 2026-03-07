@@ -56,7 +56,8 @@ function CircleProgress({
     >
       <SoftTypography
         variant="caption"
-        sx={{ fontSize: '0.7rem', lineHeight: 1.2, color: 'white', mb: 0.25 }}
+        color="white"
+        sx={{ fontSize: '0.7rem', lineHeight: 1.2, mb: 0.25 }}
       >
         {label}
       </SoftTypography>
@@ -101,7 +102,8 @@ function CircleProgress({
           <SoftTypography
             variant="button"
             fontWeight="bold"
-            sx={{ fontSize: '0.75rem', lineHeight: 1.2, color: 'white' }}
+            color="white"
+            sx={{ fontSize: '0.75rem', lineHeight: 1.2 }}
           >
             {used} of {limit >= 9999 ? '∞' : limit}
           </SoftTypography>
@@ -144,32 +146,32 @@ const DashboardSubscriptionCard: React.FC<DashboardSubscriptionCardProps> = ({
     : `${((sub?.priceAmount ?? 0) / 100).toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} / ${sub?.interval === 'year' ? 'year' : 'month'}`;
 
   return (
-    <Card sx={{ background: blueGradient, color: 'white' }}>
-      <SoftBox p={2} sx={{ color: 'white' }}>
-        <SoftTypography variant="h6" fontWeight="bold" mb={1.5} sx={{ color: 'white' }}>
+    <Card sx={{ background: blueGradient, color: 'white', '& .MuiTypography-root': { color: 'white !important' } }}>
+      <SoftBox p={2} sx={{ color: 'white', '& .MuiTypography-root': { color: 'white !important' } }}>
+        <SoftTypography variant="h6" fontWeight="bold" color="white" mb={1.5}>
           Subscription Plan Details
         </SoftTypography>
         <SoftBox display="flex" justifyContent="space-between" alignItems="flex-start" mb={1}>
           <SoftBox>
-            <SoftTypography variant="button" fontWeight="medium" sx={{ color: 'white' }}>
+            <SoftTypography variant="button" fontWeight="medium" color="white">
               {sub?.planId ?? 'FREE'}
             </SoftTypography>
             {periodStart && (
-              <SoftTypography variant="caption" display="block" sx={{ color: 'white' }}>
+              <SoftTypography variant="caption" display="block" color="white">
                 {periodStart.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })} – {periodEnd?.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' }) ?? '-'}
               </SoftTypography>
             )}
           </SoftBox>
-          <SoftTypography variant="button" fontWeight="medium" sx={{ color: 'white' }}>
+          <SoftTypography variant="button" fontWeight="medium" color="white">
             {priceLabel}
           </SoftTypography>
         </SoftBox>
         {isLoading ? (
-          <SoftTypography variant="caption" sx={{ color: 'white' }}>Laden...</SoftTypography>
+          <SoftTypography variant="caption" color="white">Laden...</SoftTypography>
         ) : (
           <>
             {!isFree && (
-              <SoftTypography variant="caption" display="block" mb={1.5} sx={{ color: 'white' }}>{billingPeriod}</SoftTypography>
+              <SoftTypography variant="caption" display="block" mb={1.5} color="white">{billingPeriod}</SoftTypography>
             )}
             <SoftBox display="flex" flexDirection="row" justifyContent="space-between" alignItems="center" mb={1.5} flexWrap="nowrap" gap={1}>
               <CircleProgress label="Sites" used={u.sitesUsed} limit={sitesLimit} valuePct={sitesPct} />
