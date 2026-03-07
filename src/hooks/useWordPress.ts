@@ -66,6 +66,8 @@ export const usePlugins = (siteId: string | undefined) => {
       })) as WordPressPlugin[];
     },
     enabled: !!siteId,
+    staleTime: 0, // Always consider data stale so we fetch fresh update availability on each load
+    refetchOnMount: 'always',
   });
 };
 
@@ -197,6 +199,8 @@ export const useThemes = (siteId: string | undefined) => {
       })) as WordPressTheme[];
     },
     enabled: !!siteId,
+    staleTime: 0, // Always consider data stale so we fetch fresh update availability on each load
+    refetchOnMount: 'always',
   });
 };
 
