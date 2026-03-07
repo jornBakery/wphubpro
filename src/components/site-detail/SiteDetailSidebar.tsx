@@ -39,11 +39,74 @@ const SiteDetailSidebar: React.FC<SiteDetailSidebarProps> = ({
   return (
     <SoftBox display="flex" flexDirection="column" gap={2} sx={{ alignSelf: 'flex-start' }}>
       {/* Site Details Card - sticky on scroll */}
-      <Card sx={{ position: 'sticky', top: 8, zIndex: 1, background: infoGradient, color: 'white' }}>
-        <SoftBox p={2} sx={{ color: 'white' }}>
-          <SoftTypography variant="h6" fontWeight="bold" mb={1} sx={{ color: 'white' }}>
-            {siteName}
-          </SoftTypography>
+      <Card sx={{ position: 'sticky', top: 8, zIndex: 1, background: infoGradient, color: 'white', '& .MuiTypography-root, & .MuiBadge-root': { color: 'white !important' } }}>
+        <SoftBox p={2} sx={{ color: 'white', '& .MuiTypography-root': { color: 'white !important' } }}>
+          <SoftBox display="flex" justifyContent="space-between" alignItems="flex-start" mb={1}>
+            <SoftBox flex={1} minWidth={0}>
+              <SoftTypography variant="h6" fontWeight="bold" color="white">
+                {siteName}
+              </SoftTypography>
+            </SoftBox>
+            <SoftBox display="flex" alignItems="center" gap={0.5} flexShrink={0} ml={1}>
+              <Tooltip title="Verwijderen" placement="top">
+                <IconButton
+                  size="small"
+                  onClick={onRemove}
+                  sx={{
+                    width: 32,
+                    height: 32,
+                    background: orangeGradient,
+                    color: 'white',
+                    '&:hover': { background: orangeGradient, opacity: 0.9 },
+                    '& .MuiSvgIcon-root': { color: 'white' },
+                  }}
+                >
+                  <Icon sx={{ fontSize: 18, color: 'white !important' }}>delete</Icon>
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Verbinding controleren" placement="top">
+                <IconButton
+                  size="small"
+                  onClick={() => checkHealth.mutate()}
+                  disabled={checkHealth.isPending}
+                  sx={{
+                    width: 32,
+                    height: 32,
+                    background: '#ffffff',
+                    '&:hover': { background: 'rgba(255,255,255,0.9)' },
+                    '& .MuiSvgIcon-root': {
+                      background: infoGradient,
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      backgroundClip: 'text',
+                    },
+                  }}
+                >
+                  <Icon sx={{ fontSize: 18, background: infoGradient, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>sync</Icon>
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Bewerken" placement="top">
+                <IconButton
+                  size="small"
+                  onClick={onEdit}
+                  sx={{
+                    width: 32,
+                    height: 32,
+                    background: '#ffffff',
+                    '&:hover': { background: 'rgba(255,255,255,0.9)' },
+                    '& .MuiSvgIcon-root': {
+                      background: infoGradient,
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      backgroundClip: 'text',
+                    },
+                  }}
+                >
+                  <Icon sx={{ fontSize: 18, background: infoGradient, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>edit</Icon>
+                </IconButton>
+              </Tooltip>
+            </SoftBox>
+          </SoftBox>
           {siteUrl && (
             <a
               href={fullUrl}
@@ -53,7 +116,8 @@ const SiteDetailSidebar: React.FC<SiteDetailSidebarProps> = ({
             >
               <SoftTypography
                 variant="caption"
-                sx={{ display: 'block', wordBreak: 'break-all', color: 'rgba(255,255,255,0.9)', '&:hover': { textDecoration: 'underline' } }}
+                color="white"
+                sx={{ display: 'block', wordBreak: 'break-all', '&:hover': { textDecoration: 'underline' } }}
               >
                 {siteUrl}
               </SoftTypography>
@@ -66,78 +130,27 @@ const SiteDetailSidebar: React.FC<SiteDetailSidebarProps> = ({
 
           {/* Technical details */}
           <SoftBox mt={2} pt={2} borderTop="1px solid rgba(255,255,255,0.3)">
-            <SoftTypography variant="caption" fontWeight="bold" sx={{ display: 'block', mb: 1, color: 'rgba(255,255,255,0.9)' }}>
+            <SoftTypography variant="caption" fontWeight="bold" color="white" sx={{ display: 'block', mb: 1 }}>
               Technische gegevens
             </SoftTypography>
             <Grid container spacing={1}>
               <Grid item xs={6}>
-                <SoftTypography variant="caption" sx={{ color: 'rgba(255,255,255,0.9)' }}>WordPress</SoftTypography>
-                <SoftTypography variant="button" display="block" sx={{ color: 'white' }}>{details?.wp_version || (site as any).wpVersion || site.wpVersion || '—'}</SoftTypography>
+                <SoftTypography variant="caption" color="white">WordPress</SoftTypography>
+                <SoftTypography variant="button" display="block" color="white">{details?.wp_version || (site as any).wpVersion || site.wpVersion || '—'}</SoftTypography>
               </Grid>
               <Grid item xs={6}>
-                <SoftTypography variant="caption" sx={{ color: 'rgba(255,255,255,0.9)' }}>PHP</SoftTypography>
-                <SoftTypography variant="button" display="block" sx={{ color: 'white' }}>{details?.php_version || (site as any).phpVersion || site.phpVersion || '—'}</SoftTypography>
+                <SoftTypography variant="caption" color="white">PHP</SoftTypography>
+                <SoftTypography variant="button" display="block" color="white">{details?.php_version || (site as any).phpVersion || site.phpVersion || '—'}</SoftTypography>
               </Grid>
               <Grid item xs={6}>
-                <SoftTypography variant="caption" sx={{ color: 'rgba(255,255,255,0.9)' }}>Schijfruimte</SoftTypography>
-                <SoftTypography variant="button" display="block" sx={{ color: 'white' }}>—</SoftTypography>
+                <SoftTypography variant="caption" color="white">Schijfruimte</SoftTypography>
+                <SoftTypography variant="button" display="block" color="white">—</SoftTypography>
               </Grid>
               <Grid item xs={6}>
-                <SoftTypography variant="caption" sx={{ color: 'rgba(255,255,255,0.9)' }}>Memory limit</SoftTypography>
-                <SoftTypography variant="button" display="block" sx={{ color: 'white' }}>—</SoftTypography>
+                <SoftTypography variant="caption" color="white">Memory limit</SoftTypography>
+                <SoftTypography variant="button" display="block" color="white">—</SoftTypography>
               </Grid>
             </Grid>
-          </SoftBox>
-          <SoftBox display="flex" alignItems="center" gap={0.5}>
-            <Tooltip title="Verwijderen" placement="top">
-              <IconButton
-                size="small"
-                onClick={onRemove}
-                sx={{
-                  width: 32,
-                  height: 32,
-                  background: orangeGradient,
-                  color: 'white',
-                  '&:hover': { background: orangeGradient, opacity: 0.9 },
-                  '& .MuiSvgIcon-root': { color: 'white' },
-                }}
-              >
-                <Icon sx={{ fontSize: 18, color: 'white !important' }}>delete</Icon>
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Verbinding controleren" placement="top">
-              <IconButton
-                size="small"
-                onClick={() => checkHealth.mutate()}
-                disabled={checkHealth.isPending}
-                sx={{
-                  width: 32,
-                  height: 32,
-                  background: infoGradient,
-                  color: 'white',
-                  '&:hover': { background: infoGradient, opacity: 0.9 },
-                  '& .MuiSvgIcon-root': { color: 'white' },
-                }}
-              >
-                <Icon sx={{ fontSize: 18, color: 'white !important' }}>sync</Icon>
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Bewerken" placement="top">
-              <IconButton
-                size="small"
-                onClick={onEdit}
-                sx={{
-                  width: 32,
-                  height: 32,
-                  background: infoGradient,
-                  color: 'white',
-                  '&:hover': { background: infoGradient, opacity: 0.9 },
-                  '& .MuiSvgIcon-root': { color: 'white' },
-                }}
-              >
-                <Icon sx={{ fontSize: 18, color: 'white !important' }}>edit</Icon>
-              </IconButton>
-            </Tooltip>
           </SoftBox>
         </SoftBox>
       </Card>
