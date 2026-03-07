@@ -707,7 +707,5 @@ const LogsTab: React.FC<LogsTabProps> = ({ siteId }) => {
         {subTab === 2 && <ExecutionLogsPanel siteId={siteId} />}
       </Box>
     </Card>
-  );
-};
-
+  
 export default LogsTab;
