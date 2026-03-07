@@ -1,13 +1,30 @@
 import { Site } from '../../types';
 
+function parseMetaData(doc: Record<string, any>): Record<string, unknown> {
+  const raw = doc.meta_data ?? doc.metaData;
+  if (!raw) return {};
+  try {
+    const parsed = JSON.parse(raw);
+    return typeof parsed === 'object' && parsed !== null ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
 export const mapSiteDocumentToSite = (doc: Record<string, any>): Site => {
   const hasCredentials = !!(doc.api_key || doc.apiKey || doc.password);
+  const meta = parseMetaData(doc);
+  const metaConnected = meta.connected;
   const status: 'connected' | 'disconnected' =
-    doc.status === 'connected'
+    metaConnected === true
       ? 'connected'
-      : doc.status === 'disconnected'
+      : metaConnected === false
         ? 'disconnected'
-        : 'disconnected';
+        : doc.status === 'connected'
+          ? 'connected'
+          : doc.status === 'disconnected'
+            ? 'disconnected'
+            : 'disconnected';
 
   const healthStatus: 'healthy' | 'bad' =
     doc.health_status === 'healthy' || doc.health_status === 'bad'
