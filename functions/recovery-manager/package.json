@@ -1,13 +1,11 @@
 {
     "name": "recovery-manager",
     "version": "1.0.0",
-    "description": "Recovery Manager Function for WPHub Pro",
-    "main": "index.js",
-    "scripts": {
-      "test": "echo \"Error: no test specified\" && exit 1"
-    },
+    "description": "WPHubPro Recovery Manager for Fatal Errors",
+    "main": "src/main.js",
+    "type": "module",
     "dependencies": {
-      "node-appwrite": "^22.1.3"
+      "node-appwrite": "^11.0.0",
+      "jsonwebtoken": "^9.0.0"
     }
   }
-  
