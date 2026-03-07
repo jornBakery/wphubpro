@@ -15,16 +15,17 @@ function wpProxy<T>(
   qs.set('endpoint', endpoint);
   if (userId) qs.set('userId', userId);
   qs.set('useApiKey', '1');
+  const method = (options.method || 'GET').toUpperCase();
+  if (method !== 'GET') qs.set('method', method);
   if (options.body && Object.keys(options.body).length > 0) {
     qs.set('body', JSON.stringify(options.body));
   }
   const path = `/?${qs.toString()}`;
-  const payload = options.body && options.method !== 'GET' ? options.body : undefined;
-  const method = (options.method || 'GET') as 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+  const payload = options.body && method !== 'GET' ? options.body : undefined;
   return executeFunctionWithMeta<T>(
     'wp-proxy',
     payload as any,
-    { path, method, throwOnHttpError: true }
+    { path, method: method as 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE', throwOnHttpError: true }
   ).then((r) => r.data);
 }
 
