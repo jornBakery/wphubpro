@@ -20,6 +20,8 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
 import { 
   useWordPress,
   useSiteLogs, 
@@ -293,13 +295,22 @@ function logTypeColor(type: string): string {
   return 'text.secondary';
 }
 
-interface ErrorLogRowProps {
-  entry: ParsedErrorLogEntry;
+function extractPluginSlugFromPath(filePath: string | null): string | null {
+  if (!filePath || !filePath.includes('plugins/')) return null;
+  const m = filePath.match(/plugins\/([^/]+)/);
+  return m ? m[1] : null;
 }
 
-const ErrorLogRow: React.FC<ErrorLogRowProps> = ({ entry }) => {
+interface ErrorLogRowProps {
+  entry: ParsedErrorLogEntry;
+  onRollbackPlugin?: (slug: string) => void;
+  rollbackLoading?: boolean;
+}
+
+const ErrorLogRow: React.FC<ErrorLogRowProps> = ({ entry, onRollbackPlugin, rollbackLoading }) => {
   const [open, setOpen] = useState(false);
   const fileLine = entry.file != null && entry.line != null ? `${entry.file}:${entry.line}` : entry.file ?? '—';
+  const pluginSlug = extractPluginSlugFromPath(entry.file);
 
   return (
     <>
@@ -330,9 +341,30 @@ const ErrorLogRow: React.FC<ErrorLogRowProps> = ({ entry }) => {
             {fileLine}
           </Typography>
         </DataTableBodyCell>
+        <DataTableBodyCell>
+          <Box
+            component="span"
+            onClick={(e: React.MouseEvent) => e.stopPropagation()}
+            sx={{ display: 'inline-flex', width: 56, justifyContent: 'center' }}
+          >
+            {pluginSlug && onRollbackPlugin && (
+              <Tooltip title={`Deactiveer plugin: ${pluginSlug}`} placement="left">
+                <IconButton
+                  size="small"
+                  color="error"
+                  onClick={() => onRollbackPlugin(pluginSlug)}
+                  disabled={rollbackLoading}
+                  aria-label={`Deactiveer ${pluginSlug}`}
+                >
+                  <Icon sx={{ fontSize: 18 }}>power_off</Icon>
+                </IconButton>
+              </Tooltip>
+            )}
+          </Box>
+        </DataTableBodyCell>
       </TableRow>
       <TableRow>
-        <TableCell colSpan={3} sx={{ py: 0, borderBottom: open ? '1px solid' : 0, borderColor: 'divider' }}>
+        <TableCell colSpan={4} sx={{ py: 0, borderBottom: open ? '1px solid' : 0, borderColor: 'divider' }}>
           <Collapse in={open} timeout="auto" unmountOnExit>
             <Box sx={{ py: 1.5, px: 2, bgcolor: 'grey.50' }}>
               <Typography variant="caption" fontWeight="bold" color="textSecondary" display="block" sx={{ mb: 0.5 }}>Bericht</Typography>
@@ -512,14 +544,20 @@ function ErrorLogsPanel({ siteId }: { siteId: string }) {
           >
             <Box component="thead">
               <TableRow>
-                <DataTableHeadCell width="22%" pl={5} color="#4F5482">Tijd</DataTableHeadCell>
-                <DataTableHeadCell width="18%" pl={undefined} color="#4F5482">Type</DataTableHeadCell>
-                <DataTableHeadCell width="60%" pl={undefined} color="#4F5482">Bestand:regel</DataTableHeadCell>
+                <DataTableHeadCell width="20%" pl={5} color="#4F5482">Tijd</DataTableHeadCell>
+                <DataTableHeadCell width="16%" pl={undefined} color="#4F5482">Type</DataTableHeadCell>
+                <DataTableHeadCell width="54%" pl={undefined} color="#4F5482">Bestand:regel</DataTableHeadCell>
+                <DataTableHeadCell width="10%" pl={undefined} color="#4F5482">Actie</DataTableHeadCell>
               </TableRow>
             </Box>
             <TableBody>
               {parsed.map((entry, i) => (
-                <ErrorLogRow key={i} entry={entry} />
+                <ErrorLogRow
+                  key={i}
+                  entry={entry}
+                  onRollbackPlugin={(slug) => handleRecoveryAction('rollback_plugin', slug)}
+                  rollbackLoading={recoveryLoading}
+                />
               ))}
             </TableBody>
           </Table>
