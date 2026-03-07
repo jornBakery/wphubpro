@@ -1,5 +1,6 @@
 /**
  * Logs tab – sub-tabs: Bridge Logs, Error Logs, Execution Logs (Appwrite wp-proxy for this site).
+ * Inclusief Noodherstel functionaliteit voor Fatal Errors via JWT.
  */
 import React, { useState } from 'react';
 import Table from '@mui/material/Table';
@@ -17,8 +18,19 @@ import Collapse from '@mui/material/Collapse';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import { useSiteLogs, useSiteErrorLog, useSiteExecutionLogs, type BridgeLogEntry, type AppwriteExecution } from '../../hooks/useWordPress';
-import { useSite } from '../../hooks/useSites';
+import Alert from '@mui/material/Alert';
+import CircularProgress from '@mui/material/CircularProgress';
+import { 
+  useSiteLogs, 
+  useSiteErrorLog, 
+  useSiteExecutionLogs, 
+  type BridgeLogEntry, 
+  type AppwriteExecution,
+  functions // Importeer Appwrite functions vanuit je hook of service
+} from '../../hooks/useWordPress';
+import { useSite } from '../../domains/sites';
+import SoftTypography from 'components/SoftTypography';
+import SoftButton from 'components/SoftButton';
 
 function parseExecutionEndpoint(requestPath: string): string {
   if (!requestPath || !requestPath.includes('?')) return requestPath || '—';
@@ -205,8 +217,6 @@ function BridgeLogsPanel({ siteId }: { siteId: string }) {
   );
 }
 
-// PHP error log line: [date time] PHP Type: message [ in file.php on line N]
-// Lines that don't match (e.g. "Stack trace:", "#0 ...", "  thrown in ...") are merged into the previous entry's message.
 export interface ParsedErrorLogEntry {
   raw: string;
   timestamp: string;
@@ -217,12 +227,9 @@ export interface ParsedErrorLogEntry {
 }
 
 const PHP_ERROR_LINE_RE = /^\[([^\]]+)\]\s*PHP\s+(\w+(?:\s+\w+)?):\s*(.+)$/i;
-// Match " in /path/file.php on line 123" or " thrown in /path/file.php on line 123"
 const FILE_LINE_RE = /\s+(?:thrown\s+)?in\s+(.+?)\s+on\s+line\s+(\d+)\s*$/;
-// Fallback: match "file.php(123)" or "file.php:123" in stack frames
 const FILE_LINE_FALLBACK_RE = /([^\s()]+\.php)[:(](\d+)\)?/;
 
-/** Extract file and line from a string (e.g. first line or full merged text). */
 function extractFileLine(text: string): { file: string; line: number } | null {
   const m = FILE_LINE_RE.exec(text);
   if (m) return { file: m[1].trim(), line: parseInt(m[2], 10) };
@@ -246,7 +253,6 @@ function parseSingleErrorLine(raw: string): Partial<ParsedErrorLogEntry> & { mes
   return { raw, timestamp, logType, file: null, line: null, message: msg };
 }
 
-/** Parse lines and merge stack traces / continuation lines into the previous entry's message. */
 function parseErrorLogLines(lines: string[]): ParsedErrorLogEntry[] {
   const entries: ParsedErrorLogEntry[] = [];
   let current: ParsedErrorLogEntry | null = null;
@@ -265,7 +271,6 @@ function parseErrorLogLines(lines: string[]): ParsedErrorLogEntry[] {
     } else if (current) {
       current.message = current.message + '\n' + raw;
       current.raw = current.raw + '\n' + raw;
-      // Extract file/line from "thrown in ... on line N" in continuation if we don't have one yet
       if (current.file == null && current.line == null) {
         const fl = extractFileLine(current.raw);
         if (fl) {
@@ -343,6 +348,42 @@ const ErrorLogRow: React.FC<ErrorLogRowProps> = ({ entry }) => {
 
 function ErrorLogsPanel({ siteId }: { siteId: string }) {
   const { data, isLoading, isError, error, refetch } = useSiteErrorLog(siteId);
+  const [recoveryLoading, setRecoveryLoading] = useState(false);
+  const [fatalRecoveryLog, setFatalRecoveryLog] = useState<any>(null);
+  const [recoveryError, setRecoveryError] = useState<string | null>(null);
+
+  /**
+   * Voert een noodactie uit via de Appwrite recovery-manager function (JWT gebaseerd)
+   */
+  const handleRecoveryAction = async (action: 'get_error_log' | 'rollback_plugin', pluginSlug?: string) => {
+    setRecoveryLoading(true);
+    setRecoveryError(null);
+    try {
+      // Roep de Appwrite function aan die we hebben gemaakt voor JWT herstel
+      const execution = await functions.createExecution(
+        'recovery-manager', // Zorg dat dit ID overeenkomt met je Appwrite Function ID
+        JSON.stringify({ siteId, action, plugin_slug: pluginSlug }),
+        false,
+        '/',
+        'POST'
+      );
+
+      const result = JSON.parse(execution.responseBody);
+      if (!result.success) throw new Error(result.message || 'Actie mislukt');
+
+      if (action === 'get_error_log') {
+        setFatalRecoveryLog(result.data.data);
+      } else {
+        alert('Plugin succesvol gedeactiveerd. De site zou nu weer bereikbaar moeten zijn.');
+        setFatalRecoveryLog(null);
+        refetch();
+      }
+    } catch (err: any) {
+      setRecoveryError(err.message || 'Kon herstelactie niet uitvoeren.');
+    } finally {
+      setRecoveryLoading(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -353,13 +394,63 @@ function ErrorLogsPanel({ siteId }: { siteId: string }) {
     );
   }
 
+  // Als de reguliere API faalt (500 error op WP), toon de Noodherstel optie
   if (isError) {
     return (
       <Box p={3}>
-        <Box display="flex" alignItems="flex-start" gap={2}>
+        <Alert severity="warning" sx={{ mb: 3 }}>
+          <Typography variant="body2">
+            <strong>De WordPress site lijkt onbereikbaar (Fatal Error).</strong> <br />
+            De standaard error logs kunnen niet worden opgehaald via de Bridge API. 
+            Gebruik de Noodherstel-agent om de laatste PHP crash-data op te halen.
+          </Typography>
+          <Box mt={2}>
+            <SoftButton 
+              color="error" 
+              variant="contained" 
+              size="small" 
+              onClick={() => handleRecoveryAction('get_error_log')}
+              disabled={recoveryLoading}
+            >
+              {recoveryLoading ? <CircularProgress size={16} color="inherit" sx={{ mr: 1 }} /> : <Icon sx={{ mr: 1 }}>emergency</Icon>}
+              Scan op Fatal Errors (JWT)
+            </SoftButton>
+          </Box>
+        </Alert>
+
+        {fatalRecoveryLog && (
+          <Card sx={{ p: 2, bgcolor: 'grey.100', border: '1px solid', borderColor: 'error.light', mb: 2 }}>
+            <SoftTypography variant="h6" color="error">Gevonden Fatal Error:</SoftTypography>
+            <Typography variant="caption" component="pre" sx={{ whiteSpace: 'pre-wrap', mt: 1, display: 'block', p: 1, bgcolor: 'white', borderRadius: 1 }}>
+              {JSON.stringify(fatalRecoveryLog, null, 2)}
+            </Typography>
+            
+            {/* Slimme detectie van de plugin slug uit het bestandspad */}
+            {fatalRecoveryLog.file && fatalRecoveryLog.file.includes('plugins/') && (
+              <Box mt={2}>
+                <Typography variant="body2" sx={{ mb: 1 }}>Mogelijke oorzaak: Plugin gedetecteerd.</Typography>
+                <SoftButton 
+                  color="warning" 
+                  variant="gradient"
+                  onClick={() => {
+                    const parts = fatalRecoveryLog.file.split('plugins/');
+                    const slug = parts[1].split('/')[0];
+                    handleRecoveryAction('rollback_plugin', slug);
+                  }}
+                >
+                  Deactiveer Plugin: {fatalRecoveryLog.file.split('plugins/')[1].split('/')[0]}
+                </SoftButton>
+              </Box>
+            )}
+          </Card>
+        )}
+
+        {recoveryError && <Typography color="error" variant="caption" sx={{ mt: 1, display: 'block' }}>{recoveryError}</Typography>}
+
+        <Box display="flex" alignItems="flex-start" gap={2} mt={3}>
           <Icon color="error" sx={{ mt: 0.5 }}>error</Icon>
           <Box flex={1}>
-            <Typography variant="h6" fontWeight="medium" color="error" sx={{ mb: 1 }}>Fout bij laden van error log</Typography>
+            <Typography variant="h6" fontWeight="medium" color="error" sx={{ mb: 1 }}>Fout bij laden van reguliere error log</Typography>
             <Typography variant="caption" color="textSecondary" sx={{ mb: 2, display: 'block' }}>{error?.message || String(error)}</Typography>
             <Button variant="outlined" color="info" size="small" onClick={() => refetch()}>Opnieuw proberen</Button>
           </Box>
