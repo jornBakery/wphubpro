@@ -6,6 +6,7 @@ import { searchWpPlugins } from '../services/wordpress';
 import { LibraryItem, LibraryItemSource, LibraryItemType } from '../types';
 import { useToast } from '../contexts/ToastContext';
 import { useAuth } from '../contexts/AuthContext';
+import { mapLibraryDocumentToItem } from '../domains/library/mappers';
 
 const DATABASE_ID = 'platform_db';
 const LIBRARY_COLLECTION_ID = 'library';
@@ -23,7 +24,7 @@ export const useLibraryItems = () => {
         LIBRARY_COLLECTION_ID,
         [Query.equal('user_id', user.$id)]
       );
-      return response.documents as unknown as LibraryItem[];
+      return response.documents.map((doc) => mapLibraryDocumentToItem(doc as any));
     },
     enabled: !!user,
   });
@@ -67,7 +68,7 @@ export const useAddOfficialPlugin = () => {
         ID.unique(), 
         doc
       );
-      return response as unknown as LibraryItem;
+      return mapLibraryDocumentToItem(response as any);
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['libraryItems', user?.$id] });
@@ -128,8 +129,12 @@ export const useUploadLocalItem = () => {
                 const errorBody = JSON.parse(execution.responseBody);
                 throw new Error(errorBody.message || 'Failed to process file.');
             }
-            
-            return JSON.parse(execution.responseBody);
+
+            const parsed = JSON.parse(execution.responseBody);
+            return {
+                ...parsed,
+                item: parsed?.item ? mapLibraryDocumentToItem(parsed.item) : undefined,
+            };
         },
         onSuccess: (data) => {
             if (data.success) {

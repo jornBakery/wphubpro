@@ -5,6 +5,7 @@ import { Site } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { executeFunction, executeFunctionWithMeta } from '../integrations/appwrite/executeFunction';
+import { mapSiteDocumentToSite } from '../domains/sites/mappers';
 
 const DATABASE_ID = 'platform_db';
 const SITES_COLLECTION_ID = 'sites';
@@ -21,24 +22,7 @@ export const useSites = () => {
         SITES_COLLECTION_ID,
         [Query.equal('user_id', user.$id)]
       );
-      // Map de database resultaten naar het Site type
-      return response.documents.map((doc: any) => {
-        const hasCredentials = !!(doc.api_key || doc.apiKey || doc.password);
-        const status: 'connected' | 'disconnected' = (doc.status === 'connected' || doc.status === 'disconnected')
-          ? doc.status
-          : (hasCredentials ? 'connected' : 'disconnected');
-        const healthStatus: 'healthy' | 'bad' = (doc.health_status === 'healthy' || doc.health_status === 'bad')
-          ? doc.health_status
-          : (hasCredentials ? 'healthy' : 'bad'); // fallback voor oude data
-        return {
-          ...doc,
-          siteName: doc.site_name || '',
-          siteUrl: doc.site_url || '',
-          status,
-          healthStatus,
-          lastChecked: doc.last_checked || doc.lastChecked || '',
-        };
-      }) as unknown as Site[];
+      return response.documents.map((doc: any) => mapSiteDocumentToSite(doc));
     },
     enabled: !!user?.$id,
   });
@@ -62,24 +46,8 @@ export const useSite = (siteId: string | undefined) => {
             if ((document as any).user_id !== user?.$id) {
                 throw new Error("Geen toegang tot deze site.");
             }
-            
-            // Map snake_case naar camelCase zodat de UI de data vindt
-            const doc = document as any;
-            const hasCredentials = !!(doc.api_key || doc.apiKey || doc.password);
-            const status: 'connected' | 'disconnected' = (doc.status === 'connected' || doc.status === 'disconnected')
-                ? doc.status
-                : (hasCredentials ? 'connected' : 'disconnected');
-            const healthStatus: 'healthy' | 'bad' = (doc.health_status === 'healthy' || doc.health_status === 'bad')
-                ? doc.health_status
-                : (hasCredentials ? 'healthy' : 'bad');
-            return {
-                ...document,
-                siteName: doc.site_name,
-                siteUrl: doc.site_url,
-                status,
-                healthStatus,
-                lastChecked: doc.last_checked || doc.lastChecked || '',
-            } as unknown as Site;
+
+            return mapSiteDocumentToSite(document as any);
         },
         enabled: !!siteId && !!user,
         retry: 1 // Voorkom eindeloze retries bij 404
@@ -116,7 +84,8 @@ export const useAddSite = () => {
 
             const path = `/?userId=${user.$id}`;
             const parsed = await executeFunction<{ document?: Site }>('create-site', payload, { path });
-            return (parsed && parsed.document) ? (parsed.document as unknown as Site) : (parsed as unknown as Site);
+            const rawSite = (parsed && parsed.document) ? parsed.document : parsed;
+            return mapSiteDocumentToSite(rawSite as any);
         },
         onSuccess: (data) => {
             queryClient.invalidateQueries({ queryKey: ['sites', user?.$id] });
@@ -163,14 +132,16 @@ export const useUpdateSite = () => {
                 if (Object.keys(dbUpdates).length === 0) {
                     throw new Error('No fields to update.');
                 }
-                return await databases.updateDocument(DATABASE_ID, SITES_COLLECTION_ID, siteId, dbUpdates);
+                const updated = await databases.updateDocument(DATABASE_ID, SITES_COLLECTION_ID, siteId, dbUpdates);
+                return mapSiteDocumentToSite(updated as any);
             }
 
             // Gebruik de 'update-site' functie voor gevoelige data (password/username)
             const payload = { siteId, updates, userId: user.$id };
             const path = `/?userId=${user.$id}`;
             const parsed = await executeFunction<{ document?: any }>('update-site', payload, { path });
-            return (parsed && parsed.document) ? parsed.document : parsed;
+            const rawSite = (parsed && parsed.document) ? parsed.document : parsed;
+            return mapSiteDocumentToSite(rawSite as any);
         },
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: ['sites', user?.$id] });
