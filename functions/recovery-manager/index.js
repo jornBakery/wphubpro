@@ -71,3 +71,36 @@ export default async ({ req, res, log, error }) => {
         'Accept': 'application/json'
       }
     });
+
+    // Haal de rauwe tekst op voor debugging bij JSON parse fouten
+    const responseText = await response.text();
+    
+    try {
+      // Probeer de response te parsen als JSON
+      const data = JSON.parse(responseText);
+      
+      log(`Succesvolle communicatie met WordPress agent.`);
+      return res.json({ 
+        success: true, 
+        data: data 
+      });
+
+    } catch (parseError) {
+      // Als parsen mislukt, hebben we waarschijnlijk HTML ontvangen
+      error(`JSON Parse fout. Ontvangen data begint met: ${responseText.substring(0, 100)}`);
+      
+      return res.json({ 
+        success: false, 
+        message: 'De WordPress site stuurde HTML terug in plaats van JSON. Controleer of de MU-plugin is geïnstalleerd en of de API key overeenkomt.',
+        debug: responseText.substring(0, 200) // Stuur een fragment terug naar het dashboard voor diagnose
+      }, 500);
+    }
+
+  } catch (err) {
+    error(`Recovery Manager Fout: ${err.message}`);
+    return res.json({ 
+      success: false, 
+      message: err.message 
+    }, 500);
+  }
+};
