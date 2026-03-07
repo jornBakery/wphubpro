@@ -4,7 +4,7 @@
   "description": "Migrate a local plan to Stripe by creating product and prices",
   "main": "index.js",
   "dependencies": {
-    "node-appwrite": "^13.0.0",
-    "stripe": "^14.0.0"
+    "node-appwrite": "^22.1.3",
+    "stripe": "^20.4.1"
   }
 }

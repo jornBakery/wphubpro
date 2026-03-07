@@ -4,7 +4,7 @@
   "description": "Preview proration amounts for subscription changes",
   "main": "index.js",
   "dependencies": {
-    "node-appwrite": "^11.0.0",
-    "stripe": "^14.0.0"
+    "node-appwrite": "^22.1.3",
+    "stripe": "^20.4.1"
   }
 }

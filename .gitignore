@@ -1,2 +1,9 @@
 node_modules
 wphubpro-bridge
+.env
+.env.local
+.env.*.local
+functions/.env
+functions/.env.local
+!*.env.example
+!functions/.env.example

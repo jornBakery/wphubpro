@@ -4,6 +4,6 @@
   "description": "List Appwrite users for admin UI",
   "main": "index.js",
   "dependencies": {
-    "node-appwrite": "^22.0.0"
+    "node-appwrite": "^22.1.3"
   }
 }
