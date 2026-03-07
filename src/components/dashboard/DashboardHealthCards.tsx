@@ -65,6 +65,7 @@ const DashboardHealthCards: React.FC<DashboardHealthCardsProps> = ({
   themeTotalCount = 0,
 }) => {
   const total = sites.length;
+  const connectedCount = sites.filter((s) => s.status === 'connected').length;
   const healthyCount = sites.filter(isHealthy).length;
   const disconnectedCount = sites.filter((s) => s.status === 'disconnected').length;
   const healthyPct = total > 0 ? Math.round((healthyCount / total) * 100) : 0;
@@ -91,11 +92,11 @@ const DashboardHealthCards: React.FC<DashboardHealthCardsProps> = ({
             </Typography>
             <Box sx={numberCircleSx}>
               <Typography variant="h6" fontWeight="bold" color="#ea580c" sx={{ fontFamily: '"Inter", sans-serif', fontVariantNumeric: 'tabular-nums' }}>
-                {sitesNeedingUpdatesCount}/{total}
+                {sitesNeedingUpdatesCount}/{connectedCount}
               </Typography>
             </Box>
             <Typography variant="caption" color="white" sx={{ opacity: 0.95, fontSize: '0.7rem' }}>
-              sites need an update.
+              connected sites need an update.
             </Typography>
           </Box>
         </Card>
