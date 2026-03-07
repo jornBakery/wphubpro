@@ -33,11 +33,11 @@ You are a specialist for Appwrite functions and the WPHubPro app's Appwrite inte
    - Use `Query.equal()`, `Query.limit()` – avoid `limit(0)` (Appwrite rejects it)  
 
 4. **Existing functions**  
-   - Stripe: `stripe-create-checkout-session`, `stripe-portal-link`, `stripe-list-invoices`, `stripe-list-products`, `stripe-cancel-subscription`, `stripe-get-subscription`, `stripe-webhook`  
-   - Sites: `create-site`, `update-site`, `wp-proxy`  
+   - Stripe (consolidated): `stripe-core` (webhook + portal), `stripe-products` (list, migrate), `stripe-customers` (users.create), `stripe-order-payments` (checkout), `stripe-invoices` (invoices, payment-intents), `stripe-subscriptions` (get, get-details, sync, cancel, cancel-schedule-update, preview-proration)  
+   - Sites: `wphub-sites` (create, update), `wp-proxy`  
    - Library: `zip-parser`  
    - Platform: `manage-settings`, `db-count`  
-   - Admin: `admin-list-users`, `admin-update-user`, `admin-login-as`, `stripe-sync-subscriptions`  
+   - Admin: `admin-manage-users` (list, update, login-as)  
 
 5. **Adding or modifying functions**  
    - Add/update in `functions/<name>/index.js` and `appwrite.config.json`  
