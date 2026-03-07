@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueries, useMutation, useQueryClient } from '@tanstack/react-query';
 import { functions } from '../services/appwrite';
 import { useAuth } from '../domains/auth';
 import { useToast } from '../contexts/ToastContext';
@@ -165,6 +165,93 @@ export const useThemes = (siteId: string | undefined) => {
     staleTime: 0,
     refetchOnMount: 'always',
   });
+};
+
+function hasUpdate(p: { update?: string | null }): boolean {
+  return p.update != null && String(p.update).trim() !== '';
+}
+
+export interface SitesUpdateStats {
+  sitesNeedingUpdatesCount: number;
+  pluginUpdatesCount: number;
+  pluginTotalCount: number;
+  themeUpdatesCount: number;
+  themeTotalCount: number;
+  isLoading: boolean;
+}
+
+/** Aggregate update stats across all connected sites - exported for Dashboard */
+export const useSitesUpdateStats = (sites: { $id: string; status: string }[]) => {
+  const { user } = useAuth();
+  const connectedSites = sites.filter((s) => s.status === 'connected');
+  const siteIds = connectedSites.map((s) => s.$id);
+
+  const pluginsQueries = useQueries({
+    queries: siteIds.map((siteId) => ({
+      queryKey: ['plugins', siteId] as const,
+      queryFn: async () => {
+        const raw = await wpProxy<any[]>(siteId, user?.$id, 'wphubpro/v1/plugins');
+        return (raw ?? []).map((p: any) => ({
+          plugin: p.plugin ?? p.file,
+          name: p.name,
+          version: p.version,
+          status: p.active ? ('active' as const) : ('inactive' as const),
+          update: p.update ?? null,
+        }));
+      },
+      enabled: !!siteId && !!user,
+      staleTime: 60_000,
+    })),
+  });
+
+  const themesQueries = useQueries({
+    queries: siteIds.map((siteId) => ({
+      queryKey: ['themes', siteId] as const,
+      queryFn: async () => {
+        const raw = await wpProxy<any[]>(siteId, user?.$id, 'wphubpro/v1/themes');
+        return (raw ?? []).map((t: any) => ({
+          stylesheet: t.stylesheet ?? t.slug,
+          name: t.name,
+          version: t.version,
+          status: t.active ? ('active' as const) : ('inactive' as const),
+          update: t.update ?? null,
+        }));
+      },
+      enabled: !!siteId && !!user,
+      staleTime: 60_000,
+    })),
+  });
+
+  const isLoading = pluginsQueries.some((q) => q.isLoading) || themesQueries.some((q) => q.isLoading);
+
+  let pluginUpdatesCount = 0;
+  let pluginTotalCount = 0;
+  let themeUpdatesCount = 0;
+  let themeTotalCount = 0;
+  let sitesNeedingUpdatesCount = 0;
+
+  for (let i = 0; i < siteIds.length; i++) {
+    const plugins = pluginsQueries[i]?.data ?? [];
+    const themes = themesQueries[i]?.data ?? [];
+    const pluginUpdates = plugins.filter(hasUpdate).length;
+    const themeUpdates = themes.filter(hasUpdate).length;
+    pluginUpdatesCount += pluginUpdates;
+    pluginTotalCount += plugins.length;
+    themeUpdatesCount += themeUpdates;
+    themeTotalCount += themes.length;
+    if (pluginUpdates > 0 || themeUpdates > 0) {
+      sitesNeedingUpdatesCount++;
+    }
+  }
+
+  return {
+    sitesNeedingUpdatesCount,
+    pluginUpdatesCount,
+    pluginTotalCount,
+    themeUpdatesCount,
+    themeTotalCount,
+    isLoading,
+  };
 };
 
 /** Toggle plugin active/inactive - exported for PluginsTab */
