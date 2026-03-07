@@ -1,5 +1,4 @@
 node_modules
-wphubpro-bridge
 .env
 .env.local
 .env.*.local
