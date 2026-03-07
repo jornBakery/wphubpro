@@ -630,8 +630,11 @@ const LogsTab: React.FC<LogsTabProps> = ({ siteId }) => {
           </SoftButton>
         )}
       </Card>
-    );
-  
+    </>
+  );
+};
+
+export default LogsTab;
     <Card>
       <Tabs
         value={subTab}
@@ -707,5 +710,3 @@ const LogsTab: React.FC<LogsTabProps> = ({ siteId }) => {
         {subTab === 2 && <ExecutionLogsPanel siteId={siteId} />}
       </Box>
     </Card>
-  
-export default LogsTab;
