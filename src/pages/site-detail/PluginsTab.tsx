@@ -13,6 +13,9 @@ import MenuItem from '@mui/material/MenuItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Tooltip from '@mui/material/Tooltip';
+import Select from '@mui/material/Select';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
 import SoftBox from 'components/SoftBox';
 import SoftTypography from 'components/SoftTypography';
 import SoftButton from 'components/SoftButton';
@@ -23,6 +26,8 @@ import { WordPressPlugin } from '../../types';
 
 const infoGradient = 'linear-gradient(310deg, #4F5482, #7a8ef0)';
 const orangeGradient = 'linear-gradient(310deg, #ea580c, #fb923c)';
+
+type PluginFilter = 'all' | 'updates' | 'active' | 'inactive';
 
 interface PluginsTabProps {
   siteId: string;
@@ -35,6 +40,7 @@ const PluginsTab: React.FC<PluginsTabProps> = ({ siteId }) => {
   const updatePluginMutation = useUpdatePlugin(siteId);
   const deletePluginMutation = useDeletePlugin(siteId);
   const [menuAnchor, setMenuAnchor] = useState<{ el: HTMLElement; plugin: WordPressPlugin } | null>(null);
+  const [filter, setFilter] = useState<PluginFilter>('all');
 
   const handleMenuOpen = (e: React.MouseEvent<HTMLElement>, plugin: WordPressPlugin) => {
     e.stopPropagation();
@@ -61,6 +67,19 @@ const PluginsTab: React.FC<PluginsTabProps> = ({ siteId }) => {
 
   const openPlugin = menuAnchor?.plugin;
   const anyPending = togglePluginMutation.isPending || updatePluginMutation.isPending || deletePluginMutation.isPending;
+  const allPlugins = plugins ?? [];
+  const filteredPlugins = (() => {
+    switch (filter) {
+      case 'updates':
+        return allPlugins.filter((p) => p.update != null && p.update !== '');
+      case 'active':
+        return allPlugins.filter((p) => p.status === 'active');
+      case 'inactive':
+        return allPlugins.filter((p) => p.status === 'inactive');
+      default:
+        return allPlugins;
+    }
+  })();
 
   if (isLoading) {
     return (
@@ -92,10 +111,24 @@ const PluginsTab: React.FC<PluginsTabProps> = ({ siteId }) => {
 
   return (
     <Card>
-      <SoftBox p={2} borderBottom="1px solid" borderColor="grey-200">
+      <SoftBox p={2} borderBottom="1px solid" borderColor="grey-200" display="flex" alignItems="center" justifyContent="space-between" flexWrap="wrap" gap={1}>
         <SoftTypography variant="caption" color="secondary">
           API: {site ? `${String(site.siteUrl).replace(/\/$/, '')}/wp-json/wphubpro/v1/plugins` : '-'}
         </SoftTypography>
+        <FormControl size="small" sx={{ minWidth: 160 }}>
+          <InputLabel id="plugin-filter-label">Filter</InputLabel>
+          <Select
+            labelId="plugin-filter-label"
+            value={filter}
+            label="Filter"
+            onChange={(e) => setFilter(e.target.value as PluginFilter)}
+          >
+            <MenuItem value="all">Alle plugins</MenuItem>
+            <MenuItem value="updates">Show Updates</MenuItem>
+            <MenuItem value="active">Show Active</MenuItem>
+            <MenuItem value="inactive">Show Inactive</MenuItem>
+          </Select>
+        </FormControl>
       </SoftBox>
       <ScrollableTableWrapper maxHeight="55vh">
         <Table
@@ -128,7 +161,7 @@ const PluginsTab: React.FC<PluginsTabProps> = ({ siteId }) => {
             </TableRow>
           </SoftBox>
           <TableBody>
-            {plugins?.map((plugin) => (
+            {filteredPlugins.map((plugin) => (
               <TableRow key={plugin.plugin}>
                 <DataTableBodyCell><SoftTypography variant="button" fontWeight="medium">{plugin.name}</SoftTypography></DataTableBodyCell>
                 <DataTableBodyCell>

@@ -2,31 +2,16 @@
 =========================================================
 * Soft UI Dashboard PRO React - v4.0.3
 =========================================================
-
-* Product Page: https://www.creative-tim.com/product/soft-ui-dashboard-pro-react
-* Copyright 2024 Creative Tim (https://www.creative-tim.com)
-
-Coded by www.creative-tim.com
-
- =========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 */
-
-/**
- * The base colors for the Soft UI Dashboard PRO React.
- * You can add new color using this file.
- * You can customized the colors for the entire Soft UI Dashboard PRO React using thie file.
- */
 
 const colors = {
   background: {
-    default: "#F4F6F9",
+    default: "#F0F2F5",
   },
 
   text: {
-    main: "#292F4D",
-    focus: "#292F4D",
+    main: "#344767",
+    focus: "#1A1D1F", // Donkergrijs i.p.v. zwart
   },
 
   transparent: {
@@ -39,281 +24,168 @@ const colors = {
   },
 
   black: {
-    light: "#141414",
-    main: "#000000",
-    focus: "#000000",
+    light: "#212529",
+    main: "#1A1D1F", // Donkergrijs i.p.v. puur zwart
+    focus: "#1A1D1F",
   },
 
   primary: {
-    main: "#292F4D",
-    focus: "#3a416f",
+    main: "#FF6B00", // Oranje
+    focus: "#E66000",
   },
 
   secondary: {
-    main: "#A3A7BA",
-    focus: "#96a2b8",
+    main: "#6C757D",
+    focus: "#495057",
   },
 
   info: {
-    main: "#4F5482",
-    focus: "#7a8ef0",
+    main: "#ea580c",
+    focus: "#c2410c",
   },
 
   success: {
-    main: "#f97316",
-    focus: "#fb923c",
+    main: "#ea580c",
+    focus: "#c2410c",
   },
 
   warning: {
-    main: "#fbcf33",
-    focus: "#fcd652",
+    main: "#FBCE44",
+    focus: "#FBC400",
   },
 
   error: {
-    main: "#ea0606",
-    focus: "#c70505",
+    main: "#FD5C70",
+    focus: "#F53939",
   },
 
   light: {
-    main: "#E7EAF3",
-    focus: "#E7EAF3",
+    main: "#E9ECEF",
+    focus: "#E9ECEF",
   },
 
   dark: {
-    main: "#292F4D",
-    focus: "#3a416f",
+    main: "#1A1D1F", // Jouw basis donkergrijze kleur
+    focus: "#0F1112",
   },
 
   cta: {
-    main: "#FF735D",
-    focus: "#ff8a77",
+    main: "#FF6B00",
+    focus: "#E66000",
   },
 
   grey: {
-    100: "#F4F6F9",
-    200: "#E7EAF3",
-    300: "#D8DCEE",
-    400: "#ced4da",
-    500: "#A3A7BA",
-    600: "#6c757d",
-    700: "#424A67",
-    800: "#292F4D",
-    900: "#212529",
+    100: "#F8F9FA",
+    200: "#E9ECEF",
+    300: "#DEE2E6",
+    400: "#CED4DA",
+    500: "#ADB5BD",
+    600: "#6C757D",
+    700: "#495057",
+    800: "#343A40",
+    900: "#1A1D1F",
   },
 
   gradients: {
+    orangeGradient: "linear-gradient(310deg, #ea580c, #fb923c)",
+    blueGradient: "linear-gradient(310deg, #4F5482, #7a8ef0)",
+    gradientTextColor: "#ffffff",
+
     primary: {
-      main: "#292F4D",
-      state: "#424A67",
-    },
-
-    secondary: {
-      main: "#4F5482",
-      state: "#7a8ef0",
-    },
-
-    info: {
-      main: "#4F5482",
-      state: "#7a8ef0",
-    },
-
-    success: {
-      main: "#ea580c",
-      state: "#fb923c",
-    },
-
-    warning: {
-      main: "#f53939",
-      state: "#fbcf33",
-    },
-
-    error: {
-      main: "#ea0606",
-      state: "#ff667c",
-    },
-
-    light: {
-      main: "#ced4da",
-      state: "#ebeff4",
-    },
-
-    dark: {
-      main: "#141727",
-      state: "#3a416f",
-    },
-  },
-
-  socialMediaColors: {
-    facebook: {
-      main: "#3b5998",
-      dark: "#344e86",
-    },
-
-    twitter: {
-      main: "#55acee",
-      dark: "#3ea1ec",
-    },
-
-    instagram: {
-      main: "#125688",
-      dark: "#0e456d",
-    },
-
-    linkedin: {
-      main: "#0077b5",
-      dark: "#00669c",
-    },
-
-    pinterest: {
-      main: "#cc2127",
-      dark: "#b21d22",
-    },
-
-    youtube: {
-      main: "#e52d27",
-      dark: "#d41f1a",
-    },
-
-    vimeo: {
-      main: "#1ab7ea",
-      dark: "#13a3d2",
-    },
-
-    slack: {
-      main: "#3aaf85",
-      dark: "#329874",
-    },
-
-    dribbble: {
-      main: "#ea4c89",
-      dark: "#e73177",
-    },
-
-    github: {
-      main: "#24292e",
-      dark: "#171a1d",
-    },
-
-    reddit: {
-      main: "#ff4500",
-      dark: "#e03d00",
-    },
-
-    tumblr: {
-      main: "#35465c",
-      dark: "#2a3749",
-    },
-  },
-
-  alertColors: {
-    primary: {
-      main: "#7928ca",
-      state: "#d6006c",
-      border: "#efb6e2",
+      main: "#FF6B00",
+      state: "#FF8C33",
     },
 
     secondary: {
       main: "#627594",
-      state: "#8ca1cb",
-      border: "#dadee6",
+      state: "#A8B8D8",
     },
 
     info: {
-      main: "#2152ff",
-      state: "#02c6f3",
-      border: "#b9ecf8",
+      main: "#ea580c",
+      state: "#fb923c",
     },
 
     success: {
       main: "#ea580c",
       state: "#fb923c",
-      border: "#fed7aa",
     },
 
     warning: {
-      main: "#f53939",
-      state: "#fac60b",
-      border: "#fef1c2",
+      main: "#F53939",
+      state: "#FBCE44",
     },
 
     error: {
-      main: "#ea0606",
-      state: "#ff3d59",
-      border: "#f9b4b4",
+      main: "#EA0606",
+      state: "#FF667C",
     },
 
     light: {
-      main: "#ced4da",
-      state: "#d1dae6",
-      border: "#f8f9fa",
+      main: "#CED4DA",
+      state: "#EBEFF4",
     },
 
     dark: {
-      main: "#141727",
-      state: "#2c3154",
-      border: "#c2c8d1",
+      main: "#1A1D1F",
+      state: "#424A67",
     },
+  },
+
+  socialMediaColors: {
+    facebook: { main: "#3B5998", dark: "#344E86" },
+    twitter: { main: "#55ACEE", dark: "#3EA1EC" },
+    instagram: { main: "#125688", dark: "#0E456D" },
+    linkedin: { main: "#0077B5", dark: "#00669C" },
+    pinterest: { main: "#CC2127", dark: "#B21D22" },
+    youtube: { main: "#E52D27", dark: "#D41F1A" },
+    vimeo: { main: "#1AB7EA", dark: "#13A3D2" },
+    slack: { main: "#3AAF85", dark: "#329874" },
+    dribbble: { main: "#EA4C89", dark: "#E73177" },
+    github: { main: "#24292E", dark: "#171A1D" },
+    reddit: { main: "#FF4500", dark: "#E03D00" },
+    tumblr: { main: "#35465C", dark: "#2A3749" },
+  },
+
+  alertColors: {
+    primary: { main: "#FF6B00", state: "#FF8C33", border: "#FFD4B3" },
+    secondary: { main: "#627594", state: "#8CA1CB", border: "#DADEE6" },
+    info: { main: "#ea580c", state: "#fb923c", border: "#fed7aa" },
+    success: { main: "#ea580c", state: "#fb923c", border: "#fed7aa" },
+    warning: { main: "#F53939", state: "#FAC60B", border: "#FEF1C2" },
+    error: { main: "#EA0606", state: "#FF3D59", border: "#F9B4B4" },
+    light: { main: "#CED4DA", state: "#D1DAE6", border: "#F8F9FA" },
+    dark: { main: "#1A1D1F", state: "#2C3154", border: "#C2C8D1" },
   },
 
   badgeColors: {
-    primary: {
-      background: "#f883dd",
-      text: "#a3017e",
-    },
-
-    secondary: {
-      background: "#e4e8ed",
-      text: "#5974a2",
-    },
-
-    info: {
-      background: "#abe9f7",
-      text: "#08a1c4",
-    },
-
-    success: {
-      background: "#ffedd5",
-      text: "#ea580c",
-    },
-
-    warning: {
-      background: "#fef5d3",
-      text: "#fbc400",
-    },
-
-    error: {
-      background: "#fc9797",
-      text: "#bd0000",
-    },
-
-    light: {
-      background: "#ffffff",
-      text: "#c7d3de",
-    },
-
-    dark: {
-      background: "#8097bf",
-      text: "#1e2e4a",
-    },
+    primary: { background: "#FFEBD6", text: "#FF6B00" },
+    secondary: { background: "#E4E8ED", text: "#5974A2" },
+    info: { background: "#ffedd5", text: "#c2410c" },
+    success: { background: "#ffedd5", text: "#c2410c" },
+    warning: { background: "#FEF5D3", text: "#FBC400" },
+    error: { background: "#FC9797", text: "#BD0000" },
+    light: { background: "#FFFFFF", text: "#C7D3DE" },
+    dark: { background: "#ADB5BD", text: "#1A1D1F" },
   },
 
   inputColors: {
-    borderColor: { main: "#E7EAF3", focus: "#4F5482" },
-    boxShadow: "#81e3f9",
-    error: "#fd5c70",
-    success: "#f97316",
+    borderColor: { main: "#D2D6DA", focus: "#FF6B00" },
+    boxShadow: "#FFD4B3",
+    error: "#FD5C70",
+    success: "#ea580c",
   },
 
   sliderColors: {
-    thumb: { borderColor: "#d9d9d9" },
+    thumb: { borderColor: "#D9D9D9" },
   },
 
   circleSliderColors: {
-    background: "#d3d3d3",
+    background: "#D3D3D3",
   },
 
   tabs: {
-    indicator: { boxShadow: "#ddd" },
+    indicator: { boxShadow: "#DDD" },
   },
 };
 

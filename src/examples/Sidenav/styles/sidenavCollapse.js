@@ -16,14 +16,14 @@ function collapseItem(theme, ownerState) {
   const { palette, transitions, breakpoints, boxShadows, borders, functions } = theme;
   const { active, transparentSidenav } = ownerState;
 
-  const { dark, white, text, transparent } = palette;
+  const { dark, white, text, transparent, gradients } = palette;
   const { xxl } = boxShadows;
   const { borderRadius } = borders;
   const { pxToRem } = functions;
 
   return {
-    background: active && transparentSidenav ? white.main : transparent.main,
-    color: active ? dark.main : text.main,
+    background: active ? gradients.blueGradient : transparent.main,
+    color: active ? gradients.gradientTextColor : text.main,
     display: "flex",
     alignItems: "center",
     width: "100%",
@@ -52,64 +52,37 @@ function collapseItem(theme, ownerState) {
 
 function collapseIconBox(theme, ownerState) {
   const { palette, transitions, breakpoints, boxShadows, borders, functions } = theme;
-  const { active, transparentSidenav, sidenavColor } = ownerState;
+  const { active } = ownerState;
 
-  const { white, info, light, gradients } = palette;
-  const { linearGradient } = functions;
+  const { gradients } = palette;
   const { md } = boxShadows;
   const { borderRadius } = borders;
   const { pxToRem } = functions;
 
-  const getActiveBg = () => {
-    // Active menu item icon: orange (success gradient)
-    return linearGradient(gradients.success.main, gradients.success.state);
-  };
-
   return {
-    background: () => {
-      if (active) return getActiveBg();
-      return light.main;
-    },
+    background: active ? gradients.orangeGradient : gradients.blueGradient,
     minWidth: pxToRem(32),
     minHeight: pxToRem(32),
     borderRadius: borderRadius.md,
     display: "grid",
     placeItems: "center",
     boxShadow: md,
-    transition: transitions.create("margin", {
+    transition: transitions.create(["background", "margin"], {
       easing: transitions.easing.easeInOut,
       duration: transitions.duration.standard,
     }),
 
-    [breakpoints.up("xl")]: {
-      background: () => {
-        if (!active) return transparentSidenav ? white.main : light.main;
-        return getActiveBg();
-      },
-    },
-
     "& svg, svg g": {
-      fill: active ? white.main : gradients.dark.state,
+      fill: gradients.gradientTextColor,
     },
   };
 }
 
-function collapseIcon(theme, ownerState) {
-  const { functions, palette } = theme;
-  const { active } = ownerState;
+function collapseIcon(theme) {
+  const { palette } = theme;
+  const { gradients } = palette;
 
-  const { linearGradient } = functions;
-  const { white, gradients, transparent } = palette;
-
-  // Active: white icon on gradient box. Inactive: same gradient as star (background-clip: text)
-  if (active) {
-    return { color: white.main };
-  }
-  return {
-    backgroundImage: linearGradient(gradients.info.main, gradients.info.state),
-    WebkitBackgroundClip: "text",
-    WebkitTextFillColor: transparent.main,
-  };
+  return { color: gradients.gradientTextColor };
 }
 
 function collapseText(theme, ownerState) {
@@ -142,7 +115,7 @@ function collapseText(theme, ownerState) {
 
 function collapseArrow(theme, ownerState) {
   const { palette, typography, transitions, breakpoints, functions } = theme;
-  const { noCollapse, transparentSidenav, miniSidenav, open } = ownerState;
+  const { noCollapse, transparentSidenav, miniSidenav, open, active } = ownerState;
 
   const { dark, gradients } = palette;
   const { size } = typography;
@@ -153,7 +126,7 @@ function collapseArrow(theme, ownerState) {
     fontWeight: 700,
     marginBottom: pxToRem(-1),
     transform: open ? "rotate(0)" : "rotate(-180deg)",
-    color: open ? dark.main : rgba(gradients.dark.state, 0.4),
+    color: active ? gradients.gradientTextColor : (open ? dark.main : rgba(gradients.dark.state, 0.4)),
     transition: transitions.create(["color", "transform", "opacity"], {
       easing: transitions.easing.easeInOut,
       duration: transitions.duration.shorter,

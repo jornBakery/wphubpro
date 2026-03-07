@@ -1,5 +1,5 @@
-import React from "react";
-import { NavLink } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { NavLink, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
   Globe,
@@ -58,8 +58,18 @@ const PlatformBrand: React.FC = () => {
   );
 };
 
+type TabId = "user" | "admin";
+
 const Sidebar: React.FC = () => {
   const { isAdmin } = useAuth();
+  const { pathname } = useLocation();
+  const isAdminRoute = pathname.startsWith("/admin");
+  const [activeTab, setActiveTab] = useState<TabId>(isAdmin && isAdminRoute ? "admin" : "user");
+
+  useEffect(() => {
+    if (isAdminRoute && isAdmin) setActiveTab("admin");
+    else setActiveTab("user");
+  }, [pathname, isAdminRoute, isAdmin]);
 
   const navItems = [
     { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -107,20 +117,44 @@ const Sidebar: React.FC = () => {
         <PlatformBrand />
       </div>
 
-      <nav className="flex-1 px-4 py-6 space-y-2">
-        <p className="px-4 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-          Main
-        </p>
-        {navItems.map((item) => (
-          <NavItem key={item.to} {...item} />
-        ))}
-
-        {/* Admin Sectie: Alleen zichtbaar voor gebruikers met het 'Admin' label */}
+      <div className="flex border-b border-border">
+        <button
+          type="button"
+          onClick={() => setActiveTab("user")}
+          className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+            activeTab === "user"
+              ? "text-primary border-b-2 border-primary"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          User
+        </button>
         {isAdmin && (
-          <div className="pt-6 mt-6 border-t border-border">
-            <p className="px-4 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center">
-              <ShieldCheck className="w-3 h-3 mr-1" /> Admin Panel
-            </p>
+          <button
+            type="button"
+            onClick={() => setActiveTab("admin")}
+            className={`flex-1 px-4 py-3 text-sm font-medium transition-colors flex items-center justify-center gap-1 ${
+              activeTab === "admin"
+                ? "text-primary border-b-2 border-primary"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <ShieldCheck className="w-3.5 h-3.5" />
+            Admin
+          </button>
+        )}
+      </div>
+
+      <nav className="flex-1 flex flex-col overflow-auto">
+        {activeTab === "user" && (
+          <div className="flex-1 px-4 py-6 space-y-2">
+            {navItems.map((item) => (
+              <NavItem key={item.to} {...item} />
+            ))}
+          </div>
+        )}
+        {activeTab === "admin" && isAdmin && (
+          <div className="flex-1 px-4 py-6 space-y-2">
             {adminItems.map((item) => (
               <NavItem key={item.to} {...item} />
             ))}
@@ -128,10 +162,12 @@ const Sidebar: React.FC = () => {
         )}
       </nav>
 
-      <div className="px-4 py-6 border-t border-border mt-auto">
-        <NavItem to="/settings" icon={Settings} label="Settings" />
-        <NavItem to="/support" icon={LifeBuoy} label="Support" />
-      </div>
+      {activeTab === "user" && (
+        <div className="px-4 py-6 border-t border-border mt-auto">
+          <NavItem to="/settings" icon={Settings} label="Settings" />
+          <NavItem to="/support" icon={LifeBuoy} label="Support" />
+        </div>
+      )}
     </aside>
   );
 };

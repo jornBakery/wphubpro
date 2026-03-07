@@ -65,8 +65,8 @@ const executeWpProxy = async <T>(payload: { siteId: string; method?: string; end
 
 // --- Hooks ---
 // Use the new bridge endpoint for plugin list
-// Bridge returns: { file, name, version, active (boolean), update }
-// Frontend expects: { plugin (file path), name, version, status: 'active'|'inactive' }
+// Bridge returns: { file, name, version, active (boolean), update (version string or null) }
+// Frontend expects: { plugin (file path), name, version, status, update }
 export const usePlugins = (siteId: string | undefined) => {
   const { user } = useAuth();
   return useQuery<WordPressPlugin[], Error>({
@@ -77,6 +77,7 @@ export const usePlugins = (siteId: string | undefined) => {
         ...p,
         plugin: p.plugin || p.file,
         status: p.active === true ? ('active' as const) : ('inactive' as const),
+        update: p.update ?? null, // Explicitly preserve update (version string when available)
       })) as WordPressPlugin[];
     },
     enabled: !!siteId,

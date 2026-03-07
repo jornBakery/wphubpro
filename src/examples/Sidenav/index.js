@@ -44,13 +44,20 @@ import sidenavLogoLabel from "examples/Sidenav/styles/sidenav";
 // Soft UI Dashboard PRO React context
 import { useSoftUIController, setMiniSidenav } from "context";
 
-function Sidenav({ color = "info", brand = "", brandName, routes, ...rest }) {
+function Sidenav({ color = "info", brand = "", brandName, userRoutes = [], adminRoutes = [], isAdmin = false, routes, ...rest }) {
   const [openCollapse, setOpenCollapse] = useState(false);
   const [openNestedCollapse, setOpenNestedCollapse] = useState(false);
   const [controller, dispatch] = useSoftUIController();
   const { miniSidenav, transparentSidenav } = controller;
   const location = useLocation();
   const { pathname } = location;
+  const displayRoutes =
+    userRoutes.length || adminRoutes.length
+      ? [
+          ...(userRoutes.length ? [{ type: "title", title: "User", key: "user-title" }, ...userRoutes] : []),
+          ...(isAdmin && adminRoutes.length ? [{ type: "divider", key: "menu-divider" }, { type: "title", title: "Admin", key: "admin-title" }, ...adminRoutes] : []),
+        ]
+      : routes;
   const collapseName = pathname.split("/").slice(1)[0];
   const itemName = pathname.split("/").slice(1)[1];
 
@@ -137,7 +144,7 @@ function Sidenav({ color = "info", brand = "", brandName, routes, ...rest }) {
     });
 
   // Render all the routes from the routes.js (All the visible items on the Sidenav)
-  const renderRoutes = routes.map(
+  const renderRoutes = (displayRoutes || []).map(
     ({ type, name, icon, title, collapse, noCollapse, key, href, route, submenuColor }) => {
       let returnValue;
 
@@ -270,7 +277,10 @@ Sidenav.propTypes = {
   color: PropTypes.oneOf(["primary", "secondary", "info", "success", "warning", "error", "dark"]),
   brand: PropTypes.string,
   brandName: PropTypes.string.isRequired,
-  routes: PropTypes.arrayOf(PropTypes.object).isRequired,
+  userRoutes: PropTypes.arrayOf(PropTypes.object),
+  adminRoutes: PropTypes.arrayOf(PropTypes.object),
+  isAdmin: PropTypes.bool,
+  routes: PropTypes.arrayOf(PropTypes.object),
 };
 
 export default Sidenav;

@@ -63,7 +63,7 @@ function SidenavCollapse({ icon, name, children = false, active = false, noColla
 
           <Icon
             sx={(theme) =>
-              collapseArrow(theme, { noCollapse, transparentSidenav, miniSidenav, open })
+              collapseArrow(theme, { noCollapse, transparentSidenav, miniSidenav, open, active })
             }
           >
             expand_less
