@@ -185,7 +185,6 @@ export const useUpdateSite = () => {
       const needsServerProcessing = hasOwn(updates, 'password') || hasOwn(updates, 'username') || hasOwn(updates, 'api_key') || hasOwn(updates, 'apiKey');
 
       if (!needsServerProcessing) {
-        // Direct DB update for simple metadata
         const dbUpdates: any = {};
         if (updates.siteName) dbUpdates.site_name = updates.siteName;
         if (updates.siteUrl) dbUpdates.site_url = updates.siteUrl;
@@ -193,13 +192,19 @@ export const useUpdateSite = () => {
         if (updates.health_status) dbUpdates.health_status = updates.health_status;
         if (updates.last_checked) dbUpdates.last_checked = updates.last_checked;
         if (updates.meta_data !== undefined) dbUpdates.meta_data = updates.meta_data;
-        // When status changes, persist connected in meta_data
+
         if (updates.status !== undefined) {
           const doc = await databases.getDocument(DATABASE_ID, SITES_COLLECTION_ID, siteId);
           const meta = parseMetaData(doc as any);
-          dbUpdates.meta_data = mergeMetaDataConnected(meta, updates.status === 'connected');
+          const alreadyConnected = meta.connected === true;
+          const wantConnected = updates.status === 'connected';
+          const statusOnlyUpdate = Object.keys(updates).every((k) => k === 'status');
+          if (statusOnlyUpdate && alreadyConnected === wantConnected) {
+            return mapSiteDocumentToSite(doc as any);
+          }
+          dbUpdates.meta_data = mergeMetaDataConnected(meta, wantConnected);
         }
-        // If there are no dbUpdates, avoid calling updateDocument with empty payload
+
         if (Object.keys(dbUpdates).length === 0) {
           throw new Error('No fields to update.');
         }
