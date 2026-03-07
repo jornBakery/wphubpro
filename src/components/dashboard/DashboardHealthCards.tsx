@@ -34,6 +34,7 @@ const numberCircleSx = {
   flexShrink: 0,
   width: 56,
   height: 56,
+  '& .MuiTypography-root': { color: '#ea580c !important' },
   minWidth: 56,
   minHeight: 56,
   borderRadius: '50%',
@@ -52,6 +53,7 @@ const numberCircleSx = {
 const numberCircleCard4Sx = {
   ...numberCircleSx,
   color: '#292F4D',
+  '& .MuiTypography-root': { color: '#292F4D !important' },
 };
 
 const DashboardHealthCards: React.FC<DashboardHealthCardsProps> = ({
@@ -82,7 +84,7 @@ const DashboardHealthCards: React.FC<DashboardHealthCardsProps> = ({
     <Grid container spacing={2} sx={{ mb: 3 }}>
       {/* Card 1: Updates */}
       <Grid item xs={12} sm={6} lg={3}>
-        <Card sx={{ minHeight: 145, background: blueGradient, position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center' }}>
+        <Card sx={{ minHeight: 145, background: blueGradient, position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', '& .MuiTypography-root': { color: 'white !important' } }}>
           <Box p={2} flex={1} display="flex" flexDirection="column" alignItems="center" gap={1.5} color="white" position="relative" textAlign="center">
             <Typography variant="button" fontWeight="bold" color="white" sx={{ fontSize: '0.7rem', textTransform: 'uppercase' }}>
               Updates
@@ -101,7 +103,7 @@ const DashboardHealthCards: React.FC<DashboardHealthCardsProps> = ({
 
       {/* Card 2: Healthy sites */}
       <Grid item xs={12} sm={6} lg={3}>
-        <Card sx={{ minHeight: 145, background: blueGradient, position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center' }}>
+        <Card sx={{ minHeight: 145, background: blueGradient, position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', '& .MuiTypography-root': { color: 'white !important' } }}>
           <Box p={2} flex={1} display="flex" flexDirection="column" alignItems="center" gap={1.5} color="white" position="relative" textAlign="center">
             <Typography variant="button" fontWeight="bold" color="white" sx={{ fontSize: '0.7rem', textTransform: 'uppercase' }}>
               Healthy Sites
@@ -120,7 +122,7 @@ const DashboardHealthCards: React.FC<DashboardHealthCardsProps> = ({
 
       {/* Card 3: Connected */}
       <Grid item xs={12} sm={6} lg={3}>
-        <Card sx={{ minHeight: 145, background: blueGradient, position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center' }}>
+        <Card sx={{ minHeight: 145, background: blueGradient, position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', '& .MuiTypography-root': { color: 'white !important' } }}>
           <Box p={2} flex={1} display="flex" flexDirection="column" alignItems="center" gap={1.5} color="white" position="relative" textAlign="center">
             <Typography variant="button" fontWeight="bold" color="white" sx={{ fontSize: '0.7rem', textTransform: 'uppercase' }}>
               Connection
@@ -139,7 +141,7 @@ const DashboardHealthCards: React.FC<DashboardHealthCardsProps> = ({
 
       {/* Card 4: Total Health Score */}
       <Grid item xs={12} sm={6} lg={3}>
-        <Card sx={{ minHeight: 145, background: 'linear-gradient(310deg, #ea580c, #fb923c)', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center' }}>
+        <Card sx={{ minHeight: 145, background: 'linear-gradient(310deg, #ea580c, #fb923c)', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', '& .MuiTypography-root': { color: 'white !important' } }}>
           <Box p={2} flex={1} display="flex" flexDirection="column" alignItems="center" gap={1.5} color="white" position="relative" textAlign="center">
             <Typography variant="button" fontWeight="bold" color="white" sx={{ fontSize: '0.7rem', textTransform: 'uppercase' }}>
               Health Score
