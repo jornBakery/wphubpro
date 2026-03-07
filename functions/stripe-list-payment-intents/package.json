@@ -4,6 +4,6 @@
   "main": "index.js",
   "type": "module",
   "dependencies": {
-    "stripe": "^20.4.1"
+    "stripe": "^12.16.0"
   }
 }

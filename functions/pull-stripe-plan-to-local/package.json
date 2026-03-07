@@ -1,7 +1,7 @@
 {
-  "name": "stripe-preview-proration",
+  "name": "pull-stripe-plan-to-local",
   "version": "1.0.0",
-  "description": "Preview proration amounts for subscription changes",
+  "description": "Pull Stripe plan data to local_plans table",
   "main": "index.js",
   "dependencies": {
     "node-appwrite": "^11.0.0",

@@ -47,7 +47,6 @@ async function pingSiteConnection(
   const meta_data = mergeMetaDataConnected(meta, success);
 
   await databases.updateDocument(DATABASE_ID, SITES_COLLECTION_ID, siteId, {
-    status: success ? 'connected' : 'disconnected',
     health_status: success ? 'healthy' : 'bad',
     last_checked: new Date().toISOString(),
     meta_data,
@@ -188,7 +187,6 @@ export const useUpdateSite = () => {
         const dbUpdates: any = {};
         if (updates.siteName) dbUpdates.site_name = updates.siteName;
         if (updates.siteUrl) dbUpdates.site_url = updates.siteUrl;
-        if (updates.status) dbUpdates.status = updates.status;
         if (updates.health_status) dbUpdates.health_status = updates.health_status;
         if (updates.last_checked) dbUpdates.last_checked = updates.last_checked;
         if (updates.meta_data !== undefined) dbUpdates.meta_data = updates.meta_data;

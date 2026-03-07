@@ -1,10 +1,6 @@
 /* eslint-disable no-unused-vars */
 const sdk = require('node-appwrite');
 const crypto = require('crypto');
-const { getEnv, getAppwriteConfig } = require('./_shared/env');
-const { parsePayload } = require('./_shared/request');
-const { createClient } = require('./_shared/appwrite');
-const { fail, ok } = require('./_shared/response');
 
 function encrypt(text, key) {
   const iv = crypto.randomBytes(12);
@@ -16,22 +12,21 @@ function encrypt(text, key) {
 }
 
 module.exports = async ({ req, res, log, error }) => {
-  const env = getEnv(req);
-  const { endpoint, projectId, apiKey, missing } = getAppwriteConfig(req);
-  const ENCRYPTION_KEY = env.ENCRYPTION_KEY;
-
-  if (missing.length > 0) {
-    return fail(res, 'Function environment is not configured.', 500);
-  }
-
-  const client = createClient(sdk, { endpoint, projectId, apiKey });
+  const client = new sdk.Client();
   const databases = new sdk.Databases(client);
 
-  let payloadObj = {};
-  try {
-    payloadObj = parsePayload(req);
-  } catch (parseErr) {
-    return fail(res, 'Invalid request body. JSON expected.', 400);
+  const env = (req && req.variables && Object.keys(req.variables).length) ? req.variables : process.env;
+  const ENCRYPTION_KEY = env.ENCRYPTION_KEY;
+
+  client
+    .setEndpoint(env.APPWRITE_FUNCTION_ENDPOINT || env.APPWRITE_ENDPOINT)
+    .setProject(env.APPWRITE_FUNCTION_PROJECT_ID || env.APPWRITE_PROJECT_ID)
+    .setKey(env.APPWRITE_FUNCTION_API_KEY || env.APPWRITE_API_KEY);
+
+  let payloadObj = null;
+  if (req) payloadObj = req.payload || req.body || null;
+  if (typeof payloadObj === 'string') {
+    try { payloadObj = JSON.parse(payloadObj); } catch (e) { /* skip */ }
   }
 
   log('update-site payload: ' + JSON.stringify(payloadObj));
@@ -41,7 +36,7 @@ module.exports = async ({ req, res, log, error }) => {
   const updates = (req.query && req.query.updates) || (payloadObj && payloadObj.updates) || payloadObj;
 
   if (!updates) {
-    return fail(res, 'Missing updates payload', 400);
+    return res.json({ success: false, message: 'Missing updates payload' }, 400);
   }
 
   // Allow either providing siteId or site_url to identify the site
@@ -75,7 +70,7 @@ module.exports = async ({ req, res, log, error }) => {
       finalUpdates.password = '';
     } else {
       if (!ENCRYPTION_KEY) {
-        return fail(res, 'ENCRYPTION_KEY not configured', 500);
+        return res.json({ success: false, message: 'ENCRYPTION_KEY not configured' }, 500);
       }
       finalUpdates.password = encrypt(rawPass, ENCRYPTION_KEY);
     }
@@ -88,7 +83,7 @@ module.exports = async ({ req, res, log, error }) => {
       finalUpdates.api_key = '';
     } else {
       if (!ENCRYPTION_KEY) {
-        return fail(res, 'ENCRYPTION_KEY not configured', 500);
+        return res.json({ success: false, message: 'ENCRYPTION_KEY not configured' }, 500);
       }
       finalUpdates.api_key = encrypt(rawKey, ENCRYPTION_KEY);
     }
@@ -97,7 +92,6 @@ module.exports = async ({ req, res, log, error }) => {
   if (usernameRaw !== null) finalUpdates.username = usernameRaw;
   if (siteNameRaw !== null) finalUpdates.site_name = siteNameRaw;
   if (siteUrlCandidate !== null) finalUpdates.site_url = siteUrlCandidate;
-  if (hasProp(updates, 'meta_data')) finalUpdates.meta_data = updates.meta_data;
 
   // If siteId wasn't provided, try to find the site by site_url or create it
   try {
@@ -135,12 +129,12 @@ module.exports = async ({ req, res, log, error }) => {
         if (!createData.site_url) createData.site_url = decodedUrl;
         const created = await databases.createDocument('platform_db', 'sites', sdk.ID.unique(), createData);
         log('Created new site: ' + JSON.stringify(created));
-        return ok(res, { success: true, document: created });
+        return res.json({ success: true, document: created });
       }
     }
   } catch (e) {
     error(e.message);
-    return fail(res, e.message, 500);
+    return res.json({ success: false, message: e.message }, 500);
   }
 
   log('Updating site id: ' + siteId + ' with: ' + JSON.stringify(finalUpdates));
@@ -148,18 +142,18 @@ module.exports = async ({ req, res, log, error }) => {
   try {
     // Guard: ensure we have updates to apply
     if (!siteId) {
-      return fail(res, 'Missing siteId to update', 400);
+      return res.json({ success: false, message: 'Missing siteId to update' }, 400);
     }
 
     if (!finalUpdates || Object.keys(finalUpdates).length === 0) {
       log('No updates provided to update-site for siteId: ' + siteId);
-      return fail(res, 'No update fields provided', 400);
+      return res.json({ success: false, message: 'No update fields provided' }, 400);
     }
 
     const updated = await databases.updateDocument('platform_db', 'sites', siteId, finalUpdates);
-    return ok(res, { success: true, document: updated });
+    return res.json({ success: true, document: updated });
   } catch (e) {
     error(e.message);
-    return fail(res, e.message, 500);
+    return res.json({ success: false, message: e.message }, 500);
   }
 };

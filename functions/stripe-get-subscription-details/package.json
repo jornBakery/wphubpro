@@ -4,6 +4,6 @@
   "description": "Get detailed subscription data from Stripe",
   "main": "index.js",
   "dependencies": {
-    "stripe": "^20.4.1"
+    "stripe": "^14.0.0"
   }
 }

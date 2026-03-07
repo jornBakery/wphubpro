@@ -110,74 +110,6 @@
             "specification": "s-0.5vcpu-512mb"
         },
         {
-            "$id": "recovery-manager",
-            "name": "recovery-manager",
-            "runtime": "node-18.0",
-            "path": "functions/recovery-manager",
-            "entrypoint": "index.js",
-            "execute": [
-                "users"
-            ],
-            "enabled": true,
-            "logging": true,
-            "events": [],
-            "schedule": "",
-            "timeout": 30,
-            "commands": "npm install",
-            "scopes": [
-                "users.read",
-                "users.write",
-                "teams.read",
-                "teams.write",
-                "databases.read",
-                "databases.write",
-                "tables.read",
-                "collections.read",
-                "tables.write",
-                "collections.write",
-                "columns.read",
-                "attributes.read",
-                "columns.write",
-                "attributes.write",
-                "indexes.read",
-                "indexes.write",
-                "rows.read",
-                "documents.read",
-                "rows.write",
-                "documents.write",
-                "files.read",
-                "files.write",
-                "buckets.read",
-                "buckets.write",
-                "functions.read",
-                "functions.write",
-                "execution.read",
-                "execution.write",
-                "targets.read",
-                "targets.write",
-                "providers.read",
-                "providers.write",
-                "messages.read",
-                "messages.write",
-                "topics.read",
-                "topics.write",
-                "subscribers.read",
-                "subscribers.write",
-                "locale.read",
-                "avatars.read",
-                "health.read",
-                "migrations.read",
-                "migrations.write",
-                "tokens.read",
-                "tokens.write",
-                "sites.read",
-                "sites.write",
-                "log.read",
-                "log.write"
-            ],  
-            "specification": "s-0.5vcpu-512mb"
-        },
-        {
             "$id": "zip-parser",
             "name": "zip-parser",
             "runtime": "node-18.0",
@@ -222,10 +154,10 @@
             "specification": "s-0.5vcpu-512mb"
         },
         {
-            "$id": "wphub-sites",
-            "name": "wphub-sites",
+            "$id": "create-site",
+            "name": "create-site",
             "runtime": "node-18.0",
-            "path": "functions/wphub-sites",
+            "path": "functions/create-site",
             "entrypoint": "index.js",
             "execute": [
                 "users"
@@ -291,14 +223,13 @@
             "specification": "s-1vcpu-512mb"
         },
         {
-            "$id": "stripe-core",
-            "name": "stripe-core",
+            "$id": "update-site",
+            "name": "update-site",
             "runtime": "node-18.0",
-            "path": "functions/stripe-core",
+            "path": "functions/update-site",
             "entrypoint": "index.js",
             "execute": [
-                "users",
-                "any"
+                "users"
             ],
             "enabled": true,
             "logging": true,
@@ -307,19 +238,84 @@
             "timeout": 15,
             "commands": "npm install",
             "scopes": [
+                "sessions.write",
+                "users.read",
+                "users.write",
+                "teams.read",
+                "teams.write",
                 "databases.read",
-                "documents.read"
+                "databases.write",
+                "tables.read",
+                "collections.read",
+                "tables.write",
+                "collections.write",
+                "columns.read",
+                "attributes.read",
+                "columns.write",
+                "attributes.write",
+                "indexes.read",
+                "indexes.write",
+                "rows.read",
+                "documents.read",
+                "rows.write",
+                "documents.write",
+                "files.read",
+                "files.write",
+                "buckets.read",
+                "buckets.write",
+                "functions.read",
+                "functions.write",
+                "execution.read",
+                "execution.write",
+                "targets.read",
+                "targets.write",
+                "providers.read",
+                "providers.write",
+                "messages.read",
+                "messages.write",
+                "topics.read",
+                "topics.write",
+                "subscribers.read",
+                "subscribers.write",
+                "locale.read",
+                "avatars.read",
+                "health.read",
+                "migrations.read",
+                "migrations.write",
+                "tokens.read",
+                "tokens.write",
+                "sites.read",
+                "sites.write",
+                "log.read",
+                "log.write"
             ],
+            "specification": "s-1vcpu-512mb"
+        },
+        {
+            "$id": "stripe-list-products",
+            "name": "stripe-list-products",
+            "runtime": "node-18.0",
+            "path": "functions/stripe-list-products",
+            "entrypoint": "index.js",
+            "execute": [
+                "any"
+            ],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 15,
+            "commands": "npm install",
+            "scopes": [],
             "specification": "s-0.5vcpu-512mb"
         },
         {
-            "$id": "stripe-products",
-            "name": "stripe-products",
+            "$id": "stripe-list-payment-intents",
+            "name": "stripe-list-payment-intents",
             "runtime": "node-18.0",
-            "path": "functions/stripe-products",
+            "path": "functions/stripe-list-payment-intents",
             "entrypoint": "index.js",
             "execute": [
-                "any",
                 "team:admin"
             ],
             "enabled": true,
@@ -332,14 +328,13 @@
             "specification": "s-0.5vcpu-512mb"
         },
         {
-            "$id": "stripe-invoices",
-            "name": "stripe-invoices",
+            "$id": "stripe-portal-link",
+            "name": "stripe-portal-link",
             "runtime": "node-18.0",
-            "path": "functions/stripe-invoices",
+            "path": "functions/stripe-portal-link",
             "entrypoint": "index.js",
             "execute": [
-                "users",
-                "team:admin"
+                "users"
             ],
             "enabled": true,
             "logging": true,
@@ -354,13 +349,72 @@
             "specification": "s-0.5vcpu-512mb"
         },
         {
-            "$id": "admin-manage-users",
-            "name": "admin-manage-users",
+            "$id": "stripe-list-invoices",
+            "name": "stripe-list-invoices",
             "runtime": "node-18.0",
-            "path": "functions/admin-manage-users",
+            "path": "functions/stripe-list-invoices",
             "entrypoint": "index.js",
             "execute": [
-                "users",
+                "users"
+            ],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 15,
+            "commands": "npm install",
+            "scopes": [
+                "databases.read",
+                "documents.read"
+            ],
+            "specification": "s-0.5vcpu-512mb"
+        },
+        {
+            "$id": "stripe-webhook",
+            "name": "stripe-webhook",
+            "runtime": "node-18.0",
+            "path": "functions/stripe-webhook",
+            "entrypoint": "index.js",
+            "execute": [
+                "any"
+            ],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 15,
+            "commands": "npm install",
+            "scopes": [],
+            "specification": "s-0.5vcpu-512mb"
+        },
+        {
+            "$id": "admin-list-users",
+            "name": "admin-list-users",
+            "runtime": "node-18.0",
+            "path": "functions/admin-list-users",
+            "entrypoint": "index.js",
+            "execute": [
+                "any",
+                "team:admin"
+            ],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 15,
+            "commands": "npm install",
+            "scopes": [
+                "users.read"
+            ],
+            "specification": "s-0.5vcpu-512mb"
+        },
+        {
+            "$id": "admin-update-user",
+            "name": "admin-update-user",
+            "runtime": "node-18.0",
+            "path": "functions/admin-update-user",
+            "entrypoint": "index.js",
+            "execute": [
                 "team:admin"
             ],
             "enabled": true,
@@ -424,10 +478,10 @@
             "specification": "s-1vcpu-512mb"
         },
         {
-            "$id": "stripe-customers",
-            "name": "stripe-customers",
+            "$id": "stripe-create-customer",
+            "name": "stripe-create-customer",
             "runtime": "node-18.0",
-            "path": "functions/stripe-customers",
+            "path": "functions/stripe-create-customer",
             "entrypoint": "index.js",
             "execute": [],
             "enabled": true,
@@ -445,10 +499,10 @@
             "specification": "s-1vcpu-512mb"
         },
         {
-            "$id": "stripe-order-payments",
-            "name": "stripe-order-payments",
+            "$id": "stripe-create-checkout-session",
+            "name": "stripe-create-checkout-session",
             "runtime": "node-18.0",
-            "path": "functions/stripe-order-payments",
+            "path": "functions/stripe-create-checkout-session",
             "entrypoint": "index.js",
             "execute": [
                 "users"
@@ -465,13 +519,52 @@
             "specification": "s-1vcpu-512mb"
         },
         {
-            "$id": "stripe-subscriptions",
-            "name": "stripe-subscriptions",
+            "$id": "stripe-get-subscription",
+            "name": "stripe-get-subscription",
             "runtime": "node-18.0",
-            "path": "functions/stripe-subscriptions",
+            "path": "functions/stripe-get-subscription",
             "entrypoint": "index.js",
             "execute": [
-                "users",
+                "users"
+            ],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 15,
+            "commands": "npm install",
+            "scopes": [
+                "documents.read"
+            ],
+            "specification": "s-1vcpu-512mb"
+        },
+        {
+            "$id": "stripe-cancel-subscription",
+            "name": "stripe-cancel-subscription",
+            "runtime": "node-18.0",
+            "path": "functions/stripe-cancel-subscription",
+            "entrypoint": "index.js",
+            "execute": [
+                "users"
+            ],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 15,
+            "commands": "npm install",
+            "scopes": [
+                "documents.read"
+            ],
+            "specification": "s-1vcpu-512mb"
+        },
+        {
+            "$id": "stripe-sync-subscriptions",
+            "name": "stripe-sync-subscriptions",
+            "runtime": "node-18.0",
+            "path": "functions/stripe-sync-subscriptions",
+            "entrypoint": "index.js",
+            "execute": [
                 "team:admin"
             ],
             "enabled": true,
@@ -484,21 +577,22 @@
                 "users.read",
                 "databases.read",
                 "databases.write",
-                "documents.read",
                 "collections.read",
                 "collections.write",
+                "documents.read",
                 "documents.write"
             ],
-            "specification": "s-1vcpu-512mb"
+            "specification": "s-0.5vcpu-512mb"
         },
         {
-            "$id": "set-admin",
-            "name": "set-admin",
+            "$id": "stripe-get-subscription-details",
+            "name": "stripe-get-subscription-details",
             "runtime": "node-18.0",
-            "path": "functions/set-admin",
+            "path": "functions/stripe-get-subscription-details",
             "entrypoint": "index.js",
             "execute": [
-                "any"
+                "users",
+                "team:admin"
             ],
             "enabled": true,
             "logging": true,
@@ -506,17 +600,14 @@
             "schedule": "",
             "timeout": 15,
             "commands": "npm install",
-            "scopes": [
-                "teams.read",
-                "teams.write"
-            ],
+            "scopes": [],
             "specification": "s-0.5vcpu-512mb"
         },
         {
-            "$id": "validate-wp",
-            "name": "validate-wp",
+            "$id": "stripe-preview-proration",
+            "name": "stripe-preview-proration",
             "runtime": "node-18.0",
-            "path": "functions/validate-wp",
+            "path": "functions/stripe-preview-proration",
             "entrypoint": "index.js",
             "execute": [
                 "users"
@@ -527,65 +618,33 @@
             "schedule": "",
             "timeout": 15,
             "commands": "npm install",
-            "scopes": [
-                "sessions.write",
-                "users.read",
-                "users.write",
-                "teams.read",
-                "teams.write",
-                "databases.read",
-                "databases.write",
-                "tables.read",
-                "collections.read",
-                "tables.write",
-                "collections.write",
-                "columns.read",
-                "attributes.read",
-                "columns.write",
-                "attributes.write",
-                "indexes.read",
-                "indexes.write",
-                "rows.read",
-                "documents.read",
-                "rows.write",
-                "documents.write",
-                "files.read",
-                "files.write",
-                "buckets.read",
-                "buckets.write",
-                "functions.read",
-                "functions.write",
-                "execution.read",
-                "execution.write",
-                "targets.read",
-                "targets.write",
-                "providers.read",
-                "providers.write",
-                "messages.read",
-                "messages.write",
-                "topics.read",
-                "topics.write",
-                "subscribers.read",
-                "subscribers.write",
-                "locale.read",
-                "avatars.read",
-                "health.read",
-                "migrations.read",
-                "migrations.write",
-                "tokens.read",
-                "tokens.write",
-                "sites.read",
-                "sites.write",
-                "log.read",
-                "log.write"
-            ],
-            "specification": "s-1vcpu-512mb"
+            "scopes": [],
+            "specification": "s-0.5vcpu-512mb"
         },
         {
-            "$id": "db-count",
-            "name": "db-count",
+            "$id": "admin-login-as",
+            "name": "admin-login-as",
             "runtime": "node-18.0",
-            "path": "functions/db-count",
+            "path": "functions/admin-login-as",
+            "entrypoint": "index.js",
+            "execute": [
+                "users",
+                "team:admin"
+            ],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 15,
+            "commands": "npm install",
+            "scopes": [],
+            "specification": "s-0.5vcpu-512mb"
+        },
+        {
+            "$id": "stripe-cancel-schedule-update",
+            "name": "stripe-cancel-schedule-update",
+            "runtime": "node-18.0",
+            "path": "functions/stripe-cancel-schedule-update",
             "entrypoint": "index.js",
             "execute": [
                 "users"
@@ -600,6 +659,94 @@
                 "documents.read"
             ],
             "specification": "s-1vcpu-512mb"
+        },
+        {
+            "$id": "migrate-local-plan-to-stripe",
+            "name": "migrate-local-plan-to-stripe",
+            "runtime": "node-18.0",
+            "path": "functions/migrate-local-plan-to-stripe",
+            "entrypoint": "index.js",
+            "execute": [
+                "team:admin"
+            ],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 30,
+            "commands": "npm install",
+            "scopes": [
+                "documents.read",
+                "documents.write"
+            ],
+            "specification": "s-1vcpu-512mb"
+        },
+        {
+            "$id": "stripe-pull-to-local",
+            "name": "stripe-pull-to-local",
+            "runtime": "node-18.0",
+            "path": "functions/stripe-pull-to-local",
+            "entrypoint": "index.js",
+            "execute": [
+                "team:admin"
+            ],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 15,
+            "commands": "npm install",
+            "scopes": [
+                "documents.read",
+                "documents.write"
+            ],
+            "specification": "s-1vcpu-512mb"
+        },
+        {
+            "$id": "pull-stripe-plan-to-local",
+            "name": "pull-stripe-plan-to-local",
+            "runtime": "node-18.0",
+            "path": "functions/pull-stripe-plan-to-local",
+            "entrypoint": "index.js",
+            "execute": [
+                "team:admin"
+            ],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 15,
+            "commands": "npm install",
+            "scopes": [
+                "documents.read",
+                "documents.write"
+            ],
+            "specification": "s-1vcpu-512mb"
+        },
+        {
+            "$id": "admin-get-user",
+            "name": "admin-get-user",
+            "runtime": "node-18.0",
+            "path": "functions/admin-get-user",
+            "entrypoint": "index.js",
+            "execute": [
+                "any",
+                "team:admin"
+            ],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 15,
+            "commands": "npm install",
+            "scopes": [
+                "users.read",
+                "databases.read",
+                "databases.write",
+                "documents.read",
+                "documents.write"
+            ],
+            "specification": "s-0.5vcpu-512mb"
         }
     ],
     "tablesDB": [
@@ -673,7 +820,7 @@
                     "type": "string",
                     "required": false,
                     "array": false,
-                    "size": 50000,
+                    "size": 4000,
                     "default": null,
                     "encrypt": false
                 },
@@ -1433,7 +1580,20 @@
             ]
         }
     ],
-    "buckets": [],
+    "buckets": [
+        {
+            "$id": "action_logs",
+            "$permissions": [],
+            "fileSecurity": false,
+            "name": "action_logs",
+            "enabled": true,
+            "maximumFileSize": 30000000,
+            "allowedFileExtensions": [],
+            "compression": "none",
+            "encryption": true,
+            "antivirus": true
+        }
+    ],
     "teams": [
         {
             "$id": "admin",
