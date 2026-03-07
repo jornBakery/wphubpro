@@ -31,7 +31,7 @@ export default async ({ req, res, log, error }) => {
 
     // Bepaal de URL van de site (controleer of je veld 'siteUrl' of 'url' heet in je DB)
     const targetUrl = site.siteUrl || site.site_url;
-    const siteApiKey = site.wphubpro_api_key;
+    const siteApiKey = site.api_key;
 
     if (!targetUrl) throw new Error('Site URL niet gevonden in database.');
     if (!siteApiKey) throw new Error('Geen API key gevonden voor deze site.');
