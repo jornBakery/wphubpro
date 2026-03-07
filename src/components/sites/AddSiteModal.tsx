@@ -8,7 +8,7 @@ import SoftTypography from 'components/SoftTypography';
 import SoftButton from 'components/SoftButton';
 import SoftInput from 'components/SoftInput';
 import Icon from '@mui/material/Icon';
-import { useAddSite } from '../../domains/sites/hooks';
+import { useAddSite } from '../../domains/sites';
 
 interface AddSiteModalProps {
   open: boolean;

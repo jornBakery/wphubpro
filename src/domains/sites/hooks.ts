@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { databases } from '../../services/appwrite';
 import { Query } from 'appwrite';
 import { Site } from '../../types';
-import { useAuth } from '../auth/context';
+import { useAuth } from '../auth';
 import { useToast } from '../../contexts/ToastContext';
 import { executeFunction, executeFunctionWithMeta } from '../../integrations/appwrite/executeFunction';
 import { mapSiteDocumentToSite } from './mappers';

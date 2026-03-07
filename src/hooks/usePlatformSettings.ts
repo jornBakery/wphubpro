@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { databases, DATABASE_ID, COLLECTIONS } from '../services/appwrite';
 import { Query } from 'appwrite';
-import { useAuth } from '../domains/auth/context';
+import { useAuth } from '../domains/auth';
 import { executeFunction } from '../integrations/appwrite/executeFunction';
 
 /**

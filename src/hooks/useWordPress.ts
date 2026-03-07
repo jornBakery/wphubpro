@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { functions } from '../services/appwrite';
 import { WordPressPlugin, WordPressTheme } from '../types';
 import { useToast } from '../contexts/ToastContext';
-import { useAuth } from '../domains/auth/context';
+import { useAuth } from '../domains/auth';
 import { executeFunctionWithMeta } from '../integrations/appwrite/executeFunction';
 
 const FUNCTION_ID = 'wp-proxy';

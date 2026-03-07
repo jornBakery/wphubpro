@@ -12,7 +12,7 @@ import Tooltip from '@mui/material/Tooltip';
 import SoftBox from 'components/SoftBox';
 import SoftTypography from 'components/SoftTypography';
 import { StatusIcon, HealthBadge } from '../sites/SitesTableCells';
-import { useCheckSiteHealth } from '../../domains/sites/hooks';
+import { useCheckSiteHealth } from '../../domains/sites';
 import { useSiteDetails } from '../../hooks/useWordPress';
 import type { Site } from '../../types';
 

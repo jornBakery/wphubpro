@@ -14,7 +14,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Tooltip from '@mui/material/Tooltip';
 import { Site } from '../../types';
-import { useDeleteSite } from '../../domains/sites/hooks';
+import { useDeleteSite } from '../../domains/sites';
 
 const infoGradient = 'linear-gradient(310deg, #4F5482, #7a8ef0)';
 const orangeGradient = 'linear-gradient(310deg, #ea580c, #fb923c)';

@@ -1,7 +1,7 @@
 import React from "react";
 import { Search, Bell, Menu, LogOut } from "lucide-react";
 import Button from "../ui/Button";
-import { useAuth } from "../../domains/auth/context";
+import { useAuth } from "../../domains/auth";
 import { useNavigate } from "react-router-dom";
 
 const Header: React.FC = () => {

@@ -14,7 +14,7 @@ import SoftTypography from 'components/SoftTypography';
 import SoftButton from 'components/SoftButton';
 import Footer from 'examples/Footer';
 
-import { useSite, useDeleteSite, useCheckSiteHealth } from '../domains/sites/hooks';
+import { useSite, useDeleteSite, useCheckSiteHealth } from '../domains/sites';
 import { usePageBreadcrumb } from '../contexts/PageBreadcrumbContext';
 
 import SiteDetailsTab from './site-detail/SiteDetailsTab';
