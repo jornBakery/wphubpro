@@ -10,7 +10,8 @@ import SoftBox from 'components/SoftBox';
 import Footer from 'examples/Footer';
 
 import { useSubscription, useUsage } from '../domains/billing';
-import { useSites } from '../domains/sites';
+import { useSites, useSitesConnectionPing } from '../domains/sites';
+import { useSitesUpdateStats } from '../hooks/useWordPress';
 
 import DashboardHealthCards from '../components/dashboard/DashboardHealthCards';
 import DashboardSitesTable from '../components/dashboard/DashboardSitesTable';
@@ -20,6 +21,8 @@ const DashboardPage: React.FC = () => {
   const { data: subscription, isLoading: subLoading } = useSubscription();
   const { data: usage } = useUsage();
   const { data: sites } = useSites();
+  const updateStats = useSitesUpdateStats(sites ?? []);
+  useSitesConnectionPing((sites ?? []).map((s) => s.$id));
 
   return (
     <>
@@ -29,11 +32,11 @@ const DashboardPage: React.FC = () => {
           <Grid item xs={12} lg={9} sx={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
             <DashboardHealthCards
               sites={sites ?? []}
-              sitesNeedingUpdatesCount={0}
-              pluginUpdatesCount={0}
-              pluginTotalCount={0}
-              themeUpdatesCount={0}
-              themeTotalCount={0}
+              sitesNeedingUpdatesCount={updateStats.sitesNeedingUpdatesCount}
+              pluginUpdatesCount={updateStats.pluginUpdatesCount}
+              pluginTotalCount={updateStats.pluginTotalCount}
+              themeUpdatesCount={updateStats.themeUpdatesCount}
+              themeTotalCount={updateStats.themeTotalCount}
             />
             <SoftBox sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', alignSelf: 'stretch' }}>
               <DashboardSitesTable sites={sites ?? []} />
