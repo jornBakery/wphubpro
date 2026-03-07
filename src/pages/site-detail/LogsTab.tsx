@@ -25,6 +25,7 @@ import {
   useSiteLogs, 
   useSiteErrorLog, 
   useSiteExecutionLogs, 
+  executeRecovery,
   type BridgeLogEntry, 
   type AppwriteExecution 
 } from '../../hooks/useWordPress';
