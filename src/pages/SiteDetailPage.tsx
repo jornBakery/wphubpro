@@ -135,9 +135,9 @@ const SiteDetailPage: React.FC = () => {
                       borderRadius: '8px',
                       transition: 'background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
                       '&.Mui-selected': {
-                        color: '#292F4D !important',
+                        color: '#ffffff !important',
                         fontWeight: 600,
-                        backgroundColor: '#ffffff',
+                        background: blueGradient,
                         boxShadow: '0 20px 27px 0 rgba(0,0,0,0.05)',
                       },
                       // Ensure label text is visible (icon + label layout)
