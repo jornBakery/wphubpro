@@ -4,7 +4,7 @@
   "description": "Update site function dependencies",
   "main": "index.js",
   "dependencies": {
-    "node-appwrite": "^22.0.0",
+    "node-appwrite": "^22.1.3",
     "node-fetch": "^2.6.7"
   }
 }
