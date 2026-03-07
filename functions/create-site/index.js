@@ -2,6 +2,10 @@
 const sdk = require('node-appwrite');
 const fetch = require('node-fetch');
 const crypto = require('crypto');
+const { getEnv, getAppwriteConfig } = require('../_shared/env');
+const { parsePayload } = require('../_shared/request');
+const { createClient } = require('../_shared/appwrite');
+const { fail, ok } = require('../_shared/response');
 
 function encrypt(text, key) {
   const iv = crypto.randomBytes(12);
@@ -13,26 +17,23 @@ function encrypt(text, key) {
 }
 
 module.exports = async ({ req, res, log, error }) => {
-  const client = new sdk.Client();
-  const databases = new sdk.Databases(client);
-
-  const env = (req && req.variables && Object.keys(req.variables).length) ? req.variables : process.env;
-  const APPWRITE_FUNCTION_ENDPOINT = env.APPWRITE_FUNCTION_ENDPOINT || env.APPWRITE_ENDPOINT;
-  const APPWRITE_FUNCTION_PROJECT_ID = env.APPWRITE_FUNCTION_PROJECT_ID || env.APPWRITE_PROJECT_ID;
-  const APPWRITE_FUNCTION_API_KEY = env.APPWRITE_FUNCTION_API_KEY || env.APPWRITE_API_KEY || env.APPWRITE_KEY;
+  const env = getEnv(req);
+  const { endpoint, projectId, apiKey, missing } = getAppwriteConfig(req);
   const ENCRYPTION_KEY = env.ENCRYPTION_KEY;
 
-  if (!APPWRITE_FUNCTION_ENDPOINT || !APPWRITE_FUNCTION_PROJECT_ID || !APPWRITE_FUNCTION_API_KEY || !ENCRYPTION_KEY) {
+  if (missing.length > 0 || !ENCRYPTION_KEY) {
     error('Function environment is not configured');
-    return res.json({ success: false, message: 'Function environment is not configured.' }, 500);
+    return fail(res, 'Function environment is not configured.', 500);
   }
 
-  client.setEndpoint(APPWRITE_FUNCTION_ENDPOINT).setProject(APPWRITE_FUNCTION_PROJECT_ID).setKey(APPWRITE_FUNCTION_API_KEY);
+  const client = createClient(sdk, { endpoint, projectId, apiKey });
+  const databases = new sdk.Databases(client);
 
-  let payloadObj = null;
-  if (req) payloadObj = req.payload || req.body || null;
-  if (typeof payloadObj === 'string') {
-    try { payloadObj = JSON.parse(payloadObj); } catch (e) { /* leave as string */ }
+  let payloadObj = {};
+  try {
+    payloadObj = parsePayload(req);
+  } catch (parseErr) {
+    return fail(res, 'Invalid request body. JSON expected.', 400);
   }
 
   const site_url = (req.query && (req.query.site_url || req.query.siteUrl)) || (payloadObj && (payloadObj.site_url || payloadObj.siteUrl));
@@ -40,7 +41,7 @@ module.exports = async ({ req, res, log, error }) => {
   const user_id = (req.query && (req.query.userId || req.query.user_id)) || (payloadObj && (payloadObj.userId || payloadObj.user_id));
 
   if (!site_url || !site_name || !user_id) {
-    return res.json({ success: false, message: 'Missing required fields: site_url, site_name, userId' }, 400);
+    return fail(res, 'Missing required fields: site_url, site_name, userId', 400);
   }
 
   // Twee flows:
@@ -66,7 +67,7 @@ module.exports = async ({ req, res, log, error }) => {
       const resp = await fetch(url, { method: 'GET', headers: { 'Authorization': `Basic ${auth}` }, timeout: 10000 });
       
       if (!resp.ok) {
-        return res.json({ success: false, message: 'WP validation failed' }, resp.status);
+        return fail(res, 'WP validation failed', resp.status);
       }
       encryptedPassword = encrypt(password, ENCRYPTION_KEY);
     }
@@ -83,9 +84,9 @@ module.exports = async ({ req, res, log, error }) => {
     };
 
     const created = await databases.createDocument('platform_db', 'sites', sdk.ID.unique(), document);
-    return res.json({ success: true, document: created });
+    return ok(res, { success: true, document: created });
   } catch (e) {
     error(e.message);
-    return res.json({ success: false, message: e.message }, 500);
+    return fail(res, e.message, 500);
   }
 };
