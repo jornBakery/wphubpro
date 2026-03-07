@@ -78,7 +78,12 @@ export const StatusIcon: React.FC<{ value: Site['status'] }> = ({ value }) => {
                   WebkitBackgroundClip: 'text',
                   color: 'transparent',
                 }
-              : { color: 'grey.400' }),
+              : {
+                  background: 'none',
+                  backgroundClip: 'unset',
+                  WebkitBackgroundClip: 'unset',
+                  color: '#9e9e9e !important',
+                }),
           }}
         >
           bolt
