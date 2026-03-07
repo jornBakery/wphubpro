@@ -1,13 +1,34 @@
 import { Client, Databases } from 'node-appwrite';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 
 /**
- * WPHubPro Recovery Manager
- * Deze functie faciliteert noodherstel acties via een beveiligde JWT verbinding.
- * Werkt met Nginx door het token zowel in de header als in de URL mee te sturen.
+ * Decryptie helper functie (Matcht exact jouw encrypt logica)
  */
+function decrypt(encryptedData, encryptionKey) {
+  try {
+    const [ivHex, encryptedHex, tagHex] = encryptedData.split(':');
+    
+    const iv = Buffer.from(ivHex, 'hex');
+    const encrypted = Buffer.from(encryptedHex, 'hex');
+    const tag = Buffer.from(tagHex, 'hex');
+    
+    // De sleutel wordt afgeleid via SHA256 (exact zoals in je add-site function)
+    const derivedKey = crypto.createHash('sha256').update(String(encryptionKey), 'utf8').digest();
+    
+    const decipher = crypto.createDecipheriv('aes-256-gcm', derivedKey, iv);
+    decipher.setAuthTag(tag);
+    
+    let decrypted = decipher.update(encrypted, 'hex', 'utf8');
+    decrypted += decipher.final('utf8');
+    
+    return decrypted;
+  } catch (err) {
+    throw new Error('Decryptie van API sleutel mislukt: ' + err.message);
+  }
+}
+
 export default async ({ req, res, log, error }) => {
-  // Initialiseer Appwrite Client
   const client = new Client()
     .setEndpoint(process.env.APPWRITE_FUNCTION_ENDPOINT)
     .setProject(process.env.APPWRITE_FUNCTION_PROJECT_ID)
@@ -15,92 +36,83 @@ export default async ({ req, res, log, error }) => {
 
   const databases = new Databases(client);
 
-  // 1. Parse de inkomende request body
+  // 1. Request body parsen
   let body;
   try {
     body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
   } catch (err) {
-    return res.json({ success: false, message: 'Ongeldige JSON in request body' }, 400);
+    return res.json({ success: false, message: 'Invalid JSON body' }, 400);
   }
 
   const { siteId, action, plugin_slug } = body;
+  const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY; // Zorg dat deze in je Function settings staat!
 
   if (!siteId || !action) {
-    return res.json({ success: false, message: 'siteId en action zijn verplicht' }, 400);
+    return res.json({ success: false, message: 'siteId and action are required' }, 400);
   }
 
   try {
-    log(`Start herstelactie [${action}] voor siteId: ${siteId}`);
+    log(`Ophalen site gegevens voor: ${siteId}`);
 
-    // 2. Haal site gegevens op uit de database
+    // 2. Haal de site doc op uit de collectie
     const site = await databases.getDocument(
-      process.env.APPWRITE_DATABASE_ID,
-      process.env.APPWRITE_SITES_COLLECTION_ID,
+      'platform_db', // Jouw database ID
+      'sites',       // Jouw collection ID
       siteId
     );
 
-    // Bepaal de URL en de geheime sleutel (Shared Secret)
-    const targetUrl = site.site_url;
-    const siteApiKey = site.api_key;
+    const targetUrl = site.site_url || site.siteUrl;
+    
+    // 3. Ontsleutel de API key
+    if (!site.api_key) {
+      throw new Error('Geen api_key gevonden in het site document.');
+    }
+    
+    const decryptedApiKey = decrypt(site.api_key, ENCRYPTION_KEY);
+    log(`Sleutel succesvol ontsleuteld.`);
 
-    if (!targetUrl) throw new Error('Site URL niet gevonden in database.');
-    if (!siteApiKey) throw new Error('Geen WPHubPro API key gevonden voor deze site.');
-
-    // 3. Genereer de JWT
+    // 4. JWT genereren (ondertekend met de PLATTE tekst sleutel)
     const token = jwt.sign(
       {
         action,
         plugin_slug: plugin_slug || null,
-        exp: Math.floor(Date.now() / 1000) + 60 // 60 seconden geldig
+        exp: Math.floor(Date.now() / 1000) + 60
       },
-      siteApiKey
+      decryptedApiKey
     );
 
-    // 4. Bereid de URL voor met token parameter (Fallback voor Nginx/Hostings die headers strippen)
+    // 5. URL voorbereiden met Nginx fallback parameter
     const urlWithToken = new URL(targetUrl);
     urlWithToken.searchParams.append('wphub_token', token);
 
-    log(`Verbinding maken met: ${urlWithToken.origin} (via URL parameter fallback)`);
+    log(`Verbinding maken met agent op: ${targetUrl}`);
 
-    // 5. Voer het request uit naar de WordPress site
+    // 6. Request sturen naar WordPress
     const response = await fetch(urlWithToken.toString(), {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${token}`, // Altijd meesturen voor servers die het wel ondersteunen
+        'Authorization': `Bearer ${token}`,
         'X-WPHubPro-Recovery': 'true',
         'Accept': 'application/json'
       }
     });
 
-    // Haal de rauwe tekst op voor debugging bij JSON parse fouten
     const responseText = await response.text();
     
     try {
-      // Probeer de response te parsen als JSON
       const data = JSON.parse(responseText);
-      
-      log(`Succesvolle communicatie met WordPress agent.`);
-      return res.json({ 
-        success: true, 
-        data: data 
-      });
-
+      return res.json({ success: true, data });
     } catch (parseError) {
-      // Als parsen mislukt, hebben we waarschijnlijk HTML ontvangen
-      error(`JSON Parse fout. Ontvangen data begint met: ${responseText.substring(0, 100)}`);
-      
+      error(`WP stuurde geen JSON: ${responseText.substring(0, 200)}`);
       return res.json({ 
         success: false, 
-        message: 'De WordPress site stuurde HTML terug in plaats van JSON. Controleer of de MU-plugin is geïnstalleerd en of de API key overeenkomt.',
-        debug: responseText.substring(0, 200) // Stuur een fragment terug naar het dashboard voor diagnose
+        message: 'Site stuurde HTML (Fatal Error). Controleer of de ontsleutelde sleutel overeenkomt met de waarde in de WP database.',
+        debug: responseText.substring(0, 100)
       }, 500);
     }
 
   } catch (err) {
-    error(`Recovery Manager Fout: ${err.message}`);
-    return res.json({ 
-      success: false, 
-      message: err.message 
-    }, 500);
+    error(`Fout: ${err.message}`);
+    return res.json({ success: false, message: err.message }, 500);
   }
 };
