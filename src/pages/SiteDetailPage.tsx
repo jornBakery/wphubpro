@@ -25,7 +25,7 @@ import LogsTab from './site-detail/LogsTab';
 import SiteDetailSidebar from '../components/site-detail/SiteDetailSidebar';
 import EditSiteModal from '../components/sites/EditSiteModal';
 
-const blueGradient = 'linear-gradient(310deg, #4F5482, #7a8ef0)';
+const orangeGradient = 'linear-gradient(310deg, #ea580c, #fb923c)';
 
 const TAB_ITEMS = [
   { index: 0, label: 'Overview', icon: 'info' },
@@ -108,7 +108,7 @@ const SiteDetailPage: React.FC = () => {
           <Grid item xs={12} lg={8} sx={{ display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden' }}>
             <Box sx={{ flex: '1 1 0%', display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden' }}>
               {/* Horizontal tab navigation - same style as vertical main Sidenav */}
-              <Box sx={{ flexShrink: 0, mb: 2, px: 3, pt: 0, py: 1, background: blueGradient, borderRadius: '12px' }}>
+              <Box sx={{ flexShrink: 0, mb: 2, px: 3, pt: 0, background: orangeGradient, py: 1, borderRadius: '8px' }}>
                 <Tabs
                   value={tab}
                   onChange={(_, value: number) => setTab(value)}
@@ -117,9 +117,13 @@ const SiteDetailPage: React.FC = () => {
                   allowScrollButtonsMobile
                   sx={{
                     minHeight: 48,
+                    color: 'white',
                     '& .MuiTabs-indicator': { display: 'none' },
                     '& .MuiTabs-flexContainer': { overflow: 'visible' },
-                    '& .MuiTabs-scroller': { overflow: 'visible !important' },
+                    '& .MuiTabs-scrollButtons': {
+                      color: 'white',
+                      '& .MuiSvgIcon-root': { color: 'white' },
+                    },
                     '& .MuiTab-root': {
                       minHeight: 48,
                       minWidth: 100,
@@ -130,14 +134,14 @@ const SiteDetailPage: React.FC = () => {
                       fontSize: '0.875rem',
                       fontWeight: 500,
                       textTransform: 'none',
-                      color: 'white !important',
+                      color: 'rgba(255,255,255,0.9) !important',
                       backgroundColor: 'transparent',
                       borderRadius: '8px',
-                      transition: 'background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+                      transition: 'background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, color 0.2s ease-in-out',
                       '&.Mui-selected': {
-                        color: 'white !important',
+                        color: '#ffffff !important',
                         fontWeight: 600,
-                        backgroundColor: 'rgba(255,255,255,0.15)',
+                        backgroundColor: 'transparent',
                         boxShadow: 'none',
                       },
                       '& > *:not(.MuiTab-iconWrapper)': {
@@ -157,17 +161,15 @@ const SiteDetailPage: React.FC = () => {
                         display: 'grid',
                         placeItems: 'center',
                         backgroundColor: 'rgba(255,255,255,0.2)',
-                        transition: 'background 0.2s ease-in-out',
-                        color: 'white',
+                        transition: 'background 0.2s ease-in-out, color 0.2s ease-in-out',
+                        color: '#ffffff',
                         fontSize: 18,
                       },
                     },
                     '& .Mui-selected .MuiTab-iconWrapper > *': {
-                      backgroundColor: '#ef4444',
+                      backgroundColor: '#dc2626',
                       color: '#ffffff',
-                    },
-                    '& .MuiTabs-scrollButtons': {
-                      color: 'white',
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
                     },
                   }}
                 >
