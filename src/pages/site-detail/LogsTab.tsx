@@ -18,10 +18,8 @@ import Collapse from '@mui/material/Collapse';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-<<<<<<< HEAD
 import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
-// Gebruik de centrale functions instantie uit services/appwrite
 import { 
   useSiteLogs, 
   useSiteErrorLog, 
@@ -33,10 +31,6 @@ import {
 import { useSite } from '../../hooks/useSites';
 import SoftTypography from 'components/SoftTypography';
 import SoftButton from 'components/SoftButton';
-=======
-import { useSiteLogs, useSiteErrorLog, useSiteExecutionLogs, type BridgeLogEntry, type AppwriteExecution } from '../../hooks/useWordPress';
-import { useSite } from '../../domains/sites';
->>>>>>> 38e836a79592c6b3072bf09aa64c1273b93ab624
 
 function parseExecutionEndpoint(requestPath: string): string {
   if (!requestPath || !requestPath.includes('?')) return requestPath || '—';
