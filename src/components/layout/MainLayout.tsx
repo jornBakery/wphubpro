@@ -11,7 +11,7 @@ import { useSoftUIController, setLayout } from 'context';
 import WPHubNavbar from './WPHubNavbar';
 import { PageBreadcrumbProvider } from '../../contexts/PageBreadcrumbContext';
 import { userRoutes, adminRoutes } from '../../config/sidenavRoutes';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../domains/auth';
 import { usePlatformSettings } from '../../hooks/usePlatformSettings';
 import Toaster from '../ui/Toaster';
 

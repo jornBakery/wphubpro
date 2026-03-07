@@ -12,7 +12,7 @@ import Icon from '@mui/material/Icon';
 
 import Footer from 'examples/Footer';
 
-import { useSites } from '../hooks/useSites';
+import { useSites } from '../domains/sites';
 import { usePinnedSites } from '../hooks/usePinnedSites';
 import AddSiteModal from '../components/sites/AddSiteModal';
 import ResponsiveSitesTable from '../components/sites/ResponsiveSitesTable';

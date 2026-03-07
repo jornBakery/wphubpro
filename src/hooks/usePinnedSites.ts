@@ -3,7 +3,7 @@
  */
 import { useCallback } from 'react';
 import { Site } from '../types';
-import { useUpdateSite } from './useSites';
+import { useUpdateSite } from '../domains/sites';
 
 function parseMeta(site: Site): Record<string, unknown> {
   if (!site.meta_data) return {};

@@ -9,8 +9,8 @@ import Grid from '@mui/material/Grid';
 import SoftBox from 'components/SoftBox';
 import Footer from 'examples/Footer';
 
-import { useSubscription, useUsage } from '../hooks/useSubscription';
-import { useSites } from '../hooks/useSites';
+import { useSubscription, useUsage } from '../domains/billing';
+import { useSites } from '../domains/sites';
 
 import DashboardHealthCards from '../components/dashboard/DashboardHealthCards';
 import DashboardSitesTable from '../components/dashboard/DashboardSitesTable';

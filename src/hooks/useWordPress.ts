@@ -1,5 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { functions } from '../services/appwrite';
+<<<<<<< HEAD
+=======
+import { WordPressPlugin, WordPressTheme } from '../types';
+import { useToast } from '../contexts/ToastContext';
+import { useAuth } from '../domains/auth';
+>>>>>>> 38e836a79592c6b3072bf09aa64c1273b93ab624
 import { executeFunctionWithMeta } from '../integrations/appwrite/executeFunction';
 import { useAuth } from '../contexts/AuthContext';
 

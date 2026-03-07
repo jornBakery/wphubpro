@@ -13,7 +13,7 @@ import { ActionIconButton } from '../../components/sites/SitesTableCells';
 import SoftTypography from 'components/SoftTypography';
 import SoftBadge from 'components/SoftBadge';
 import { useThemes, useManageTheme } from '../../hooks/useWordPress';
-import { useSite } from '../../hooks/useSites';
+import { useSite } from '../../domains/sites';
 import type { WordPressTheme } from '../../types';
 
 interface ThemesTabProps {

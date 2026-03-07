@@ -8,7 +8,7 @@ import Icon from '@mui/material/Icon';
 import SoftBox from 'components/SoftBox';
 import SoftTypography from 'components/SoftTypography';
 import DefaultCounterCard from 'examples/Cards/CounterCards/DefaultCounterCard';
-import { useSite } from '../../hooks/useSites';
+import { useSite } from '../../domains/sites';
 import { usePlugins, useThemes } from '../../hooks/useWordPress';
 
 interface SiteDetailsTabProps {

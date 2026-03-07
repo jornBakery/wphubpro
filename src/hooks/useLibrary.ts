@@ -5,8 +5,8 @@ import { Query } from 'appwrite';
 import { searchWpPlugins } from '../services/wordpress';
 import { LibraryItem, LibraryItemSource, LibraryItemType } from '../types';
 import { useToast } from '../contexts/ToastContext';
-import { useAuth } from '../contexts/AuthContext';
-import { mapLibraryDocumentToItem } from '../domains/library/mappers';
+import { useAuth } from '../domains/auth';
+import { mapLibraryDocumentToItem } from '../domains/library';
 
 const DATABASE_ID = 'platform_db';
 const LIBRARY_COLLECTION_ID = 'library';

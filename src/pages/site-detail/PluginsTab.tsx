@@ -21,7 +21,7 @@ import SoftTypography from 'components/SoftTypography';
 import SoftButton from 'components/SoftButton';
 import SoftBadge from 'components/SoftBadge';
 import { usePlugins, useTogglePlugin, useUpdatePlugin, useDeletePlugin } from '../../hooks/useWordPress';
-import { useSite } from '../../hooks/useSites';
+import { useSite } from '../../domains/sites';
 import { WordPressPlugin } from '../../types';
 
 const infoGradient = 'linear-gradient(310deg, #4F5482, #7a8ef0)';

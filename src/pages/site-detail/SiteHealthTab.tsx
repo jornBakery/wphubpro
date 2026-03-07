@@ -13,7 +13,7 @@ import Card from '@mui/material/Card';
 import SoftBox from 'components/SoftBox';
 import SoftTypography from 'components/SoftTypography';
 import SoftButton from 'components/SoftButton';
-import { useSite } from '../../hooks/useSites';
+import { useSite } from '../../domains/sites';
 import type { ActionLogEntry } from '../../types';
 
 interface SiteHealthTabProps {

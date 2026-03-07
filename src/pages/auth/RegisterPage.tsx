@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../domains/auth';
 import { usePlatformSettings } from '../../hooks/usePlatformSettings';
 import Button from '../../components/ui/Button';
 import Card, { CardHeader, CardTitle, CardDescription, CardContent } from '../../components/ui/Card';

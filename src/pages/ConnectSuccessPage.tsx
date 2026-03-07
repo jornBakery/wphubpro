@@ -10,8 +10,8 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Icon from '@mui/material/Icon';
 
-import { useAuth } from '../contexts/AuthContext';
-import { useSites, useAddSite, useUpdateSite } from '../hooks/useSites';
+import { useAuth } from '../domains/auth';
+import { useSites, useAddSite, useUpdateSite } from '../domains/sites';
 import { account, APPWRITE_ENDPOINT, APPWRITE_PROJECT_ID } from '../services/appwrite';
 
 /** Save JWT and connection data to WordPress bridge */
