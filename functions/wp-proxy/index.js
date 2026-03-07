@@ -59,10 +59,20 @@ module.exports = async ({ req, res, log, error }) => {
   try {
     const siteDocument = await databases.getDocument('platform_db', 'sites', siteId);
     const site_url = siteDocument.site_url;
-    
+
     let apiKey = siteDocument.api_key || siteDocument.apiKey || siteDocument.password;
-    if (apiKey && apiKey.includes(':') && apiKey.split(':').length === 3 && ENCRYPTION_KEY) {
+    const looksEncrypted = apiKey && typeof apiKey === 'string' && apiKey.includes(':') && apiKey.split(':').length === 3;
+    const hasEncKey = !!ENCRYPTION_KEY;
+    if (apiKey && looksEncrypted && hasEncKey) {
+      const before = apiKey;
       apiKey = decryptApiKey(apiKey, ENCRYPTION_KEY);
+      const decryptionOk = apiKey !== before && /^[a-zA-Z0-9]+$/.test(apiKey || '');
+      log(`[wp-proxy] api_key: present, encrypted=${looksEncrypted}, decrypted=${decryptionOk}, len=${(apiKey || '').length}`);
+      if (!decryptionOk) {
+        error('[wp-proxy] api_key decryption may have failed - key format unexpected. Check ENCRYPTION_KEY matches create-site/update-site.');
+      }
+    } else {
+      log(`[wp-proxy] api_key: present=${!!apiKey}, encrypted=${looksEncrypted}, hasEncKey=${hasEncKey}`);
     }
 
     const headers = {
