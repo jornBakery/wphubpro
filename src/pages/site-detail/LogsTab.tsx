@@ -28,7 +28,7 @@ import {
   type AppwriteExecution,
   functions // Importeer Appwrite functions vanuit je hook of service
 } from '../../hooks/useWordPress';
-import { useSite } from '../../domains/sites';
+import { useSite } from '../../hooks/useSites';
 import SoftTypography from 'components/SoftTypography';
 import SoftButton from 'components/SoftButton';
 
