@@ -26,7 +26,7 @@ const DashboardPage: React.FC = () => {
       <SoftBox mt={3} sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
         <Grid container spacing={3} alignItems="stretch" sx={{ flex: 1, minHeight: 0 }}>
           {/* Left column ~65% (8/12) - Health cards + Sites list */}
-          <Grid item xs={12} lg={8} sx={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+          <Grid item xs={12} lg={9} sx={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
             <DashboardHealthCards
               sites={sites ?? []}
               sitesNeedingUpdatesCount={0}
@@ -41,7 +41,7 @@ const DashboardPage: React.FC = () => {
           </Grid>
 
           {/* Right column ~35% (4/12) */}
-          <Grid item xs={12} lg={4}>
+          <Grid item xs={12} lg={3}>
             <Grid container spacing={3}>
               <Grid item xs={12}>
                 <DashboardSubscriptionCard
