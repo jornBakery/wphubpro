@@ -20,13 +20,14 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
+// Gebruik de centrale functions instantie uit services/appwrite
+import { functions } from '../../services/appwrite';
 import { 
   useSiteLogs, 
   useSiteErrorLog, 
   useSiteExecutionLogs, 
   type BridgeLogEntry, 
-  type AppwriteExecution,
-  functions // Importeer Appwrite functions vanuit je hook of service
+  type AppwriteExecution 
 } from '../../hooks/useWordPress';
 import { useSite } from '../../hooks/useSites';
 import SoftTypography from 'components/SoftTypography';
