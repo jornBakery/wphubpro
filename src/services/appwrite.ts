@@ -1,16 +1,18 @@
-
 import { Client, Account, Databases, Functions, Storage, Teams, Avatars, ID } from 'appwrite';
 
 /**
  * Appwrite Productie Configuratie
- * * Deze waarden worden ingeladen vanuit de Vite omgevingsvariabelen.
- * Zorg dat deze aanwezig zijn in je .env file in de root van het project.
+ * Waarden uit Vite env (VITE_*) of fallback. Zorg dat .env in project root staat.
  */
-export const APPWRITE_ENDPOINT = (import.meta as any).env?.VITE_APPWRITE_ENDPOINT || 'https://appwrite.code045.nl/v1';
-export const APPWRITE_PROJECT_ID = (import.meta as any).env?.VITE_APPWRITE_PROJECT_ID || '698a55ce00010497b136';
+export const APPWRITE_ENDPOINT =
+  (import.meta as any).env?.VITE_APPWRITE_ENDPOINT || 'https://appwrite.code045.nl/v1';
+export const APPWRITE_PROJECT_ID =
+  (import.meta as any).env?.VITE_APPWRITE_PROJECT_ID || '698a55ce00010497b136';
 
-if (!APPWRITE_ENDPOINT || !APPWRITE_PROJECT_ID) {
-    console.error("Appwrite configuratie ontbreekt. Controleer je .env bestand.");
+if (!APPWRITE_PROJECT_ID || APPWRITE_PROJECT_ID.trim() === '') {
+  throw new Error(
+    'Appwrite project ID ontbreekt. Zet VITE_APPWRITE_PROJECT_ID in .env en herstart de dev server.'
+  );
 }
 
 const client = new Client()
