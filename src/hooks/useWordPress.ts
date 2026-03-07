@@ -1,6 +1,8 @@
+import { useEffect, useRef } from 'react';
 import { useQuery, useQueries, useMutation, useQueryClient } from '@tanstack/react-query';
 import { functions } from '../services/appwrite';
 import { useAuth } from '../domains/auth';
+import { useUpdateSite } from '../domains/sites/hooks';
 import { useToast } from '../contexts/ToastContext';
 import { executeFunctionWithMeta } from '../integrations/appwrite/executeFunction';
 
@@ -180,11 +182,16 @@ export interface SitesUpdateStats {
   isLoading: boolean;
 }
 
-/** Aggregate update stats across all connected sites - exported for Dashboard */
+/** Aggregate update stats across all connected sites - exported for Dashboard.
+ * Also tracks bridge API response: when plugins fetch fails, marks site as disconnected.
+ */
 export const useSitesUpdateStats = (sites: { $id: string; status: string }[]) => {
   const { user } = useAuth();
+  const updateSite = useUpdateSite();
+  const markedDisconnectedRef = useRef<Set<string>>(new Set());
+  const markedConnectedRef = useRef<Set<string>>(new Set());
   const connectedSites = sites.filter((s) => s.status === 'connected');
-  const siteIds = connectedSites.map((s) => s.$id);
+  const siteIds = sites.map((s) => s.$id);
 
   const pluginsQueries = useQueries({
     queries: siteIds.map((siteId) => ({
@@ -224,13 +231,37 @@ export const useSitesUpdateStats = (sites: { $id: string; status: string }[]) =>
 
   const isLoading = pluginsQueries.some((q) => q.isLoading) || themesQueries.some((q) => q.isLoading);
 
+  // Track bridge API response: plugins is the primary connectivity check
+  useEffect(() => {
+    for (let i = 0; i < siteIds.length; i++) {
+      const siteId = siteIds[i];
+      if (!siteId) continue;
+      const pluginsQuery = pluginsQueries[i];
+      const pluginsSucceeded = pluginsQuery?.isSuccess && pluginsQuery?.data != null;
+      const pluginsFailed = pluginsQuery?.isError ?? false;
+
+      if (pluginsSucceeded && !markedConnectedRef.current.has(siteId)) {
+        const site = sites.find((s) => s.$id === siteId);
+        if (site?.status !== 'connected') {
+          markedConnectedRef.current.add(siteId);
+          updateSite.mutate({ siteId, status: 'connected', silent: true });
+        }
+      } else if (pluginsFailed && !markedDisconnectedRef.current.has(siteId)) {
+        markedDisconnectedRef.current.add(siteId);
+        updateSite.mutate({ siteId, status: 'disconnected', silent: true });
+      }
+    }
+  }, [siteIds, sites, pluginsQueries, updateSite]);
+
   let pluginUpdatesCount = 0;
   let pluginTotalCount = 0;
   let themeUpdatesCount = 0;
   let themeTotalCount = 0;
   let sitesNeedingUpdatesCount = 0;
 
+  const connectedSiteIds = new Set(connectedSites.map((s) => s.$id));
   for (let i = 0; i < siteIds.length; i++) {
+    if (!connectedSiteIds.has(siteIds[i])) continue;
     const plugins = pluginsQueries[i]?.data ?? [];
     const themes = themesQueries[i]?.data ?? [];
     const pluginUpdates = plugins.filter(hasUpdate).length;
