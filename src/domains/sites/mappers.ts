@@ -33,6 +33,8 @@ export const mapSiteDocumentToSite = (doc: Record<string, any>): Site => {
         ? 'healthy'
         : 'bad';
 
+  const enabled = meta.enabled !== false;
+
   return {
     ...(doc as Site),
     userId: doc.userId || doc.user_id || '',
@@ -42,5 +44,6 @@ export const mapSiteDocumentToSite = (doc: Record<string, any>): Site => {
     healthStatus,
     lastChecked: doc.lastChecked || doc.last_checked || '',
     meta_data: doc.meta_data ?? doc.metaData ?? undefined,
+    enabled,
   };
 };

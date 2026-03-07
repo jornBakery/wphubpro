@@ -99,6 +99,8 @@ export interface Site {
   action_log?: ActionLogEntry[];
   /** Extra data stored as JSON; use meta_data or metaData from API */
   meta_data?: string;
+  /** When false, site is "off" – no bridge API calls, excluded from stats. Default true. */
+  enabled?: boolean;
 }
 
 export enum LibraryItemType {

@@ -14,7 +14,17 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Tooltip from '@mui/material/Tooltip';
 import { Site } from '../../types';
-import { useDeleteSite } from '../../domains/sites';
+import { useDeleteSite, useUpdateSite } from '../../domains/sites';
+
+function parseSiteMeta(site: Site): Record<string, unknown> {
+  if (!site.meta_data) return {};
+  try {
+    const parsed = JSON.parse(site.meta_data);
+    return typeof parsed === 'object' && parsed !== null ? parsed : {};
+  } catch {
+    return {};
+  }
+}
 
 const infoGradient = 'linear-gradient(310deg, #4F5482, #7a8ef0)';
 const orangeGradient = 'linear-gradient(310deg, #ea580c, #fb923c)';
@@ -102,6 +112,44 @@ export const HealthBadge: React.FC<{ value: Site['healthStatus'] }> = ({ value }
   return <SoftBadge variant="gradient" color={c.color} size="xs" badgeContent={c.label} container />;
 };
 
+/** On/Off toggle for site – when off, site is excluded from stats and no bridge API calls. */
+export const SiteEnabledToggle: React.FC<{ site: Site }> = ({ site }) => {
+  const updateSite = useUpdateSite();
+  const enabled = site.enabled !== false;
+  const handleToggle = () => {
+    const meta = parseSiteMeta(site);
+    meta.enabled = !enabled;
+    updateSite.mutate({ siteId: site.$id, meta_data: JSON.stringify(meta) });
+  };
+  return (
+    <Tooltip title={enabled ? 'Site aan – klik om uit te zetten' : 'Site uit – klik om aan te zetten'} placement="top">
+      <SoftBox
+        component="button"
+        type="button"
+        onClick={(e: React.MouseEvent) => {
+          e.stopPropagation?.();
+          handleToggle();
+        }}
+        sx={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: 32,
+          height: 32,
+          borderRadius: '50%',
+          background: enabled ? orangeGradient : 'grey.400',
+          color: 'white',
+          cursor: 'pointer',
+          border: 'none',
+          '&:hover': { opacity: 0.9 },
+        }}
+      >
+        <Icon sx={{ fontSize: 18, color: 'white !important' }}>{enabled ? 'power' : 'power_off'}</Icon>
+      </SoftBox>
+    </Tooltip>
+  );
+};
+
 export const ActionIconButton: React.FC<{
   icon: string;
   title: string;
@@ -142,11 +190,12 @@ export const ActionIconButton: React.FC<{
 export const ActionCell: React.FC<{
   siteId: string;
   siteUrl: string;
+  site?: Site;
   showPinButton?: boolean;
   isPinned?: boolean;
   onTogglePin?: () => void;
   compact?: boolean;
-}> = ({ siteId, siteUrl, showPinButton = false, isPinned = false, onTogglePin, compact = false }) => {
+}> = ({ siteId, siteUrl, site, showPinButton = false, isPinned = false, onTogglePin, compact = false }) => {
   const deleteSite = useDeleteSite();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -179,6 +228,8 @@ export const ActionCell: React.FC<{
     handleMenuClose();
     window.open(siteUrl, '_blank');
   };
+
+  const enabledToggle = site && <SiteEnabledToggle site={site} />;
 
   const pinButton = showPinButton && onTogglePin && (
     <Tooltip title={isPinned ? 'Verwijder van dashboard' : 'Pin naar dashboard'} placement="top">
