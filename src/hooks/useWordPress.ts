@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { functions } from '../services/appwrite';
 import { useAuth } from '../domains/auth';
+import { useToast } from '../contexts/ToastContext';
 import { executeFunctionWithMeta } from '../integrations/appwrite/executeFunction';
 
 function wpProxy<T>(
@@ -106,6 +107,147 @@ export interface AppwriteExecution {
   requestMethod: string;
   requestPath: string;
 }
+
+export interface WordPressPlugin {
+  plugin: string;
+  name: string;
+  version: string;
+  status: 'active' | 'inactive';
+  update: string | null;
+}
+
+export interface WordPressTheme {
+  stylesheet: string;
+  name: string;
+  version: string;
+  status: 'active' | 'inactive';
+  update?: string | null;
+}
+
+/** Plugin list - exported for SiteDetailsTab, PluginsTab */
+export const usePlugins = (siteId: string | undefined) => {
+  const { user } = useAuth();
+  return useQuery<WordPressPlugin[]>({
+    queryKey: ['plugins', siteId],
+    queryFn: async () => {
+      const raw = await wpProxy<any[]>(siteId!, user?.$id, 'wphubpro/v1/plugins');
+      return (raw ?? []).map((p: any) => ({
+        plugin: p.plugin ?? p.file,
+        name: p.name,
+        version: p.version,
+        status: p.active ? ('active' as const) : ('inactive' as const),
+        update: p.update ?? null,
+      }));
+    },
+    enabled: !!siteId,
+    staleTime: 0,
+    refetchOnMount: 'always',
+  });
+};
+
+/** Theme list - exported for SiteDetailsTab, ThemesTab */
+export const useThemes = (siteId: string | undefined) => {
+  const { user } = useAuth();
+  return useQuery<WordPressTheme[]>({
+    queryKey: ['themes', siteId],
+    queryFn: async () => {
+      const raw = await wpProxy<any[]>(siteId!, user?.$id, 'wphubpro/v1/themes');
+      return (raw ?? []).map((t: any) => ({
+        stylesheet: t.stylesheet ?? t.slug,
+        name: t.name,
+        version: t.version,
+        status: t.active ? ('active' as const) : ('inactive' as const),
+        update: t.update ?? null,
+      }));
+    },
+    enabled: !!siteId,
+    staleTime: 0,
+    refetchOnMount: 'always',
+  });
+};
+
+/** Toggle plugin active/inactive - exported for PluginsTab */
+export const useTogglePlugin = (siteId: string | undefined) => {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const { toast } = useToast();
+  return useMutation({
+    mutationFn: ({ pluginSlug, status }: { pluginSlug: string; status: 'active' | 'inactive'; pluginName: string }) => {
+      const path = status === 'active' ? 'wphubpro/v1/plugins/manage/deactivate' : 'wphubpro/v1/plugins/manage/activate';
+      return wpProxy(siteId!, user?.$id, `${path}?plugin=${encodeURIComponent(pluginSlug)}`, { method: 'POST', body: { plugin: pluginSlug } });
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['plugins', siteId] });
+      toast({ title: 'Success', description: `Plugin "${variables.pluginName}" has been ${variables.status === 'active' ? 'deactivated' : 'activated'}.`, variant: 'success' });
+    },
+    onError: (err, variables) => {
+      toast({ title: 'Action Failed', description: `Could not toggle plugin "${variables.pluginName}": ${(err as Error).message}`, variant: 'destructive' });
+    },
+  });
+};
+
+/** Update plugin - exported for PluginsTab */
+export const useUpdatePlugin = (siteId: string | undefined) => {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const { toast } = useToast();
+  return useMutation({
+    mutationFn: ({ pluginFile }: { pluginFile: string; pluginName: string }) =>
+      wpProxy(siteId!, user?.$id, `wphubpro/v1/plugins/manage/update?plugin=${encodeURIComponent(pluginFile)}`, { method: 'POST', body: { plugin: pluginFile } }),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['plugins', siteId] });
+      toast({ title: 'Success', description: `Plugin "${variables.pluginName}" is bijgewerkt.`, variant: 'success' });
+    },
+    onError: (err, variables) => {
+      toast({ title: 'Update mislukt', description: `Kon plugin "${variables.pluginName}" niet bijwerken: ${(err as Error).message}`, variant: 'destructive' });
+    },
+  });
+};
+
+/** Delete plugin - exported for PluginsTab */
+export const useDeletePlugin = (siteId: string | undefined) => {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const { toast } = useToast();
+  return useMutation({
+    mutationFn: ({ pluginFile }: { pluginFile: string; pluginName: string }) =>
+      wpProxy(siteId!, user?.$id, `wphubpro/v1/plugins/manage/uninstall?plugin=${encodeURIComponent(pluginFile)}`, { method: 'POST', body: { plugin: pluginFile } }),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['plugins', siteId] });
+      toast({ title: 'Success', description: `Plugin "${variables.pluginName}" is verwijderd.`, variant: 'success' });
+    },
+    onError: (err, variables) => {
+      toast({ title: 'Verwijderen mislukt', description: `Could not remove plugin "${variables.pluginName}": ${(err as Error).message}`, variant: 'destructive' });
+    },
+  });
+};
+
+const themeEndpoints: Record<string, string> = {
+  activate: 'wphubpro/v1/themes/manage/activate',
+  update: 'wphubpro/v1/themes/manage/update',
+  delete: 'wphubpro/v1/themes/manage/delete',
+};
+
+/** Manage theme (activate/update/delete) - exported for ThemesTab */
+export const useManageTheme = (siteId: string | undefined) => {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const { toast } = useToast();
+  return useMutation({
+    mutationFn: ({ themeSlug, action }: { themeSlug: string; action: 'activate' | 'delete' | 'update'; themeName: string }) => {
+      const endpoint = themeEndpoints[action];
+      if (!endpoint) return Promise.reject(new Error(`Theme action "${action}" is not supported.`));
+      return wpProxy(siteId!, user?.$id, endpoint, { method: 'POST', body: { slug: themeSlug } });
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['themes', siteId] });
+      toast({ title: 'Success', description: `Theme "${variables.themeName}" ${variables.action}d successfully.`, variant: 'success' });
+    },
+    onError: (err, variables) => {
+      toast({ title: 'Action Failed', description: `Could not ${variables.action} theme "${variables.themeName}": ${(err as Error).message}`, variant: 'destructive' });
+    },
+  });
+};
 
 /** Standalone hook for Bridge logs - exported for LogsTab */
 export const useSiteLogs = (siteId: string) => {
