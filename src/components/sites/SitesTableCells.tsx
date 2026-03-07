@@ -70,8 +70,15 @@ export const StatusIcon: React.FC<{ value: Site['status'] }> = ({ value }) => {
       <SoftBox sx={{ display: 'inline-flex', alignItems: 'center', lineHeight: 0 }}>
         <Icon
           sx={{
-            color: isConnected ? 'success.main' : 'error.main',
             fontSize: '1.5rem !important',
+            ...(isConnected
+              ? {
+                  background: orangeGradient,
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  color: 'transparent',
+                }
+              : { color: 'grey.400' }),
           }}
         >
           bolt
