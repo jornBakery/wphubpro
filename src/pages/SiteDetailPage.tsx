@@ -113,14 +113,14 @@ const SiteDetailPage: React.FC = () => {
                   variant="scrollable"
                   scrollButtons="auto"
                   allowScrollButtonsMobile
-                  sx={{
-                    minHeight: 48,
+                    sx={{
+                    minHeight: 40,
                     '& .MuiTabs-indicator': { display: 'none' },
                     '& .MuiTabs-flexContainer': { overflow: 'visible' },
                     '& .MuiTab-root': {
-                      minHeight: 48,
-                      minWidth: 100,
-                      padding: '6px 16px 6px 16px',
+                      minHeight: 40,
+                      minWidth: 80,
+                      padding: '4px 8px 4px 8px',
                       marginRight: 8,
                       justifyContent: 'flex-start',
                       textAlign: 'left',
@@ -149,8 +149,8 @@ const SiteDetailPage: React.FC = () => {
                     '& .MuiTab-iconWrapper': {
                       marginRight: 0,
                       '& > *': {
-                        minWidth: 32,
-                        minHeight: 32,
+                        minWidth: 28,
+                        minHeight: 28,
                         borderRadius: '8px',
                         display: 'grid',
                         placeItems: 'center',
