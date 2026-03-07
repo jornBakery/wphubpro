@@ -147,7 +147,7 @@ const SiteDetailPage: React.FC = () => {
                       },
                     },
                     '& .MuiTab-iconWrapper': {
-                      marginRight: 12.8,
+                      marginRight: 0,
                       '& > *': {
                         minWidth: 32,
                         minHeight: 32,
