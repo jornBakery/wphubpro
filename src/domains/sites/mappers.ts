@@ -3,10 +3,10 @@ import { Site } from '../../types';
 export const mapSiteDocumentToSite = (doc: Record<string, any>): Site => {
   const hasCredentials = !!(doc.api_key || doc.apiKey || doc.password);
   const status: 'connected' | 'disconnected' =
-    doc.status === 'connected' || doc.status === 'disconnected'
-      ? doc.status
-      : hasCredentials
-        ? 'connected'
+    doc.status === 'connected'
+      ? 'connected'
+      : doc.status === 'disconnected'
+        ? 'disconnected'
         : 'disconnected';
 
   const healthStatus: 'healthy' | 'bad' =
