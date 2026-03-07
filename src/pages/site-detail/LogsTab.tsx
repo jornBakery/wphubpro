@@ -21,6 +21,7 @@ import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
 import { 
+  useWordPress,
   useSiteLogs, 
   useSiteErrorLog, 
   useSiteExecutionLogs, 
