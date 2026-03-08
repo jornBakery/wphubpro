@@ -23,7 +23,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     const checkSession = async () => {
       try {
-        const currentUser = await account.get();
+        const timeout = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Auth check timed out')), 10000)
+        );
+        const currentUser = await Promise.race([account.get(), timeout]);
         if (!mounted) return;
 
         console.log('Current User ID:', currentUser.$id);

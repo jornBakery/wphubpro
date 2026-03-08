@@ -12,7 +12,7 @@ import { SoftUIControllerProvider } from './context';
 import ProtectedRoute from './components/layout/ProtectedRoute';
 import AdminRoute from './components/layout/AdminRoute';
 import Toaster from './components/ui/Toaster';
-import { Loader2 } from 'lucide-react';
+import CircularProgress from '@mui/material/CircularProgress';
 import { ROUTE_PATHS, ADMIN_CHILD_PATHS } from './config/routePaths';
 
 import theme from 'assets/theme';
@@ -37,8 +37,8 @@ const AppRoutes: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-secondary">
-        <Loader2 className="w-10 h-10 animate-spin text-primary" />
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#f8fafc' }}>
+        <CircularProgress size={40} />
       </div>
     );
   }
