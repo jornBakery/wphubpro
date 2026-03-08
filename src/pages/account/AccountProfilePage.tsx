@@ -1,19 +1,96 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Card from '@mui/material/Card';
 import Grid from '@mui/material/Grid';
+import Divider from '@mui/material/Divider';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import Box from '@mui/material/Box';
+import TextField from '@mui/material/TextField';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Switch from '@mui/material/Switch';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Icon from '@mui/material/Icon';
+import LinearProgress from '@mui/material/LinearProgress';
 import SoftBox from 'components/SoftBox';
 import SoftTypography from 'components/SoftTypography';
+import SoftButton from 'components/SoftButton';
 import SoftAvatar from 'components/SoftAvatar';
 import Footer from 'examples/Footer';
 import { useAuth } from '../../domains/auth';
-import { avatars } from '../../services/appwrite';
-import { useSubscription, useUsage } from '../../domains/billing';
-import AccountSectionNav from '../../components/account/AccountSectionNav'; // pragma: allowlist secret
+import { avatars, account } from '../../services/appwrite';
+import {
+  useSubscription,
+  useUsage,
+  useInvoices,
+  useManageSubscription,
+} from '../../domains/billing';
+import { useToast } from '../../contexts/ToastContext';
+
+const formatMoney = (amountCents: number, currency = 'eur') =>
+  (amountCents / 100).toLocaleString('nl-NL', {
+    style: 'currency',
+    currency: currency.toUpperCase(),
+    minimumFractionDigits: 2,
+  });
+
+interface TabPanelProps {
+  children?: React.ReactNode;
+  index: number;
+  value: number;
+}
+
+const TabPanel: React.FC<TabPanelProps> = ({ children, value, index }) => (
+  <Box hidden={value !== index} role="tabpanel" pt={2}>
+    {value === index && children}
+  </Box>
+);
+
+const DetailRow: React.FC<{ label: string; value: React.ReactNode }> = ({ label, value }) => (
+  <SoftBox display="flex" justifyContent="space-between" alignItems="center" mb={0.75}>
+    <SoftTypography variant="button" color="secondary" sx={{ minWidth: 100, flexShrink: 0 }}>
+      {label}:
+    </SoftTypography>
+    {value}
+  </SoftBox>
+);
 
 const AccountProfilePage: React.FC = () => {
-  const { user, isAdmin } = useAuth();
-  const { data: subscription } = useSubscription();
+  const { user, isAdmin, refreshUser } = useAuth();
+  const { toast } = useToast();
+  const { data: subscription, isLoading: isSubLoading } = useSubscription();
   const { data: usage } = useUsage();
+  const { data: invoices, isLoading: isInvoicesLoading } = useInvoices();
+  const manageSubscription = useManageSubscription();
+
+  const [activeTab, setActiveTab] = useState(0);
+
+  const [name, setName] = useState('');
+  const [displayName, setDisplayName] = useState('');
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isSavingPassword, setIsSavingPassword] = useState(false);
+
+  const [emailNotifications, setEmailNotifications] = useState(true);
+  const [marketingEmails, setMarketingEmails] = useState(false);
+  const [weeklyDigest, setWeeklyDigest] = useState(true);
+  const [isSavingSettings, setIsSavingSettings] = useState(false);
+
+  useEffect(() => {
+    setName(user?.name || '');
+    const prefs = (user?.prefs ?? {}) as Record<string, unknown>;
+    setDisplayName(typeof prefs.displayName === 'string' ? prefs.displayName : '');
+    setEmailNotifications(prefs.emailNotifications !== false);
+    setMarketingEmails(prefs.marketingEmails === true);
+    setWeeklyDigest(prefs.weeklyDigest !== false);
+  }, [user]);
 
   const avatarUrl = (() => {
     try {
@@ -26,60 +103,556 @@ const AccountProfilePage: React.FC = () => {
 
   const memberSince = (user as { $createdAt?: string } | null)?.$createdAt
     ? new Date((user as { $createdAt?: string }).$createdAt as string).toLocaleDateString('nl-NL', {
-      month: 'long',
-      year: 'numeric',
-    })
+        month: 'long',
+        year: 'numeric',
+      })
     : '-';
+
+  const usernameDisplay = user?.email?.split('@')[0] ?? '-';
+  const isFree = !subscription?.priceAmount || (subscription.planId ?? '').toUpperCase() === 'FREE';
+  const usagePct = (used: number, limit: number) =>
+    limit > 0 ? Math.min(100, Math.round((used / limit) * 100)) : 0;
+
+  const handleSaveProfile = async () => {
+    setIsSavingProfile(true);
+    try {
+      await account.updateName(name.trim());
+      const currentPrefs = (user?.prefs ?? {}) as Record<string, unknown>;
+      await account.updatePrefs({ ...currentPrefs, displayName: displayName.trim() });
+      await refreshUser();
+      toast({ title: 'Profile updated', description: 'Uw profiel is bijgewerkt.', variant: 'success' });
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Kon profiel niet bijwerken.';
+      toast({ title: 'Update mislukt', description: msg, variant: 'destructive' });
+    } finally {
+      setIsSavingProfile(false);
+    }
+  };
+
+  const handleSavePassword = async () => {
+    if (newPassword.length < 8) {
+      toast({ title: 'Wachtwoord te kort', description: 'Minimaal 8 karakters.', variant: 'destructive' });
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast({ title: 'Niet overeenkomend', description: 'Wachtwoorden komen niet overeen.', variant: 'destructive' });
+      return;
+    }
+    setIsSavingPassword(true);
+    try {
+      await account.updatePassword(newPassword, currentPassword || undefined);
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      toast({ title: 'Wachtwoord bijgewerkt', variant: 'success' });
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Kon wachtwoord niet wijzigen.';
+      toast({ title: 'Wachtwoord update mislukt', description: msg, variant: 'destructive' });
+    } finally {
+      setIsSavingPassword(false);
+    }
+  };
+
+  const handleSaveSettings = async () => {
+    setIsSavingSettings(true);
+    try {
+      const currentPrefs = (user?.prefs ?? {}) as Record<string, unknown>;
+      await account.updatePrefs({ ...currentPrefs, emailNotifications, marketingEmails, weeklyDigest });
+      await refreshUser();
+      toast({ title: 'Settings saved', description: 'Uw instellingen zijn opgeslagen.', variant: 'success' });
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Kon instellingen niet opslaan.';
+      toast({ title: 'Opslaan mislukt', description: msg, variant: 'destructive' });
+    } finally {
+      setIsSavingSettings(false);
+    }
+  };
 
   return (
     <>
       <SoftBox my={3}>
-        <SoftTypography variant="h4" fontWeight="bold" mb={0.5}>
-          Account Profile
-        </SoftTypography>
-        <SoftTypography variant="button" color="text" mb={2} display="block">
-          Bekijk uw accountinformatie en huidig abonnement.
-        </SoftTypography>
-
-        <AccountSectionNav /> {/* pragma: allowlist secret */}
-
-        <Grid container spacing={3} mt={0.5}>
-          <Grid item xs={12} md={7}>
+        <Grid container spacing={3} alignItems="flex-start">
+          {/* Left: Profile Card */}
+          <Grid item xs={12} md={4} lg={3}>
             <Card>
-              <SoftBox p={3} display="flex" alignItems="center" gap={2}>
-                <SoftAvatar src={avatarUrl} alt={user?.name || 'avatar'} size="xl" bgColor="info" variant="rounded" />
-                <SoftBox>
-                  <SoftTypography variant="h5" fontWeight="bold">
-                    {user?.name || 'Gebruiker'}
+              <SoftBox p={3} display="flex" flexDirection="column" alignItems="center" textAlign="center">
+                <SoftAvatar
+                  src={avatarUrl}
+                  alt={user?.name || 'avatar'}
+                  size="xl"
+                  bgColor="info"
+                  variant="circular"
+                  sx={{ width: 90, height: 90 }}
+                />
+                <SoftTypography variant="h5" fontWeight="bold" mt={1.5}>
+                  {user?.name || 'Gebruiker'}
+                </SoftTypography>
+                <SoftBox
+                  mt={0.5}
+                  mb={2}
+                  sx={{
+                    bgcolor: 'info.main',
+                    borderRadius: '4px',
+                    px: 1.5,
+                    py: 0.3,
+                    display: 'inline-block',
+                  }}
+                >
+                  <SoftTypography
+                    variant="caption"
+                    fontWeight="bold"
+                    sx={{ color: '#fff', fontSize: '0.65rem', letterSpacing: 1, textTransform: 'uppercase' }}
+                  >
+                    {isAdmin ? 'Admin' : 'Member'}
                   </SoftTypography>
-                  <SoftTypography variant="button" color="text" display="block">
-                    {user?.email || '-'}
+                </SoftBox>
+
+                {/* Stats row */}
+                <SoftBox display="flex" width="100%" mb={2}>
+                  <SoftBox flex={1} textAlign="center">
+                    <SoftTypography variant="h5" fontWeight="bold">
+                      {usage?.sitesUsed ?? 0}
+                    </SoftTypography>
+                    <SoftTypography variant="caption" color="secondary">
+                      Sites
+                    </SoftTypography>
+                  </SoftBox>
+                  <Divider orientation="vertical" flexItem />
+                  <SoftBox flex={1} textAlign="center">
+                    <SoftTypography variant="h5" fontWeight="bold">
+                      {usage?.libraryUsed ?? 0}
+                    </SoftTypography>
+                    <SoftTypography variant="caption" color="secondary">
+                      Library
+                    </SoftTypography>
+                  </SoftBox>
+                </SoftBox>
+
+                <Divider sx={{ width: '100%', my: 0.5 }} />
+
+                {/* Details section */}
+                <SoftBox width="100%" textAlign="left" mt={1.5}>
+                  <SoftTypography variant="button" fontWeight="bold" mb={1.5} display="block">
+                    Details
                   </SoftTypography>
-                  <SoftTypography variant="caption" color="secondary">
-                    {isAdmin ? 'Administrator' : 'Member'} · Lid sinds {memberSince}
-                  </SoftTypography>
+
+                  <DetailRow label="Username" value={
+                    <SoftTypography variant="button" fontWeight="medium">
+                      @{usernameDisplay}
+                    </SoftTypography>
+                  } />
+                  <DetailRow label="Billing Email" value={
+                    <SoftTypography
+                      variant="button"
+                      fontWeight="medium"
+                      sx={{ textAlign: 'right', wordBreak: 'break-word', maxWidth: 160 }}
+                    >
+                      {user?.email ?? '-'}
+                    </SoftTypography>
+                  } />
+                  <DetailRow label="Status" value={
+                    <SoftBox
+                      sx={{
+                        bgcolor: '#e8f5e9',
+                        borderRadius: '4px',
+                        px: 1,
+                        py: 0.15,
+                        display: 'inline-block',
+                      }}
+                    >
+                      <SoftTypography
+                        variant="caption"
+                        fontWeight="bold"
+                        sx={{ color: '#2e7d32', fontSize: '0.65rem', letterSpacing: 0.5, textTransform: 'uppercase' }}
+                      >
+                        Active
+                      </SoftTypography>
+                    </SoftBox>
+                  } />
+                  <DetailRow label="Role" value={
+                    <SoftTypography variant="button" fontWeight="medium">
+                      {isAdmin ? 'Admin' : 'Member'}
+                    </SoftTypography>
+                  } />
+                  <DetailRow label="Plan" value={
+                    <SoftTypography variant="button" fontWeight="medium">
+                      {isSubLoading ? '...' : (subscription?.planId ?? 'FREE')}
+                    </SoftTypography>
+                  } />
+                  <DetailRow label="Lid sinds" value={
+                    <SoftTypography variant="button" fontWeight="medium">
+                      {memberSince}
+                    </SoftTypography>
+                  } />
+                </SoftBox>
+
+                <SoftBox mt={2.5} width="100%">
+                  <SoftButton
+                    variant="gradient"
+                    color="info"
+                    fullWidth
+                    size="small"
+                    onClick={() => setActiveTab(0)}
+                  >
+                    Edit Profile
+                  </SoftButton>
                 </SoftBox>
               </SoftBox>
             </Card>
           </Grid>
-          <Grid item xs={12} md={5}>
+
+          {/* Right: Tabs content */}
+          <Grid item xs={12} md={8} lg={9}>
             <Card>
-              <SoftBox p={3}>
-                <SoftTypography variant="h6" fontWeight="bold" mb={1}>
-                  Subscription Snapshot
-                </SoftTypography>
-                <SoftTypography variant="button" color="text" display="block">
-                  Plan: {subscription?.planId ?? 'FREE'}
-                </SoftTypography>
-                <SoftTypography variant="button" color="text" display="block">
-                  Status: {subscription?.status ?? 'active'}
-                </SoftTypography>
-                <SoftTypography variant="button" color="text" display="block">
-                  Sites: {usage?.sitesUsed ?? 0} / {subscription?.sitesLimit ?? 1}
-                </SoftTypography>
-                <SoftTypography variant="button" color="text" display="block">
-                  Library: {usage?.libraryUsed ?? 0} / {subscription?.libraryLimit ?? 5}
-                </SoftTypography>
+              <SoftBox px={3} pt={1.5}>
+                <Tabs
+                  value={activeTab}
+                  onChange={(_, v: number) => setActiveTab(v)}
+                  variant="scrollable"
+                  scrollButtons="auto"
+                  sx={{
+                    '& .MuiTab-root': {
+                      textTransform: 'none',
+                      fontWeight: 600,
+                      fontSize: '0.8rem',
+                      minHeight: 46,
+                      px: 2,
+                      gap: 0.5,
+                    },
+                    '& .Mui-selected': { color: 'info.main !important' },
+                    '& .MuiTabs-indicator': { bgcolor: 'info.main' },
+                  }}
+                >
+                  <Tab
+                    icon={<Icon sx={{ fontSize: '1rem !important' }}>person_outline</Icon>}
+                    iconPosition="start"
+                    label="Account"
+                  />
+                  <Tab
+                    icon={<Icon sx={{ fontSize: '1rem !important' }}>lock_outline</Icon>}
+                    iconPosition="start"
+                    label="Security"
+                  />
+                  <Tab
+                    icon={<Icon sx={{ fontSize: '1rem !important' }}>credit_card</Icon>}
+                    iconPosition="start"
+                    label="Billing & Plans"
+                  />
+                  <Tab
+                    icon={<Icon sx={{ fontSize: '1rem !important' }}>notifications_none</Icon>}
+                    iconPosition="start"
+                    label="Notifications"
+                  />
+                </Tabs>
+              </SoftBox>
+
+              <Divider sx={{ m: 0 }} />
+
+              <SoftBox px={3} pb={3}>
+                {/* Account Tab */}
+                <TabPanel value={activeTab} index={0}>
+                  <Grid container spacing={3}>
+                    <Grid item xs={12} sm={6}>
+                      <SoftTypography variant="h6" fontWeight="bold" mb={2}>
+                        Profielgegevens
+                      </SoftTypography>
+                      <SoftBox display="flex" flexDirection="column" gap={2}>
+                        <TextField
+                          label="Naam"
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          fullWidth
+                          size="small"
+                        />
+                        <TextField
+                          label="Display name"
+                          value={displayName}
+                          onChange={(e) => setDisplayName(e.target.value)}
+                          fullWidth
+                          size="small"
+                        />
+                        <TextField
+                          label="E-mail"
+                          value={user?.email || ''}
+                          fullWidth
+                          size="small"
+                          disabled
+                        />
+                        <SoftButton
+                          variant="gradient"
+                          color="info"
+                          onClick={handleSaveProfile}
+                          disabled={isSavingProfile || !name.trim()}
+                        >
+                          {isSavingProfile ? 'Opslaan...' : 'Opslaan'}
+                        </SoftButton>
+                      </SoftBox>
+                    </Grid>
+                  </Grid>
+                </TabPanel>
+
+                {/* Security Tab */}
+                <TabPanel value={activeTab} index={1}>
+                  <Grid container spacing={3}>
+                    <Grid item xs={12} sm={6}>
+                      <SoftTypography variant="h6" fontWeight="bold" mb={2}>
+                        Wachtwoord wijzigen
+                      </SoftTypography>
+                      <SoftBox display="flex" flexDirection="column" gap={2}>
+                        <TextField
+                          label="Huidig wachtwoord"
+                          type="password"
+                          value={currentPassword}
+                          onChange={(e) => setCurrentPassword(e.target.value)}
+                          fullWidth
+                          size="small"
+                        />
+                        <TextField
+                          label="Nieuw wachtwoord"
+                          type="password"
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
+                          fullWidth
+                          size="small"
+                        />
+                        <TextField
+                          label="Bevestig nieuw wachtwoord"
+                          type="password"
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          fullWidth
+                          size="small"
+                        />
+                        <SoftButton
+                          variant="outlined"
+                          color="info"
+                          onClick={handleSavePassword}
+                          disabled={isSavingPassword}
+                        >
+                          {isSavingPassword ? 'Bijwerken...' : 'Wachtwoord bijwerken'}
+                        </SoftButton>
+                      </SoftBox>
+                    </Grid>
+                  </Grid>
+                </TabPanel>
+
+                {/* Billing & Plans Tab */}
+                <TabPanel value={activeTab} index={2}>
+                  {/* Plan header */}
+                  <SoftBox
+                    display="flex"
+                    justifyContent="space-between"
+                    alignItems="flex-start"
+                    flexWrap="wrap"
+                    gap={2}
+                    mb={2.5}
+                  >
+                    <SoftBox>
+                      <SoftTypography variant="h6" fontWeight="bold">
+                        Current Plan
+                      </SoftTypography>
+                      <SoftTypography variant="button" color="text" display="block">
+                        Your Current Plan is{' '}
+                        <strong>{isSubLoading ? '...' : (subscription?.planId ?? 'FREE')}</strong>
+                      </SoftTypography>
+                      {subscription?.currentPeriodEnd && (
+                        <SoftTypography variant="caption" color="secondary">
+                          Active until{' '}
+                          {new Date(subscription.currentPeriodEnd).toLocaleDateString('nl-NL')}
+                        </SoftTypography>
+                      )}
+                    </SoftBox>
+                    <SoftBox textAlign="right">
+                      <SoftTypography variant="h5" fontWeight="bold" color="info">
+                        {subscription?.priceAmount
+                          ? formatMoney(subscription.priceAmount, subscription.currency ?? 'eur')
+                          : 'Gratis'}
+                      </SoftTypography>
+                      {subscription?.interval && (
+                        <SoftTypography variant="caption" color="secondary">
+                          per {subscription.interval}
+                        </SoftTypography>
+                      )}
+                    </SoftBox>
+                  </SoftBox>
+
+                  {/* Usage metrics */}
+                  <SoftBox
+                    display="grid"
+                    gridTemplateColumns={{ xs: '1fr', sm: 'repeat(3, 1fr)' }}
+                    gap={2}
+                    mb={3}
+                  >
+                    {[
+                      {
+                        label: 'Sites',
+                        used: usage?.sitesUsed ?? 0,
+                        limit: subscription?.sitesLimit ?? 1,
+                      },
+                      {
+                        label: 'Library items',
+                        used: usage?.libraryUsed ?? 0,
+                        limit: subscription?.libraryLimit ?? 5,
+                      },
+                      {
+                        label: 'Storage',
+                        used: usage?.storageUsed ?? 0,
+                        limit: subscription?.storageLimit ?? 10,
+                      },
+                    ].map(({ label, used, limit }) => (
+                      <Card
+                        key={label}
+                        variant="outlined"
+                        sx={{ boxShadow: 'none', border: '1px solid', borderColor: 'grey.200' }}
+                      >
+                        <SoftBox p={2}>
+                          <SoftBox display="flex" justifyContent="space-between" mb={0.75}>
+                            <SoftTypography variant="caption" color="secondary">
+                              {label}
+                            </SoftTypography>
+                            <SoftTypography variant="caption" fontWeight="bold">
+                              {used} / {limit}
+                            </SoftTypography>
+                          </SoftBox>
+                          <LinearProgress
+                            variant="determinate"
+                            value={usagePct(used, limit)}
+                            sx={{
+                              height: 6,
+                              borderRadius: 3,
+                              bgcolor: 'grey.200',
+                              '& .MuiLinearProgress-bar': {
+                                bgcolor: 'info.main',
+                                borderRadius: 3,
+                              },
+                            }}
+                          />
+                        </SoftBox>
+                      </Card>
+                    ))}
+                  </SoftBox>
+
+                  {!isFree && (
+                    <SoftBox display="flex" gap={1.5} mb={3}>
+                      <SoftButton
+                        variant="gradient"
+                        color="info"
+                        onClick={() => manageSubscription.mutate()}
+                        disabled={manageSubscription.isPending}
+                      >
+                        {manageSubscription.isPending ? 'Openen...' : 'Upgrade Plan'}
+                      </SoftButton>
+                      <SoftButton
+                        variant="outlined"
+                        color="error"
+                        onClick={() => manageSubscription.mutate()}
+                        disabled={manageSubscription.isPending}
+                      >
+                        Cancel Subscription
+                      </SoftButton>
+                    </SoftBox>
+                  )}
+
+                  <Divider sx={{ mb: 2.5 }} />
+
+                  <SoftTypography variant="h6" fontWeight="bold" mb={1.5}>
+                    Recente facturen
+                  </SoftTypography>
+                  {isInvoicesLoading ? (
+                    <SoftTypography variant="button" color="text">
+                      Laden...
+                    </SoftTypography>
+                  ) : (invoices ?? []).length === 0 ? (
+                    <SoftTypography variant="button" color="text">
+                      Geen facturen beschikbaar.
+                    </SoftTypography>
+                  ) : (
+                    <TableContainer>
+                      <Table size="small">
+                        <TableHead>
+                          <TableRow>
+                            <TableCell>Datum</TableCell>
+                            <TableCell>Status</TableCell>
+                            <TableCell>Bedrag</TableCell>
+                            <TableCell align="right">PDF</TableCell>
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {(invoices ?? []).map((invoice) => (
+                            <TableRow key={invoice.id}>
+                              <TableCell>
+                                {new Date(invoice.created * 1000).toLocaleDateString('nl-NL')}
+                              </TableCell>
+                              <TableCell>{invoice.status}</TableCell>
+                              <TableCell>
+                                {formatMoney(invoice.amount_paid, invoice.currency)}
+                              </TableCell>
+                              <TableCell align="right">
+                                <SoftButton
+                                  component="a"
+                                  href={invoice.invoice_pdf}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  variant="outlined"
+                                  color="info"
+                                  size="small"
+                                >
+                                  Open
+                                </SoftButton>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
+                  )}
+                </TabPanel>
+
+                {/* Notifications Tab */}
+                <TabPanel value={activeTab} index={3}>
+                  <SoftTypography variant="h6" fontWeight="bold" mb={2}>
+                    Notificatievoorkeuren
+                  </SoftTypography>
+                  <SoftBox display="flex" flexDirection="column" gap={1.5}>
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={emailNotifications}
+                          onChange={(e) => setEmailNotifications(e.target.checked)}
+                        />
+                      }
+                      label="E-mail notificaties voor accountactiviteit"
+                    />
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={weeklyDigest}
+                          onChange={(e) => setWeeklyDigest(e.target.checked)}
+                        />
+                      }
+                      label="Wekelijkse samenvatting van updates"
+                    />
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={marketingEmails}
+                          onChange={(e) => setMarketingEmails(e.target.checked)}
+                        />
+                      }
+                      label="Productnieuws en marketing e-mails"
+                    />
+                    <SoftBox mt={1}>
+                      <SoftButton
+                        variant="gradient"
+                        color="info"
+                        onClick={handleSaveSettings}
+                        disabled={isSavingSettings}
+                      >
+                        {isSavingSettings ? 'Opslaan...' : 'Instellingen opslaan'}
+                      </SoftButton>
+                    </SoftBox>
+                  </SoftBox>
+                </TabPanel>
               </SoftBox>
             </Card>
           </Grid>

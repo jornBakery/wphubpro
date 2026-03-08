@@ -13,7 +13,7 @@ import ProtectedRoute from './components/layout/ProtectedRoute';
 import AdminRoute from './components/layout/AdminRoute';
 import Toaster from './components/ui/Toaster';
 import CircularProgress from '@mui/material/CircularProgress';
-import { ROUTE_PATHS, ADMIN_CHILD_PATHS } from './config/routePaths';
+import { ROUTE_PATHS } from './config/routePaths';
 
 import theme from 'assets/theme';
 
@@ -28,9 +28,15 @@ import SiteDetailPage from './pages/SiteDetailPage';
 import ConnectSuccessPage from './pages/ConnectSuccessPage';
 import NotFoundPage from './pages/NotFoundPage';
 import AccountProfilePage from './pages/account/AccountProfilePage';
-import AccountEditPage from './pages/account/AccountEditPage';
-import AccountSettingsPage from './pages/account/AccountSettingsPage'; // pragma: allowlist secret
-import AccountSubscriptionPage from './pages/account/AccountSubscriptionPage'; // pragma: allowlist secret
+import NotificationsPage from './pages/NotificationsPage';
+import TicketsPage from './pages/TicketsPage';
+import CreateTicketPage from './pages/CreateTicketPage';
+import TicketDetailPage from './pages/TicketDetailPage';
+import ForumPage from './pages/ForumPage';
+import ForumCategoryPage from './pages/ForumCategoryPage';
+import ForumThreadPage from './pages/ForumThreadPage';
+import ForumNewThreadPage from './pages/ForumNewThreadPage';
+import AdminNotificationsPage from './pages/admin/AdminNotificationsPage';
 
 const PlaceholderPage: React.FC<{ name: string }> = ({ name }) => (
   <div className="p-6 text-lg">Pagina: {name} — wordt per stap gebouwd.</div>
@@ -59,31 +65,43 @@ const AppRoutes: React.FC = () => {
       />
       <Route path={ROUTE_PATHS.CONNECT_SUCCESS} element={<ConnectSuccessPage />} />
 
-      <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
-        <Route path={ROUTE_PATHS.ROOT} element={<Navigate to={ROUTE_PATHS.DASHBOARD} replace />} />
-        <Route path={ROUTE_PATHS.DASHBOARD} element={<DashboardPage />} />
-        <Route path={ROUTE_PATHS.SITES} element={<SitesPage />} />
-        <Route path={ROUTE_PATHS.SITE_DETAIL} element={<SiteDetailPage />} />
-        <Route path={ROUTE_PATHS.LIBRARY} element={<PlaceholderPage name="Bibliotheek" />} />
-        <Route path={ROUTE_PATHS.ACCOUNT} element={<Navigate to={ROUTE_PATHS.ACCOUNT_PROFILE} replace />} />
-        <Route path={ROUTE_PATHS.ACCOUNT_PROFILE} element={<AccountProfilePage />} />
-        <Route path={ROUTE_PATHS.ACCOUNT_EDIT} element={<AccountEditPage />} />
-        <Route path={ROUTE_PATHS.ACCOUNT_SETTINGS} element={<AccountSettingsPage />} /> {/* pragma: allowlist secret */}
-        <Route path={ROUTE_PATHS.ACCOUNT_SUBSCRIPTION} element={<AccountSubscriptionPage />} />
-        <Route path={ROUTE_PATHS.SUBSCRIPTION} element={<Navigate to={ROUTE_PATHS.ACCOUNT_SUBSCRIPTION} replace />} />
-        <Route path={ROUTE_PATHS.SUBSCRIPTION_PLANS} element={<PlaceholderPage name="Plannen" />} />
+      <Route path="/*" element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
+        <Route index element={<Navigate to={ROUTE_PATHS.DASHBOARD} replace />} />
+        <Route path="dashboard" element={<DashboardPage />} />
+        <Route path="sites" element={<SitesPage />} />
+        <Route path="sites/:id" element={<SiteDetailPage />} />
+        <Route path="library" element={<PlaceholderPage name="Bibliotheek" />} />
+        <Route path="account" element={<Navigate to={ROUTE_PATHS.ACCOUNT_PROFILE} replace />} />
+        <Route path="account/profile" element={<AccountProfilePage />} />
+        <Route path="account/edit" element={<Navigate to={ROUTE_PATHS.ACCOUNT_PROFILE} replace />} />
+        <Route path="account/settings" element={<Navigate to={ROUTE_PATHS.ACCOUNT_PROFILE} replace />} />
+        <Route path="account/subscription" element={<Navigate to={ROUTE_PATHS.ACCOUNT_PROFILE} replace />} />
+        <Route path="subscription" element={<Navigate to={ROUTE_PATHS.ACCOUNT_PROFILE} replace />} />
+        <Route path="subscription/plans" element={<PlaceholderPage name="Plannen" />} />
 
-        <Route path={ROUTE_PATHS.ADMIN_ROOT} element={<AdminRoute><Outlet /></AdminRoute>}>
+        <Route path="notifications" element={<NotificationsPage />} />
+        <Route path="tickets" element={<TicketsPage />} />
+        <Route path="tickets/new" element={<CreateTicketPage />} />
+        <Route path="tickets/:id" element={<TicketDetailPage />} />
+        <Route path="forum" element={<ForumPage />} />
+        <Route path="forum/category/:key" element={<ForumCategoryPage />} />
+        <Route path="forum/thread/:id" element={<ForumThreadPage />} />
+        <Route path="forum/new" element={<ForumNewThreadPage />} />
+
+        <Route path="admin" element={<AdminRoute><Outlet /></AdminRoute>}>
           <Route index element={<Navigate to={ROUTE_PATHS.ADMIN_DASHBOARD} replace />} />
-          <Route path={ADMIN_CHILD_PATHS.DASHBOARD} element={<PlaceholderPage name="Admin Dashboard" />} />
-          <Route path={ADMIN_CHILD_PATHS.USERS} element={<PlaceholderPage name="User Manager" />} />
-          <Route path={ADMIN_CHILD_PATHS.USER_DETAIL} element={<PlaceholderPage name="User Detail" />} />
-          <Route path={ADMIN_CHILD_PATHS.ORDERS} element={<PlaceholderPage name="Orders" />} />
-          <Route path={ADMIN_CHILD_PATHS.PLANS} element={<PlaceholderPage name="Plan Management" />} />
-          <Route path={ADMIN_CHILD_PATHS.PLAN_DETAIL} element={<PlaceholderPage name="Plan Detail" />} />
-          <Route path={ADMIN_CHILD_PATHS.SUBSCRIPTIONS} element={<PlaceholderPage name="Subscriptions" />} />
-          <Route path={ADMIN_CHILD_PATHS.SUBSCRIPTION_DETAIL} element={<PlaceholderPage name="Subscription Detail" />} />
-          <Route path={ADMIN_CHILD_PATHS.SETTINGS} element={<PlaceholderPage name="Admin Settings" />} />
+          <Route path="dashboard" element={<PlaceholderPage name="Admin Dashboard" />} />
+          <Route path="users" element={<PlaceholderPage name="User Manager" />} />
+          <Route path="users/:userId" element={<PlaceholderPage name="User Detail" />} />
+          <Route path="orders" element={<PlaceholderPage name="Orders" />} />
+          <Route path="plans" element={<PlaceholderPage name="Plan Management" />} />
+          <Route path="plans/:planId" element={<PlaceholderPage name="Plan Detail" />} />
+          <Route path="subscriptions" element={<PlaceholderPage name="Subscriptions" />} />
+          <Route path="subscriptions/:subscriptionId" element={<PlaceholderPage name="Subscription Detail" />} />
+          <Route path="settings" element={<PlaceholderPage name="Admin Settings" />} />
+          <Route path="notifications" element={<AdminNotificationsPage />} />
+          <Route path="tickets" element={<PlaceholderPage name="Admin Tickets" />} />
+          <Route path="tickets/:id" element={<PlaceholderPage name="Ticket Detail" />} />
         </Route>
 
         <Route path="*" element={<NotFoundPage />} />

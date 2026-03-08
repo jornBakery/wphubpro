@@ -8,6 +8,9 @@ export const ADMIN_CHILD_PATHS = {
   SUBSCRIPTIONS: 'subscriptions',
   SUBSCRIPTION_DETAIL: 'subscriptions/:subscriptionId',
   SETTINGS: 'settings',
+  NOTIFICATIONS: 'notifications',
+  TICKETS: 'tickets',
+  TICKET_DETAIL: 'tickets/:id',
 } as const;
 
 const adminPath = (child: string) => `/admin/${child}`;
@@ -30,6 +33,15 @@ export const ROUTE_PATHS = {
   SUBSCRIPTION: '/subscription',
   SUBSCRIPTION_PLANS: '/subscription/plans',
 
+  NOTIFICATIONS: '/notifications',
+  TICKETS: '/tickets',
+  TICKET_NEW: '/tickets/new',
+  TICKET_DETAIL: '/tickets/:id',
+  FORUM: '/forum',
+  FORUM_CATEGORY: '/forum/category/:key',
+  FORUM_THREAD: '/forum/thread/:id',
+  FORUM_NEW_THREAD: '/forum/new',
+
   ADMIN_ROOT: '/admin',
   ADMIN_DASHBOARD: adminPath(ADMIN_CHILD_PATHS.DASHBOARD),
   ADMIN_USERS: adminPath(ADMIN_CHILD_PATHS.USERS),
@@ -37,4 +49,7 @@ export const ROUTE_PATHS = {
   ADMIN_PLANS: adminPath(ADMIN_CHILD_PATHS.PLANS),
   ADMIN_SUBSCRIPTIONS: adminPath(ADMIN_CHILD_PATHS.SUBSCRIPTIONS),
   ADMIN_SETTINGS: adminPath(ADMIN_CHILD_PATHS.SETTINGS),
+  ADMIN_NOTIFICATIONS: adminPath(ADMIN_CHILD_PATHS.NOTIFICATIONS),
+  ADMIN_TICKETS: adminPath(ADMIN_CHILD_PATHS.TICKETS),
+  ADMIN_TICKET_DETAIL: adminPath(ADMIN_CHILD_PATHS.TICKET_DETAIL),
 } as const;

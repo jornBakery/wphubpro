@@ -14,6 +14,17 @@ interface AuthContextType {
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const AUTH_TIMEOUT_MS = 10_000;
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error(`Auth request timed out after ${ms}ms`)), ms)
+    ),
+  ]);
+}
+
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -23,10 +34,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     let mounted = true;
 
     const resolveAdminStatus = async (currentUser: User): Promise<boolean> => {
-      let adminStatus = currentUser.labels?.includes('admin') || false;
+      let adminStatus = (currentUser.labels as string[] | undefined)?.includes('admin') || false;
       if (!adminStatus) {
         try {
-          const userTeams = await teams.list();
+          const userTeams = await withTimeout(teams.list(), AUTH_TIMEOUT_MS);
           adminStatus = userTeams.teams.some(t => t.$id === 'admin' || t.name.toLowerCase() === 'admin');
         } catch {
           adminStatus = false;
@@ -36,7 +47,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
 
     const hydrateUser = async () => {
-      const currentUser = await account.get();
+      const currentUser = await withTimeout(account.get(), AUTH_TIMEOUT_MS);
       const adminStatus = await resolveAdminStatus(currentUser);
       if (!mounted) return;
       setUser({ ...currentUser, isAdmin: adminStatus });
@@ -46,11 +57,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const checkSession = async () => {
       try {
         await hydrateUser();
-      } catch (err: any) {
+      } catch (err: unknown) {
         if (!mounted) return;
-        // Only log if it's not a 401 (which just means no session)
-        if (err?.code !== 401) {
-          console.error('Session check failed:', err);
+        const code = (err as { code?: number })?.code;
+        const message = err instanceof Error ? err.message : String(err);
+        if (code !== 401) {
+          console.error('Session check failed:', message || err);
         }
         setUser(null);
         setIsAdmin(false);
@@ -72,7 +84,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       await account.createEmailPasswordSession(email, pass);
       const currentUser = await account.get();
-      let adminStatus = currentUser.labels?.includes('admin') || false;
+      let adminStatus = (currentUser.labels as string[] | undefined)?.includes('admin') || false;
       if (!adminStatus) {
         try {
           const userTeams = await teams.list();
@@ -99,7 +111,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const currentUser = await account.get();
 
     // New users are not admins by default
-    const adminStatus = currentUser.labels?.includes('admin') || false;
+    const adminStatus = (currentUser.labels as string[] | undefined)?.includes('admin') || false;
 
     setUser({ ...currentUser, isAdmin: adminStatus });
     setIsAdmin(adminStatus);

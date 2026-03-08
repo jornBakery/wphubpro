@@ -23,7 +23,8 @@ export const usePlatformSettings = (category: string) => {
                 }
                 return null;
             } catch (error) {
-                console.error(`Error fetching ${category} settings:`, error);
+                const message = error instanceof Error ? error.message : String(error);
+                console.error(`Error fetching ${category} settings:`, message || error);
                 return null;
             }
         },

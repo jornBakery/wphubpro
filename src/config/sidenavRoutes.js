@@ -8,6 +8,9 @@ export const userRoutes = [
   { type: 'collapse', name: 'Dashboard', key: 'dashboard', icon: 'dashboard', route: ROUTE_PATHS.DASHBOARD, noCollapse: true },
   { type: 'collapse', name: 'Sites', key: 'sites', icon: 'public', route: ROUTE_PATHS.SITES, noCollapse: true },
   { type: 'collapse', name: 'Bibliotheek', key: 'library', icon: 'folder', route: ROUTE_PATHS.LIBRARY, noCollapse: true },
+  { type: 'collapse', name: 'Notificaties', key: 'notifications', icon: 'notifications', route: ROUTE_PATHS.NOTIFICATIONS, noCollapse: true },
+  { type: 'collapse', name: 'Helpdesk', key: 'tickets', icon: 'support_agent', route: ROUTE_PATHS.TICKETS, noCollapse: true },
+  { type: 'collapse', name: 'Forum', key: 'forum', icon: 'forum', route: ROUTE_PATHS.FORUM, noCollapse: true },
   { type: 'collapse', name: 'Account', key: 'account', icon: 'person', route: ROUTE_PATHS.ACCOUNT_PROFILE, noCollapse: true },
   { type: 'collapse', name: 'Abonnement', key: 'subscription', icon: 'credit_card', route: ROUTE_PATHS.SUBSCRIPTION, noCollapse: true },
 ];
@@ -28,6 +31,8 @@ export const adminRoutes = [
     ],
   },
   { type: 'collapse', name: 'Platform Settings', key: 'admin-settings', icon: 'settings', route: ROUTE_PATHS.ADMIN_SETTINGS, noCollapse: true },
+  { type: 'collapse', name: 'Notifications', key: 'admin-notifications', icon: 'campaign', route: ROUTE_PATHS.ADMIN_NOTIFICATIONS, noCollapse: true },
+  { type: 'collapse', name: 'Tickets', key: 'admin-tickets', icon: 'confirmation_number', route: ROUTE_PATHS.ADMIN_TICKETS, noCollapse: true },
 ];
 
 export const getSidenavRoutes = (isAdmin = false) => {

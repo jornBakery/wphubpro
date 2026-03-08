@@ -5,9 +5,9 @@ import { Client, Account, Databases, Functions, Storage, Teams, Avatars, ID } fr
  * Waarden uit Vite env (VITE_*) of fallback. Zorg dat .env in project root staat.
  */
 export const APPWRITE_ENDPOINT =
-  (import.meta as any).env?.APPWRITE_ENDPOINT || 'https://appwrite.code045.nl/v1';
+  (import.meta as any).env?.VITE_APPWRITE_ENDPOINT || 'https://appwrite.code045.nl/v1';
 export const APPWRITE_PROJECT_ID =
-  (import.meta as any).env?.APPWRITE_PROJECT_ID || '698a55ce00010497b136';
+  (import.meta as any).env?.VITE_APPWRITE_PROJECT_ID || '698a55ce00010497b136';
 
 if (!APPWRITE_PROJECT_ID || APPWRITE_PROJECT_ID.trim() === '') {
   throw new Error(
@@ -40,10 +40,16 @@ export const DATABASE_ID = 'platform_db';
  *
  */
 export const COLLECTIONS = {
-    SITES: 'sites',
-    LIBRARY: 'library',
-    SETTINGS: 'platform_settings',
-    PLANS: 'plans',
-    SUBSCRIPTIONS: 'subscriptions',
-    ACCOUNTS: 'accounts'
+  SITES: 'sites',
+  LIBRARY: 'library',
+  SETTINGS: 'platform_settings',
+  PLANS: 'plans',
+  SUBSCRIPTIONS: 'subscriptions',
+  ACCOUNTS: 'accounts',
+  NOTIFICATIONS: 'notifications',
+  TICKETS: 'tickets',
+  TICKET_MESSAGES: 'ticket_messages',
+  FORUM_CATEGORIES: 'forum_categories',
+  FORUM_THREADS: 'forum_threads',
+  FORUM_POSTS: 'forum_posts',
 };

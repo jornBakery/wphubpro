@@ -558,6 +558,54 @@
             "commands": "npm install",
             "scopes": [],
             "specification": "s-0.5vcpu-512mb"
+        },
+        {
+            "$id": "notifications",
+            "name": "notifications",
+            "runtime": "node-18.0",
+            "path": "functions/notifications",
+            "entrypoint": "index.js",
+            "execute": ["users", "team:admin"],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 15,
+            "commands": "npm install",
+            "scopes": ["users.read", "databases.read", "databases.write", "documents.read", "documents.write"],
+            "specification": "s-0.5vcpu-512mb"
+        },
+        {
+            "$id": "tickets",
+            "name": "tickets",
+            "runtime": "node-18.0",
+            "path": "functions/tickets",
+            "entrypoint": "index.js",
+            "execute": ["users", "team:admin"],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 15,
+            "commands": "npm install",
+            "scopes": ["users.read", "databases.read", "databases.write", "documents.read", "documents.write"],
+            "specification": "s-0.5vcpu-512mb"
+        },
+        {
+            "$id": "forum",
+            "name": "forum",
+            "runtime": "node-18.0",
+            "path": "functions/forum",
+            "entrypoint": "index.js",
+            "execute": ["users", "any"],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 15,
+            "commands": "npm install",
+            "scopes": ["users.read", "databases.read", "databases.write", "documents.read", "documents.write"],
+            "specification": "s-0.5vcpu-512mb"
         }
     ],
     "tablesDB": [
@@ -1387,6 +1435,426 @@
                     "orders": [
                         "ASC"
                     ]
+                }
+            ]
+        },
+        {
+            "$id": "notifications",
+            "$permissions": [
+                "create(\"users\")",
+                "read(\"users\")",
+                "update(\"users\")",
+                "create(\"team:admin\")"
+            ],
+            "databaseId": "platform_db",
+            "name": "Notifications",
+            "enabled": true,
+            "rowSecurity": false,
+            "columns": [
+                {
+                    "key": "user_id",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 255,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "type",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 50,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "title",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 500,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "body",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 5000,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "read",
+                    "type": "boolean",
+                    "required": false,
+                    "array": false,
+                    "default": false,
+                    "encrypt": false
+                },
+                {
+                    "key": "meta",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 2000,
+                    "default": null,
+                    "encrypt": false
+                }
+            ],
+            "indexes": [
+                {
+                    "key": "user_id_index",
+                    "type": "key",
+                    "status": "available",
+                    "columns": ["user_id"],
+                    "orders": ["ASC"]
+                },
+                {
+                    "key": "read_index",
+                    "type": "key",
+                    "status": "available",
+                    "columns": ["read"],
+                    "orders": ["ASC"]
+                }
+            ]
+        },
+        {
+            "$id": "tickets",
+            "$permissions": [
+                "create(\"users\")",
+                "read(\"users\")",
+                "update(\"users\")",
+                "read(\"team:admin\")",
+                "update(\"team:admin\")"
+            ],
+            "databaseId": "platform_db",
+            "name": "Tickets",
+            "enabled": true,
+            "rowSecurity": false,
+            "columns": [
+                {
+                    "key": "user_id",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 255,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "subject",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 500,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "status",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 50,
+                    "default": "open",
+                    "encrypt": false
+                },
+                {
+                    "key": "priority",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 50,
+                    "default": "medium",
+                    "encrypt": false
+                },
+                {
+                    "key": "category",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 100,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "site_id",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 255,
+                    "default": null,
+                    "encrypt": false
+                }
+            ],
+            "indexes": [
+                {
+                    "key": "user_id_index",
+                    "type": "key",
+                    "status": "available",
+                    "columns": ["user_id"],
+                    "orders": ["ASC"]
+                },
+                {
+                    "key": "status_index",
+                    "type": "key",
+                    "status": "available",
+                    "columns": ["status"],
+                    "orders": ["ASC"]
+                }
+            ]
+        },
+        {
+            "$id": "ticket_messages",
+            "$permissions": [
+                "create(\"users\")",
+                "read(\"users\")",
+                "read(\"team:admin\")",
+                "create(\"team:admin\")"
+            ],
+            "databaseId": "platform_db",
+            "name": "Ticket Messages",
+            "enabled": true,
+            "rowSecurity": false,
+            "columns": [
+                {
+                    "key": "ticket_id",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 255,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "user_id",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 255,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "body",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 10000,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "is_staff",
+                    "type": "boolean",
+                    "required": false,
+                    "array": false,
+                    "default": false,
+                    "encrypt": false
+                }
+            ],
+            "indexes": [
+                {
+                    "key": "ticket_id_index",
+                    "type": "key",
+                    "status": "available",
+                    "columns": ["ticket_id"],
+                    "orders": ["ASC"]
+                }
+            ]
+        },
+        {
+            "$id": "forum_categories",
+            "$permissions": [
+                "read(\"any\")",
+                "create(\"team:admin\")",
+                "update(\"team:admin\")",
+                "delete(\"team:admin\")"
+            ],
+            "databaseId": "platform_db",
+            "name": "Forum Categories",
+            "enabled": true,
+            "rowSecurity": false,
+            "columns": [
+                {
+                    "key": "key",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 100,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "name",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 255,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "description",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 500,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "order",
+                    "type": "integer",
+                    "required": false,
+                    "array": false,
+                    "default": 0,
+                    "min": 0,
+                    "max": 999
+                }
+            ],
+            "indexes": [
+                {
+                    "key": "key_index",
+                    "type": "unique",
+                    "status": "available",
+                    "columns": ["key"],
+                    "orders": ["ASC"]
+                },
+                {
+                    "key": "order_index",
+                    "type": "key",
+                    "status": "available",
+                    "columns": ["order"],
+                    "orders": ["ASC"]
+                }
+            ]
+        },
+        {
+            "$id": "forum_threads",
+            "$permissions": [
+                "create(\"users\")",
+                "read(\"any\")",
+                "update(\"users\")"
+            ],
+            "databaseId": "platform_db",
+            "name": "Forum Threads",
+            "enabled": true,
+            "rowSecurity": false,
+            "columns": [
+                {
+                    "key": "category_id",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 255,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "user_id",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 255,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "title",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 500,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "post_count",
+                    "type": "integer",
+                    "required": false,
+                    "array": false,
+                    "default": 0,
+                    "min": 0,
+                    "max": 999999
+                },
+                {
+                    "key": "last_post_at",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 64,
+                    "default": null,
+                    "encrypt": false
+                }
+            ],
+            "indexes": [
+                {
+                    "key": "category_id_index",
+                    "type": "key",
+                    "status": "available",
+                    "columns": ["category_id"],
+                    "orders": ["ASC"]
+                },
+                {
+                    "key": "last_post_at_index",
+                    "type": "key",
+                    "status": "available",
+                    "columns": ["last_post_at"],
+                    "orders": ["DESC"]
+                }
+            ]
+        },
+        {
+            "$id": "forum_posts",
+            "$permissions": [
+                "create(\"users\")",
+                "read(\"any\")"
+            ],
+            "databaseId": "platform_db",
+            "name": "Forum Posts",
+            "enabled": true,
+            "rowSecurity": false,
+            "columns": [
+                {
+                    "key": "thread_id",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 255,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "user_id",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 255,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "body",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 20000,
+                    "default": null,
+                    "encrypt": false
+                }
+            ],
+            "indexes": [
+                {
+                    "key": "thread_id_index",
+                    "type": "key",
+                    "status": "available",
+                    "columns": ["thread_id"],
+                    "orders": ["ASC"]
                 }
             ]
         }

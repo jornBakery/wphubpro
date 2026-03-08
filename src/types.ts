@@ -153,10 +153,89 @@ export interface SiteHealth {
 }
 
 export interface StripeInvoice {
-    id: string;
-    created: number;
-    amount_paid: number;
-    currency: string;
-    status: string;
-    invoice_pdf: string;
+  id: string;
+  created: number;
+  amount_paid: number;
+  currency: string;
+  status: string;
+  invoice_pdf: string;
+}
+
+// --- Notifications ---
+export type NotificationType =
+  | 'platform'           // Admin-sent announcements
+  | 'site_connection'   // Site connection errors
+  | 'plugin_update'     // New plugin version available
+  | 'theme_update'      // New theme version available
+  | 'site_report'       // Weekly performance/statistics per site
+  | 'subscription';     // Invoices, renewal, plan changes
+
+export interface Notification {
+  $id: string;
+  userId: string;
+  type: NotificationType;
+  title: string;
+  body: string;
+  read: boolean;
+  meta?: Record<string, unknown>; // siteId, pluginSlug, invoiceId, etc.
+  $createdAt: string;
+}
+
+// --- Ticketing / Helpdesk ---
+export type TicketStatus = 'open' | 'in_progress' | 'waiting' | 'resolved' | 'closed';
+export type TicketPriority = 'low' | 'medium' | 'high' | 'urgent';
+
+export interface Ticket {
+  $id: string;
+  userId: string;
+  subject: string;
+  status: TicketStatus;
+  priority: TicketPriority;
+  category?: string;
+  siteId?: string;
+  $createdAt: string;
+  $updatedAt: string;
+}
+
+export interface TicketMessage {
+  $id: string;
+  ticketId: string;
+  userId: string;
+  body: string;
+  isStaff: boolean;
+  $createdAt: string;
+}
+
+// --- Forum ---
+export type ForumCategoryKey =
+  | 'general'
+  | 'platform_features'
+  | 'wordpress_dev'
+  | 'plugins_themes'
+  | 'error_reporting';
+
+export interface ForumCategory {
+  $id: string;
+  key: ForumCategoryKey;
+  name: string;
+  description?: string;
+  order: number;
+}
+
+export interface ForumThread {
+  $id: string;
+  categoryId: string;
+  userId: string;
+  title: string;
+  postCount: number;
+  lastPostAt?: string;
+  $createdAt: string;
+}
+
+export interface ForumPost {
+  $id: string;
+  threadId: string;
+  userId: string;
+  body: string;
+  $createdAt: string;
 }

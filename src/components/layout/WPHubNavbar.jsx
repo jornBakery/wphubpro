@@ -18,6 +18,7 @@ import Breadcrumbs from 'examples/Breadcrumbs';
 import { useSoftUIController, setTransparentNavbar } from 'context';
 import { useAuth } from '../../domains/auth';
 import { usePageBreadcrumb } from '../../contexts/PageBreadcrumbContext';
+import { useNotifications } from '../../domains/notifications';
 
 
 import {
@@ -75,6 +76,38 @@ function WPHubNavbar({ absolute = false, light = false, isMini = false }) {
           </SoftBox>
           {!isMini && (
             <SoftBox display="flex" alignItems="center" gap={1} color={light ? 'white' : 'inherit'}>
+              {user && (
+                <Tooltip title="Notificaties">
+                  <IconButton
+                    size="small"
+                    onClick={() => navigate('/notifications')}
+                    sx={{ color: 'inherit', position: 'relative' }}
+                    aria-label="Notificaties"
+                  >
+                    <Icon>notifications</Icon>
+                    {unreadCount > 0 && (
+                      <span
+                        style={{
+                          position: 'absolute',
+                          top: 4,
+                          right: 4,
+                          minWidth: 16,
+                          height: 16,
+                          borderRadius: 8,
+                          background: '#FD5C70',
+                          color: 'white',
+                          fontSize: 10,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        {unreadCount > 99 ? '99+' : unreadCount}
+                      </span>
+                    )}
+                  </IconButton>
+                </Tooltip>
+              )}
               <SoftInput
                 placeholder="Zoek sites..."
                 icon={{ component: 'search', direction: 'left' }}
