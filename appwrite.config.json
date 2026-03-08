@@ -487,7 +487,10 @@
             "commands": "npm install",
             "scopes": [
                 "databases.read",
-                "documents.read"
+                "documents.read",
+                "documents.write",
+                "users.read",
+                "users.write"
             ],
             "specification": "s-0.5vcpu-512mb"
         },
