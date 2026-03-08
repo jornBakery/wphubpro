@@ -23,6 +23,10 @@ export const ROUTE_PATHS = {
   SITE_DETAIL: '/sites/:id',
   LIBRARY: '/library',
   ACCOUNT: '/account',
+  ACCOUNT_PROFILE: '/account/profile',
+  ACCOUNT_EDIT: '/account/edit',
+  ACCOUNT_SETTINGS: '/account/settings',
+  ACCOUNT_SUBSCRIPTION: '/account/subscription',
   SUBSCRIPTION: '/subscription',
   SUBSCRIPTION_PLANS: '/subscription/plans',
 

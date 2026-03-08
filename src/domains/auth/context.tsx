@@ -8,6 +8,7 @@ interface AuthContextType {
   login: (email: string, pass: string) => Promise<void>;
   register: (name: string, email: string, pass: string) => Promise<void>;
   logout: () => Promise<void>;
+  refreshUser: () => Promise<void>;
   isLoading: boolean;
 }
 
@@ -21,29 +22,30 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   useEffect(() => {
     let mounted = true;
 
+    const resolveAdminStatus = async (currentUser: User): Promise<boolean> => {
+      let adminStatus = currentUser.labels?.includes('admin') || false;
+      if (!adminStatus) {
+        try {
+          const userTeams = await teams.list();
+          adminStatus = userTeams.teams.some(t => t.$id === 'admin' || t.name.toLowerCase() === 'admin');
+        } catch {
+          adminStatus = false;
+        }
+      }
+      return adminStatus;
+    };
+
+    const hydrateUser = async () => {
+      const currentUser = await account.get();
+      const adminStatus = await resolveAdminStatus(currentUser);
+      if (!mounted) return;
+      setUser({ ...currentUser, isAdmin: adminStatus });
+      setIsAdmin(adminStatus);
+    };
+
     const checkSession = async () => {
       try {
-        const currentUser = await account.get();
-        if (!mounted) return;
-
-        console.log('Current User ID:', currentUser.$id);
-
-        // Check if user is an admin via labels or team membership
-        let adminStatus = currentUser.labels?.includes('admin') || false;
-
-        if (!adminStatus) {
-          try {
-            // teams.list() is a safe call that returns only the user's teams
-            const userTeams = await teams.list();
-            adminStatus = userTeams.teams.some(t => t.$id === 'admin' || t.name.toLowerCase() === 'admin');
-          } catch {
-            // Silently fail for non-admin users or if teams service is unavailable
-            adminStatus = false;
-          }
-        }
-
-        setUser({ ...currentUser, isAdmin: adminStatus });
-        setIsAdmin(adminStatus);
+        await hydrateUser();
       } catch (err: any) {
         if (!mounted) return;
         // Only log if it's not a 401 (which just means no session)
@@ -70,11 +72,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       await account.createEmailPasswordSession(email, pass);
       const currentUser = await account.get();
-      console.log('✅ Login successful - User:', currentUser.$id, 'Email:', currentUser.email);
-
-      // Check if user is an admin via labels or team membership
       let adminStatus = currentUser.labels?.includes('admin') || false;
-
       if (!adminStatus) {
         try {
           const userTeams = await teams.list();
@@ -83,16 +81,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           adminStatus = false;
         }
       }
-
-      console.log('🔐 Admin Status:', adminStatus);
-      const userWithAdmin = { ...currentUser, isAdmin: adminStatus };
-      console.log('👤 Setting user state:', userWithAdmin);
-
-      setUser(userWithAdmin);
+      setUser({ ...currentUser, isAdmin: adminStatus });
       setIsAdmin(adminStatus);
 
       await new Promise(resolve => setTimeout(resolve, 100));
-      console.log('🚀 Login state update complete');
     } catch (error) {
       console.error('❌ Login failed:', error);
       throw error;
@@ -119,8 +111,23 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setIsAdmin(false);
   };
 
+  const refreshUser = async () => {
+    const currentUser = await account.get();
+    let adminStatus = currentUser.labels?.includes('admin') || false;
+    if (!adminStatus) {
+      try {
+        const userTeams = await teams.list();
+        adminStatus = userTeams.teams.some(t => t.$id === 'admin' || t.name.toLowerCase() === 'admin');
+      } catch {
+        adminStatus = false;
+      }
+    }
+    setUser({ ...currentUser, isAdmin: adminStatus });
+    setIsAdmin(adminStatus);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, isAdmin, login, register, logout, isLoading }}>
+    <AuthContext.Provider value={{ user, isAdmin, login, register, logout, refreshUser, isLoading }}>
       {children}
     </AuthContext.Provider>
   );

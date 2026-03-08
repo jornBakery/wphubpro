@@ -27,6 +27,10 @@ import SitesPage from './pages/SitesPage';
 import SiteDetailPage from './pages/SiteDetailPage';
 import ConnectSuccessPage from './pages/ConnectSuccessPage';
 import NotFoundPage from './pages/NotFoundPage';
+import AccountProfilePage from './pages/account/AccountProfilePage';
+import AccountEditPage from './pages/account/AccountEditPage';
+import AccountSettingsPage from './pages/account/AccountSettingsPage'; // pragma: allowlist secret
+import AccountSubscriptionPage from './pages/account/AccountSubscriptionPage'; // pragma: allowlist secret
 
 const PlaceholderPage: React.FC<{ name: string }> = ({ name }) => (
   <div className="p-6 text-lg">Pagina: {name} — wordt per stap gebouwd.</div>
@@ -61,8 +65,12 @@ const AppRoutes: React.FC = () => {
         <Route path={ROUTE_PATHS.SITES} element={<SitesPage />} />
         <Route path={ROUTE_PATHS.SITE_DETAIL} element={<SiteDetailPage />} />
         <Route path={ROUTE_PATHS.LIBRARY} element={<PlaceholderPage name="Bibliotheek" />} />
-        <Route path={ROUTE_PATHS.ACCOUNT} element={<PlaceholderPage name="Mijn Account" />} />
-        <Route path={ROUTE_PATHS.SUBSCRIPTION} element={<PlaceholderPage name="Abonnement" />} />
+        <Route path={ROUTE_PATHS.ACCOUNT} element={<Navigate to={ROUTE_PATHS.ACCOUNT_PROFILE} replace />} />
+        <Route path={ROUTE_PATHS.ACCOUNT_PROFILE} element={<AccountProfilePage />} />
+        <Route path={ROUTE_PATHS.ACCOUNT_EDIT} element={<AccountEditPage />} />
+        <Route path={ROUTE_PATHS.ACCOUNT_SETTINGS} element={<AccountSettingsPage />} /> {/* pragma: allowlist secret */}
+        <Route path={ROUTE_PATHS.ACCOUNT_SUBSCRIPTION} element={<AccountSubscriptionPage />} />
+        <Route path={ROUTE_PATHS.SUBSCRIPTION} element={<Navigate to={ROUTE_PATHS.ACCOUNT_SUBSCRIPTION} replace />} />
         <Route path={ROUTE_PATHS.SUBSCRIPTION_PLANS} element={<PlaceholderPage name="Plannen" />} />
 
         <Route path={ROUTE_PATHS.ADMIN_ROOT} element={<AdminRoute><Outlet /></AdminRoute>}>
