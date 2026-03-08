@@ -3,12 +3,13 @@ const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 /**
  * Sync all Stripe subscriptions to Appwrite subscriptions collection
- * Admin-only function
+ * Admin-only action - requires caller to be in team:admin
  */
 module.exports = async ({ req, res, log, error }) => {
   const client = new sdk.Client();
   const databases = new sdk.Databases(client);
   const users = new sdk.Users(client);
+  const teams = new sdk.Teams(client);
 
   const { APPWRITE_ENDPOINT, APPWRITE_PROJECT_ID, APPWRITE_API_KEY, STRIPE_SECRET_KEY } =
     process.env;
@@ -19,6 +20,36 @@ module.exports = async ({ req, res, log, error }) => {
   }
 
   client.setEndpoint(APPWRITE_ENDPOINT).setProject(APPWRITE_PROJECT_ID).setKey(APPWRITE_API_KEY);
+
+  // Admin check: sync is admin-only (originally stripe-sync-subscriptions was team:admin only)
+  const userId =
+    process.env.APPWRITE_FUNCTION_USER_ID || req.headers?.["x-appwrite-user-id"];
+  if (!userId) {
+    error("Sync requires authenticated user");
+    return res.json({ error: "Authentication required" }, 401);
+  }
+
+  let isAdmin = false;
+  try {
+    const memberships = await teams.listMemberships("admin");
+    isAdmin = memberships.memberships.some((m) => m.userId === userId);
+    log("Admin check - isAdmin: " + isAdmin);
+  } catch (teamErr) {
+    log("Admin check (fallback to labels): " + teamErr.message);
+    try {
+      const user = await users.get(userId);
+      isAdmin = user.labels?.some(
+        (l) => l.toLowerCase() === "admin" || l.toLowerCase() === "administrator"
+      );
+    } catch (labelErr) {
+      log("Could not verify admin: " + labelErr.message);
+    }
+  }
+
+  if (!isAdmin) {
+    error("User " + userId + " attempted sync without admin access");
+    return res.json({ error: "Forbidden: Admin access required" }, 403);
+  }
 
   try {
     log("Starting Stripe subscription sync...");

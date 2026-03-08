@@ -1,0 +1,8 @@
+---
+alwaysApply: true
+---
+
+- Voor frontend: Gebruik altijd de types uit `src/types.ts`.
+- Voor backend functions: Importeer gedeelde logica altijd uit `../_shared/`.
+- Voor de bridge: Gebruik `WPHubPro_Bridge_Logger` voor alle foutopsporing in PHP.
+- Forceer MUI v5 syntax en gebruik de `sx` prop voor snelle styling, maar `styled()` voor componenten in `src/components/ui`.
