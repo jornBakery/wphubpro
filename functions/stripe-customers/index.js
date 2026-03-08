@@ -61,14 +61,27 @@ module.exports = async ({ req, res, log, error }) => {
       });
     }
 
-    const customer = await stripe.customers.create(
-      {
-        email: user.email,
-        name: user.name,
-        metadata: { appwrite_user_id: user.$id },
-      },
-      { idempotencyKey: `create_customer_${user.$id}` }
-    );
+    // Reuse existing Stripe customer if one exists (e.g. from previous failed doc update)
+    let customer = null;
+    try {
+      const searchResult = await stripe.customers.search({
+        query: `metadata['appwrite_user_id']:'${user.$id}'`,
+        limit: 1,
+      });
+      customer = searchResult.data?.[0];
+    } catch {
+      // Search not available in some regions (e.g. India); fall back to create
+    }
+    if (!customer) {
+      customer = await stripe.customers.create(
+        {
+          email: user.email,
+          name: user.name,
+          metadata: { appwrite_user_id: user.$id },
+        },
+        { idempotencyKey: `create_customer_${user.$id}` }
+      );
+    }
 
     const accountData = { user_id: user.$id, stripe_customer_id: customer.id };
     const permissions = [
