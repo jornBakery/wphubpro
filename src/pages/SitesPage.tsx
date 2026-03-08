@@ -22,8 +22,9 @@ import { Site } from '../types';
 const SitesPage: React.FC = () => {
   const [addModalOpen, setAddModalOpen] = useState(false);
   const { data: sites, isLoading, isError, error } = useSites();
-  useSitesUpdateStats(sites ?? []);
-  useSitesConnectionPing((sites ?? []).map((s) => s.$id));
+  const enabledSites = (sites ?? []).filter((s) => s.enabled !== false);
+  useSitesUpdateStats(enabledSites);
+  useSitesConnectionPing(enabledSites.map((s) => s.$id));
   const { togglePin, isPinned } = usePinnedSites(sites ?? []);
 
   return (

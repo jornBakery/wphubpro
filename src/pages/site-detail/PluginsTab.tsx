@@ -33,8 +33,8 @@ interface PluginsTabProps {
 }
 
 const PluginsTab: React.FC<PluginsTabProps> = ({ siteId }) => {
-  const { data: plugins, isLoading, isError, error, refetch } = usePlugins(siteId);
   const { data: site } = useSite(siteId);
+  const { data: plugins, isLoading, isError, error, refetch } = usePlugins(siteId, { enabled: site?.enabled });
   const togglePluginMutation = useTogglePlugin(siteId);
   const updatePluginMutation = useUpdatePlugin(siteId);
   const deletePluginMutation = useDeletePlugin(siteId);

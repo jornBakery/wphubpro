@@ -62,8 +62,8 @@ const SiteDetailPage: React.FC = () => {
   const deleteSite = useDeleteSite();
   const checkHealth = useCheckSiteHealth(id);
   const updateSite = useUpdateSite();
-  useSiteConnectionPing(id);
-  const { isSuccess: pluginsSuccess } = usePlugins(id);
+  useSiteConnectionPing(site?.enabled !== false ? id : undefined);
+  const { isSuccess: pluginsSuccess } = usePlugins(id, { enabled: site?.enabled });
 
   useEffect(() => {
     if (site) {
@@ -74,12 +74,12 @@ const SiteDetailPage: React.FC = () => {
   }, [site, setBreadcrumbTitle]);
 
   useEffect(() => {
-    if (!id || !site) return;
+    if (!id || !site || site.enabled === false) return;
     checkHealth.mutate({ silent: true });
-  }, [id, site?.$id]);
+  }, [id, site?.$id, site?.enabled]);
 
   useEffect(() => {
-    if (!id || !site || site.status === 'connected') return;
+    if (!id || !site || site.enabled === false || site.status === 'connected') return;
     if (pluginsSuccess) {
       updateSite.mutate({ siteId: id, status: 'connected', silent: true });
     }

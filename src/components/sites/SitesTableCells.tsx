@@ -112,15 +112,13 @@ export const HealthBadge: React.FC<{ value: Site['healthStatus'] }> = ({ value }
   return <SoftBadge variant="gradient" color={c.color} size="xs" badgeContent={c.label} container />;
 };
 
-/** On/Off toggle for site – when off, site is excluded from stats and no bridge API calls. */
-export const SiteEnabledToggle: React.FC<{ site: Site }> = ({ site }) => {
-  const updateSite = useUpdateSite();
-  const enabled = site.enabled !== false;
-  const handleToggle = () => {
-    const meta = parseSiteMeta(site);
-    meta.enabled = !enabled;
-    updateSite.mutate({ siteId: site.$id, meta_data: JSON.stringify(meta) });
-  };
+/** On/Off toggle button – when off, site is excluded from stats and no bridge API calls. */
+export const SiteEnabledToggle: React.FC<{
+  enabled: boolean;
+  onToggle: () => void;
+  size?: 'small' | 'normal';
+}> = ({ enabled, onToggle, size = 'normal' }) => {
+  const sz = size === 'small' ? 28 : 32;
   return (
     <Tooltip title={enabled ? 'Site aan – klik om uit te zetten' : 'Site uit – klik om aan te zetten'} placement="top">
       <SoftBox
@@ -128,14 +126,14 @@ export const SiteEnabledToggle: React.FC<{ site: Site }> = ({ site }) => {
         type="button"
         onClick={(e: React.MouseEvent) => {
           e.stopPropagation?.();
-          handleToggle();
+          onToggle();
         }}
         sx={{
           display: 'inline-flex',
           alignItems: 'center',
           justifyContent: 'center',
-          width: 32,
-          height: 32,
+          width: sz,
+          height: sz,
           borderRadius: '50%',
           background: enabled ? orangeGradient : 'grey.400',
           color: 'white',
@@ -144,7 +142,7 @@ export const SiteEnabledToggle: React.FC<{ site: Site }> = ({ site }) => {
           '&:hover': { opacity: 0.9 },
         }}
       >
-        <Icon sx={{ fontSize: 18, color: 'white !important' }}>{enabled ? 'power' : 'power_off'}</Icon>
+        <Icon sx={{ fontSize: size === 'small' ? 16 : 18, color: 'white !important' }}>{enabled ? 'power' : 'power_off'}</Icon>
       </SoftBox>
     </Tooltip>
   );
@@ -197,9 +195,17 @@ export const ActionCell: React.FC<{
   compact?: boolean;
 }> = ({ siteId, siteUrl, site, showPinButton = false, isPinned = false, onTogglePin, compact = false }) => {
   const deleteSite = useDeleteSite();
+  const updateSite = useUpdateSite();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
+
+  const handleToggleEnabled = () => {
+    if (!site) return;
+    const meta = parseSiteMeta(site);
+    meta.enabled = !(site.enabled !== false);
+    updateSite.mutate({ siteId: site.$id, meta_data: JSON.stringify(meta) });
+  };
 
   const handleMenuOpen = (e: React.MouseEvent<HTMLElement>) => {
     e.stopPropagation();
@@ -229,7 +235,9 @@ export const ActionCell: React.FC<{
     window.open(siteUrl, '_blank');
   };
 
-  const enabledToggle = site && <SiteEnabledToggle site={site} />;
+  const enabledToggle = site && (
+    <SiteEnabledToggle enabled={site.enabled !== false} onToggle={handleToggleEnabled} />
+  );
 
   const pinButton = showPinButton && onTogglePin && (
     <Tooltip title={isPinned ? 'Verwijder van dashboard' : 'Pin naar dashboard'} placement="top">
@@ -294,6 +302,26 @@ export const ActionCell: React.FC<{
           anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
           transformOrigin={{ vertical: 'top', horizontal: 'right' }}
         >
+          {site && (
+            <MenuItem onClick={() => { handleToggleEnabled(); handleMenuClose(); }}>
+              <ListItemIcon sx={{ minWidth: 40 }}>
+                <SoftBox
+                  sx={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: 28,
+                    height: 28,
+                    borderRadius: '50%',
+                    background: site.enabled !== false ? orangeGradient : 'grey.400',
+                  }}
+                >
+                  <Icon sx={{ fontSize: 16, color: 'white !important' }}>{site.enabled !== false ? 'power' : 'power_off'}</Icon>
+                </SoftBox>
+              </ListItemIcon>
+              <ListItemText primaryTypographyProps={{ sx: { fontSize: '0.65rem !important', fontWeight: 700, textTransform: 'uppercase' } }}>{site.enabled !== false ? 'Site uitzetten' : 'Site aanzetten'}</ListItemText>
+            </MenuItem>
+          )}
           {showPinButton && onTogglePin && (
             <MenuItem onClick={handlePin}>
               <ListItemIcon sx={{ minWidth: 40 }}>
@@ -375,6 +403,7 @@ export const ActionCell: React.FC<{
 
   return (
     <SoftBox display="flex" alignItems="center" gap={0.5}>
+      {enabledToggle}
       {pinButton}
       {settingsButton}
       {openSiteButton}

@@ -1,9 +1,0 @@
-{
-  "name": "admin-get-user",
-  "version": "1.0.0",
-  "description": "Fetch a single Appwrite user for admin UI",
-  "main": "index.js",
-  "dependencies": {
-    "node-appwrite": "^22.0.0"
-  }
-}
