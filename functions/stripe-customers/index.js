@@ -22,15 +22,6 @@ module.exports = async ({ req, res, log, error }) => {
   const stripe = new Stripe(STRIPE_SECRET_KEY);
 
   try {
-    const eventName = req?.env?.APPWRITE_FUNCTION_EVENT || req?.variables?.APPWRITE_FUNCTION_EVENT || "";
-    if (eventName.includes("users.create")) {
-      return res.json({
-        success: true,
-        skipped: true,
-        message: "users.create handler disabled for stripe-customers. Use stripe-create-customer only.",
-      });
-    }
-
     let payload = {};
     try {
       if (req.payload && typeof req.payload === "string") payload = JSON.parse(req.payload);
