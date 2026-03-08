@@ -1,5 +1,5 @@
 const sdk = require("node-appwrite");
-const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+const Stripe = require("stripe");
 
 module.exports = async ({ req, res, log, error }) => {
   const client = new sdk.Client();
@@ -10,45 +10,65 @@ module.exports = async ({ req, res, log, error }) => {
   const APPWRITE_PROJECT_ID = env.APPWRITE_PROJECT_ID;
   const APPWRITE_API_KEY = env.APPWRITE_API_KEY;
   const STRIPE_SECRET_KEY = env.STRIPE_SECRET_KEY;
-  const DATABASE_ID = env.APPWRITE_DATABASE_ID || env.DATABASE_ID || "platform_db";
-  const ACCOUNTS_COLLECTION_ID = env.ACCOUNTS_COLLECTION_ID || "accounts";
+  const DATABASE_ID = env.APPWRITE_DATABASE_ID || env.DATABASE_ID;
+  const ACCOUNTS_COLLECTION_ID = env.ACCOUNTS_COLLECTION_ID; // pragma: allowlist secret
 
-  if (!APPWRITE_ENDPOINT || !APPWRITE_PROJECT_ID || !APPWRITE_API_KEY || !STRIPE_SECRET_KEY || !DATABASE_ID || !ACCOUNTS_COLLECTION_ID) {
+  if (!APPWRITE_ENDPOINT || !APPWRITE_PROJECT_ID || !APPWRITE_API_KEY || !STRIPE_SECRET_KEY || !DATABASE_ID || !ACCOUNTS_COLLECTION_ID) { // pragma: allowlist secret
     error("Missing environment variables. Please check your function settings.");
     return res.json({ error: "Internal Server Error: Missing configuration." }, 500);
   }
 
   client.setEndpoint(APPWRITE_ENDPOINT).setProject(APPWRITE_PROJECT_ID).setKey(APPWRITE_API_KEY);
+  const stripe = new Stripe(STRIPE_SECRET_KEY);
 
   try {
-    let user;
-    if (req.env && req.env["APPWRITE_FUNCTION_EVENT_DATA"]) {
-      user = JSON.parse(req.env["APPWRITE_FUNCTION_EVENT_DATA"]);
-    } else {
-      let payload = {};
-      try {
-        if (req.payload && typeof req.payload === "string") payload = JSON.parse(req.payload);
-        else if (req.payload && typeof req.payload === "object") payload = req.payload;
-      } catch (e) {
-        payload = {};
-      }
-      if (payload.action === "create" && payload.user) {
-        user = payload.user;
-      } else {
-        return res.json({ error: "Expected users.create event or action: create with user" }, 400);
-      }
+    const eventName = req?.env?.APPWRITE_FUNCTION_EVENT || req?.variables?.APPWRITE_FUNCTION_EVENT || "";
+    if (eventName.includes("users.create")) {
+      return res.json({
+        success: true,
+        skipped: true,
+        message: "users.create handler disabled for stripe-customers. Use stripe-create-customer only.",
+      });
     }
 
-    if (!user.email) {
-      log(`User ${user.$id} has no email, skipping Stripe customer creation.`);
-      return res.json({ success: false, message: "User has no email." });
+    let payload = {};
+    try {
+      if (req.payload && typeof req.payload === "string") payload = JSON.parse(req.payload);
+      else if (req.payload && typeof req.payload === "object") payload = req.payload;
+    } catch {
+      payload = {};
     }
 
-    const customer = await stripe.customers.create({
-      email: user.email,
-      name: user.name,
-      metadata: { appwrite_user_id: user.$id },
-    });
+    if (payload.action !== "create" || !payload.user) {
+      return res.json({ error: "Expected action: create with user payload." }, 400);
+    }
+
+    const user = payload.user;
+    if (!user?.$id || !user.email) {
+      return res.json({ success: false, message: "User id/email required." }, 400);
+    }
+
+    const existing = await databases.listDocuments(DATABASE_ID, ACCOUNTS_COLLECTION_ID, [ // pragma: allowlist secret
+      sdk.Query.equal("user_id", user.$id),
+      sdk.Query.limit(1),
+    ]);
+    if (existing.documents.length > 0 && existing.documents[0].stripe_customer_id) {
+      return res.json({
+        success: true,
+        skipped: true,
+        message: `Account already exists for user ${user.$id}.`,
+        stripeCustomerId: existing.documents[0].stripe_customer_id,
+      });
+    }
+
+    const customer = await stripe.customers.create(
+      {
+        email: user.email,
+        name: user.name,
+        metadata: { appwrite_user_id: user.$id },
+      },
+      { idempotencyKey: `create_customer_${user.$id}` }
+    );
 
     const accountData = { user_id: user.$id, stripe_customer_id: customer.id };
     const permissions = [
@@ -59,11 +79,26 @@ module.exports = async ({ req, res, log, error }) => {
       sdk.Permission.delete(sdk.Role.team("admin")),
     ];
 
-    await databases.createDocument(DATABASE_ID, ACCOUNTS_COLLECTION_ID, sdk.ID.unique(), accountData, permissions);
+    if (existing.documents.length > 0) {
+      await databases.updateDocument(
+        DATABASE_ID,
+        ACCOUNTS_COLLECTION_ID, // pragma: allowlist secret
+        existing.documents[0].$id,
+        accountData
+      );
+    } else {
+      await databases.createDocument(
+        DATABASE_ID,
+        ACCOUNTS_COLLECTION_ID, // pragma: allowlist secret
+        sdk.ID.unique(),
+        accountData,
+        permissions
+      );
+    }
 
     return res.json({
       success: true,
-      message: `Stripe customer created for user ${user.$id}.`,
+      message: `Stripe customer ensured for user ${user.$id}.`,
       stripeCustomerId: customer.id,
     });
   } catch (err) {

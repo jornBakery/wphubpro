@@ -1,15 +1,18 @@
-// Stripe Core - consolidated webhook + billing portal handler
+// Stripe Core - webhook-only handler
 const Stripe = require("stripe");
 const sdk = require("node-appwrite");
 
 /**
- * Router: stripe-signature header → webhook, else → portal
+ * Accepts only Stripe webhook requests
  */
 module.exports = async ({ req, res, log, error }) => {
   if (req.headers && req.headers["stripe-signature"]) {
     return handleWebhook({ req, res, log, error });
   }
-  return handlePortal({ req, res, log, error });
+  return res.json(
+    { success: false, message: "stripe-core only accepts Stripe webhook requests." },
+    400
+  );
 };
 
 async function handleWebhook({ req, res, log, error }) {
