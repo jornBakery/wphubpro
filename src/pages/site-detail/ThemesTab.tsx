@@ -23,8 +23,8 @@ interface ThemesTabProps {
 }
 
 const ThemesTab: React.FC<ThemesTabProps> = ({ siteId }) => {
-  const { data: themes, isLoading, isError, error, refetch } = useThemes(siteId);
   const { data: site } = useSite(siteId);
+  const { data: themes, isLoading, isError, error, refetch } = useThemes(siteId, { enabled: site?.enabled });
   const manageTheme = useManageTheme(siteId);
 
   const handleActivate = (theme: WordPressTheme) => {

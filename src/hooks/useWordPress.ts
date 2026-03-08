@@ -127,9 +127,10 @@ export interface WordPressTheme {
   update?: string | null;
 }
 
-/** Plugin list - exported for SiteDetailsTab, PluginsTab */
-export const usePlugins = (siteId: string | undefined) => {
+/** Plugin list - exported for SiteDetailsTab, PluginsTab. Set enabled: false when site is off to skip bridge API calls. */
+export const usePlugins = (siteId: string | undefined, options?: { enabled?: boolean }) => {
   const { user } = useAuth();
+  const queryEnabled = !!siteId && (options?.enabled !== false);
   return useQuery<WordPressPlugin[]>({
     queryKey: ['plugins', siteId],
     queryFn: async () => {
@@ -142,15 +143,16 @@ export const usePlugins = (siteId: string | undefined) => {
         update: p.update ?? null,
       }));
     },
-    enabled: !!siteId,
+    enabled: queryEnabled,
     staleTime: 0,
     refetchOnMount: 'always',
   });
 };
 
-/** Theme list - exported for SiteDetailsTab, ThemesTab */
-export const useThemes = (siteId: string | undefined) => {
+/** Theme list - exported for SiteDetailsTab, ThemesTab. Set enabled: false when site is off to skip bridge API calls. */
+export const useThemes = (siteId: string | undefined, options?: { enabled?: boolean }) => {
   const { user } = useAuth();
+  const queryEnabled = !!siteId && (options?.enabled !== false);
   return useQuery<WordPressTheme[]>({
     queryKey: ['themes', siteId],
     queryFn: async () => {
@@ -163,14 +165,31 @@ export const useThemes = (siteId: string | undefined) => {
         update: t.update ?? null,
       }));
     },
-    enabled: !!siteId,
+    enabled: queryEnabled,
     staleTime: 0,
     refetchOnMount: 'always',
   });
 };
 
-function hasUpdate(p: { update?: string | null }): boolean {
-  return p.update != null && String(p.update).trim() !== '';
+function hasUpdate(p: { update?: string | { new_version?: string } | null }): boolean {
+  if (p.update == null) return false;
+  if (typeof p.update === 'object') return !!(p.update.new_version && String(p.update.new_version).trim());
+  return String(p.update).trim() !== '';
+}
+
+export interface PluginUpdateSite {
+  siteId: string;
+  siteName: string;
+  installedVersion: string;
+  pluginFile: string;
+}
+
+export interface AggregatedPluginUpdate {
+  pluginSlug: string;
+  name: string;
+  latestVersion: string;
+  releaseDate: string | null;
+  sites: PluginUpdateSite[];
 }
 
 export interface SitesUpdateStats {
@@ -179,6 +198,7 @@ export interface SitesUpdateStats {
   pluginTotalCount: number;
   themeUpdatesCount: number;
   themeTotalCount: number;
+  pluginUpdatesList: AggregatedPluginUpdate[];
   isLoading: boolean;
 }
 
@@ -198,13 +218,22 @@ export const useSitesUpdateStats = (sites: { $id: string; status: string }[]) =>
       queryKey: ['plugins', siteId] as const,
       queryFn: async () => {
         const raw = await wpProxy<any[]>(siteId, user?.$id, 'wphubpro/v1/plugins');
-        return (raw ?? []).map((p: any) => ({
-          plugin: p.plugin ?? p.file,
-          name: p.name,
-          version: p.version,
-          status: p.active ? ('active' as const) : ('inactive' as const),
-          update: p.update ?? null,
-        }));
+        return (raw ?? []).map((p: any) => {
+          const u = p.update;
+          const updateObj =
+            u != null
+              ? typeof u === 'object' && u !== null
+                ? { new_version: (u as any).new_version ?? String(u), last_updated: (u as any).last_updated ?? null }
+                : { new_version: String(u).trim(), last_updated: null }
+              : null;
+          return {
+            plugin: p.plugin ?? p.file,
+            name: p.name,
+            version: p.version,
+            status: p.active ? ('active' as const) : ('inactive' as const),
+            update: updateObj,
+          };
+        });
       },
       enabled: !!siteId && !!user,
       staleTime: 60_000,
@@ -259,9 +288,14 @@ export const useSitesUpdateStats = (sites: { $id: string; status: string }[]) =>
   let themeTotalCount = 0;
   let sitesNeedingUpdatesCount = 0;
 
+  const pluginUpdatesMap = new Map<string, AggregatedPluginUpdate>();
+
   const connectedSiteIds = new Set(connectedSites.map((s) => s.$id));
   for (let i = 0; i < siteIds.length; i++) {
     if (!connectedSiteIds.has(siteIds[i])) continue;
+    const siteId = siteIds[i];
+    const site = sites.find((s) => s.$id === siteId);
+    const siteName = (site as any)?.siteName ?? (site as any)?.site_name ?? siteId;
     const plugins = pluginsQueries[i]?.data ?? [];
     const themes = themesQueries[i]?.data ?? [];
     const pluginUpdates = plugins.filter(hasUpdate).length;
@@ -273,7 +307,37 @@ export const useSitesUpdateStats = (sites: { $id: string; status: string }[]) =>
     if (pluginUpdates > 0 || themeUpdates > 0) {
       sitesNeedingUpdatesCount++;
     }
+
+    for (const p of plugins) {
+      if (!hasUpdate(p)) continue;
+      const slug = p.plugin;
+      const upd = p.update as { new_version?: string; last_updated?: string } | null;
+      const latestVersion = upd && typeof upd === 'object' ? (upd.new_version ?? '') : String(p.update ?? '');
+      const releaseDate = upd && typeof upd === 'object' && upd.last_updated ? upd.last_updated : null;
+      const entry = pluginUpdatesMap.get(slug);
+      const siteEntry: PluginUpdateSite = {
+        siteId,
+        siteName,
+        installedVersion: p.version ?? '',
+        pluginFile: p.plugin ?? slug,
+      };
+      if (entry) {
+        entry.sites.push(siteEntry);
+      } else {
+        pluginUpdatesMap.set(slug, {
+          pluginSlug: slug,
+          name: p.name ?? slug,
+          latestVersion,
+          releaseDate,
+          sites: [siteEntry],
+        });
+      }
+    }
   }
+
+  const pluginUpdatesList = Array.from(pluginUpdatesMap.values()).sort((a, b) =>
+    a.name.localeCompare(b.name)
+  );
 
   return {
     sitesNeedingUpdatesCount,
@@ -281,6 +345,7 @@ export const useSitesUpdateStats = (sites: { $id: string; status: string }[]) =>
     pluginTotalCount,
     themeUpdatesCount,
     themeTotalCount,
+    pluginUpdatesList,
     isLoading,
   };
 };
@@ -305,16 +370,20 @@ export const useTogglePlugin = (siteId: string | undefined) => {
   });
 };
 
-/** Update plugin - exported for PluginsTab */
-export const useUpdatePlugin = (siteId: string | undefined) => {
+/** Update plugin - exported for PluginsTab. Pass siteId in variables to update any site (e.g. from dashboard list). */
+export const useUpdatePlugin = (siteId?: string | undefined) => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const { toast } = useToast();
   return useMutation({
-    mutationFn: ({ pluginFile }: { pluginFile: string; pluginName: string }) =>
-      wpProxy(siteId!, user?.$id, `wphubpro/v1/plugins/manage/update?plugin=${encodeURIComponent(pluginFile)}`, { method: 'POST', body: { plugin: pluginFile } }),
+    mutationFn: ({ siteId: sid, pluginFile }: { siteId?: string; pluginFile: string; pluginName: string }) => {
+      const id = sid ?? siteId;
+      if (!id) throw new Error('Site ID required');
+      return wpProxy(id, user?.$id, `wphubpro/v1/plugins/manage/update?plugin=${encodeURIComponent(pluginFile)}`, { method: 'POST', body: { plugin: pluginFile } });
+    },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['plugins', siteId] });
+      const id = variables.siteId ?? siteId;
+      if (id) queryClient.invalidateQueries({ queryKey: ['plugins', id] });
       toast({ title: 'Success', description: `Plugin "${variables.pluginName}" is bijgewerkt.`, variant: 'success' });
     },
     onError: (err, variables) => {
@@ -347,13 +416,14 @@ const themeEndpoints: Record<string, string> = {
   delete: 'wphubpro/v1/themes/manage/delete',
 };
 
-/** Site details (WP version, PHP version, etc.) - exported for SiteDetailSidebar */
-export const useSiteDetails = (siteId: string | undefined) => {
+/** Site details (WP version, PHP version, etc.) - exported for SiteDetailSidebar. Set enabled: false when site is off to skip bridge API calls. */
+export const useSiteDetails = (siteId: string | undefined, options?: { enabled?: boolean }) => {
   const { user } = useAuth();
+  const queryEnabled = !!siteId && (options?.enabled !== false);
   return useQuery<{ wp_version?: string; php_version?: string; [key: string]: unknown }>({
     queryKey: ['site-details', siteId],
     queryFn: () => wpProxy(siteId!, user?.$id, 'wphubpro/v1/details'),
-    enabled: !!siteId,
+    enabled: queryEnabled,
   });
 };
 
@@ -379,29 +449,35 @@ export const useManageTheme = (siteId: string | undefined) => {
 };
 
 /** Standalone hook for Bridge logs - exported for LogsTab */
-export const useSiteLogs = (siteId: string) => {
+export const useSiteLogs = (siteId: string, options?: { enabled?: boolean }) => {
   const { user } = useAuth();
+  const queryEnabled = !!siteId && (options?.enabled !== false);
   return useQuery<BridgeLogEntry[]>({
     queryKey: ['site-logs', siteId],
     queryFn: () => getSiteLogs(siteId, user?.$id),
+    enabled: queryEnabled,
     refetchInterval: 30000,
   });
 };
 
 /** Standalone hook for error log - exported for LogsTab */
-export const useSiteErrorLog = (siteId: string) => {
+export const useSiteErrorLog = (siteId: string, options?: { enabled?: boolean }) => {
   const { user } = useAuth();
+  const queryEnabled = !!siteId && (options?.enabled !== false);
   return useQuery<{ lines: string[]; file?: string; error?: string }>({
     queryKey: ['site-error-log', siteId],
     queryFn: () => getSiteErrorLog(siteId, user?.$id),
+    enabled: queryEnabled,
   });
 };
 
 /** Standalone hook for execution logs - exported for LogsTab */
-export const useSiteExecutionLogs = (siteId: string) => {
+export const useSiteExecutionLogs = (siteId: string, options?: { enabled?: boolean }) => {
+  const queryEnabled = !!siteId && (options?.enabled !== false);
   return useQuery<AppwriteExecution[]>({
     queryKey: ['site-execution-logs', siteId],
     queryFn: () => getSiteExecutionLogs(siteId),
+    enabled: queryEnabled,
   });
 };
 

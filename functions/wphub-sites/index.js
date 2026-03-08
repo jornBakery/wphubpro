@@ -16,24 +16,48 @@ function encrypt(text, key) {
   return `${iv.toString('hex')}:${encrypted.toString('hex')}:${tag.toString('hex')}`;
 }
 
-async function handleCreate(req, res, log, error, { env, endpoint, projectId, apiKey, databases }) {
+function getAuthenticatedUserId(req, env) {
+  const headers = req?.headers || {};
+  return (
+    env.APPWRITE_FUNCTION_USER_ID ||
+    env.APPWRITE_USER_ID ||
+    headers['x-appwrite-user-id'] ||
+    headers['x-appwrite-function-user-id'] ||
+    null
+  );
+}
+
+function getDataStoreConfig(env) {
+  const databaseId = env.APPWRITE_DATABASE_ID || env.DATABASE_ID;
+  const sitesCollectionId = env.SITES_COLLECTION_ID || 'sites';
+  return { databaseId, sitesCollectionId };
+}
+
+async function handleCreate(req, res, error, { env, databases }) {
   const ENCRYPTION_KEY = env.ENCRYPTION_KEY;
   if (!ENCRYPTION_KEY) {
     return fail(res, 'Function environment is not configured.', 500);
   }
 
   const payloadObj = req._parsedPayload || {};
+  const authUserId = req._authUserId;
+  const requestedUserId = (req.query?.userId || req.query?.user_id) || (payloadObj.userId || payloadObj.user_id);
   const site_url = (req.query?.site_url || req.query?.siteUrl) || (payloadObj.site_url || payloadObj.siteUrl);
   const site_name = (req.query?.site_name || req.query?.siteName) || (payloadObj.site_name || payloadObj.siteName);
-  const user_id = (req.query?.userId || req.query?.user_id) || (payloadObj.userId || payloadObj.user_id);
+  const { databaseId, sitesCollectionId } = getDataStoreConfig(env);
 
-  if (!site_url || !site_name || !user_id) {
-    return fail(res, 'Missing required fields: site_url, site_name, userId', 400);
+  if (!databaseId) return fail(res, 'APPWRITE_DATABASE_ID missing in function environment.', 500);
+  if (!authUserId) return fail(res, 'Authentication required.', 401);
+  if (requestedUserId && requestedUserId !== authUserId) {
+    return fail(res, 'Forbidden: user_id does not match authenticated user.', 403);
+  }
+  if (!site_url || !site_name) {
+    return fail(res, 'Missing required fields: site_url, site_name', 400);
   }
 
-  let username = (payloadObj.username || payloadObj.user) || (req.query?.username || req.query?.user) || null;
-  let password = payloadObj.password ?? req.query?.password ?? null;
-  let api_key = (payloadObj.api_key || payloadObj.apiKey) || (req.query?.api_key || req.query?.apiKey) || null;
+  const username = (payloadObj.username || payloadObj.user) || (req.query?.username || req.query?.user) || null;
+  const password = payloadObj.password ?? req.query?.password ?? null;
+  const api_key = (payloadObj.api_key || payloadObj.apiKey) || (req.query?.api_key || req.query?.apiKey) || null;
 
   try {
     let encryptedPassword = '';
@@ -46,16 +70,14 @@ async function handleCreate(req, res, log, error, { env, endpoint, projectId, ap
     if (username && password) {
       const url = `${site_url.replace(/\/$/, '')}/wp-json/wp/v2/plugins`;
       const auth = Buffer.from(`${username}:${password}`).toString('base64');
-      const resp = await fetch(url, { method: 'GET', headers: { 'Authorization': `Basic ${auth}` }, timeout: 10000 });
-      if (!resp.ok) {
-        return fail(res, 'WP validation failed', resp.status);
-      }
+      const resp = await fetch(url, { method: 'GET', headers: { Authorization: `Basic ${auth}` }, timeout: 10000 });
+      if (!resp.ok) return fail(res, 'WP validation failed', resp.status);
       encryptedPassword = encrypt(password, ENCRYPTION_KEY);
     }
 
     const meta_data = (payloadObj.meta_data || payloadObj.metaData) ?? null;
     const document = {
-      user_id,
+      user_id: authUserId,
       site_url,
       site_name,
       username: username || '',
@@ -64,7 +86,7 @@ async function handleCreate(req, res, log, error, { env, endpoint, projectId, ap
       ...(meta_data != null ? { meta_data } : {}),
     };
 
-    const created = await databases.createDocument('platform_db', 'sites', sdk.ID.unique(), document);
+    const created = await databases.createDocument(databaseId, sitesCollectionId, sdk.ID.unique(), document);
     return ok(res, { success: true, document: created });
   } catch (e) {
     error(e.message);
@@ -72,39 +94,25 @@ async function handleCreate(req, res, log, error, { env, endpoint, projectId, ap
   }
 }
 
-async function handleUpdate(req, res, log, error, { env, endpoint, projectId, apiKey, databases }) {
+async function handleUpdate(req, res, error, { env, databases }) {
   const ENCRYPTION_KEY = env.ENCRYPTION_KEY;
   const payloadObj = req._parsedPayload || {};
-
-  log('wphub-sites update payload: ' + JSON.stringify(payloadObj));
-
-  const siteIdFromQuery = req.query?.siteId || req.query?.site_id;
-  const siteIdFromPayload = payloadObj.siteId || payloadObj.site_id;
+  const authUserId = req._authUserId;
+  const siteId = (req.query?.siteId || req.query?.site_id) || (payloadObj.siteId || payloadObj.site_id);
   const updates = req.query?.updates || payloadObj.updates || payloadObj;
+  const requestedUserId = (req.query?.userId || req.query?.user_id) || payloadObj.userId || payloadObj.user_id || updates?.userId || updates?.user_id;
+  const { databaseId, sitesCollectionId } = getDataStoreConfig(env);
 
-  if (!updates) {
-    return fail(res, 'Missing updates payload', 400);
+  if (!databaseId) return fail(res, 'APPWRITE_DATABASE_ID missing in function environment.', 500);
+  if (!authUserId) return fail(res, 'Authentication required.', 401);
+  if (requestedUserId && requestedUserId !== authUserId) {
+    return fail(res, 'Forbidden: user_id does not match authenticated user.', 403);
   }
+  if (!siteId) return fail(res, 'Missing siteId to update', 400);
+  if (!updates) return fail(res, 'Missing updates payload', 400);
 
-  let siteId = siteIdFromQuery || siteIdFromPayload;
-  const siteUrlRaw = updates.site_url || updates.siteUrl || updates.siteUrlRaw;
-  const finalUpdates = {};
   const hasProp = (obj, key) => Object.prototype.hasOwnProperty.call(obj || {}, key);
-
-  let usernameRaw = null;
-  if (hasProp(updates, 'username')) usernameRaw = updates.username;
-  else if (hasProp(updates, 'user_login')) usernameRaw = updates.user_login;
-  else if (hasProp(updates, 'userLogin')) usernameRaw = updates.userLogin;
-
-  let siteNameRaw = null;
-  if (hasProp(updates, 'siteName')) siteNameRaw = updates.siteName;
-  else if (hasProp(updates, 'site_name')) siteNameRaw = updates.site_name;
-
-  let siteUrlCandidate = siteUrlRaw;
-  if (!siteUrlCandidate) {
-    if (hasProp(updates, 'siteUrl')) siteUrlCandidate = updates.siteUrl;
-    else if (hasProp(updates, 'site_url')) siteUrlCandidate = updates.site_url;
-  }
+  const finalUpdates = {};
 
   if (hasProp(updates, 'password')) {
     const rawPass = updates.password;
@@ -126,60 +134,28 @@ async function handleUpdate(req, res, log, error, { env, endpoint, projectId, ap
     }
   }
 
-  if (usernameRaw !== null) finalUpdates.username = usernameRaw;
-  if (siteNameRaw !== null) finalUpdates.site_name = siteNameRaw;
-  if (siteUrlCandidate !== null) finalUpdates.site_url = siteUrlCandidate;
+  if (hasProp(updates, 'username')) finalUpdates.username = updates.username;
+  else if (hasProp(updates, 'user_login')) finalUpdates.username = updates.user_login;
+  else if (hasProp(updates, 'userLogin')) finalUpdates.username = updates.userLogin;
+
+  if (hasProp(updates, 'siteName')) finalUpdates.site_name = updates.siteName;
+  else if (hasProp(updates, 'site_name')) finalUpdates.site_name = updates.site_name;
+
+  if (hasProp(updates, 'siteUrl')) finalUpdates.site_url = updates.siteUrl;
+  else if (hasProp(updates, 'site_url')) finalUpdates.site_url = updates.site_url;
+
   if (hasProp(updates, 'meta_data')) finalUpdates.meta_data = updates.meta_data;
 
-  try {
-    if (!siteId && siteUrlCandidate) {
-      const decodedUrl = typeof siteUrlCandidate === 'string' ? decodeURIComponent(siteUrlCandidate) : siteUrlCandidate;
-      log('Searching for site by URL: ' + decodedUrl);
-      const userId = payloadObj.userId || payloadObj.user_id || updates?.userId || updates?.user_id;
-      let list;
-      try {
-        if (userId) {
-          list = await databases.listDocuments('platform_db', 'sites', [sdk.Query.equal('user_id', userId)]);
-        } else {
-          list = await databases.listDocuments('platform_db', 'sites', []);
-        }
-      } catch (e) {
-        log('Error listing documents: ' + e.message);
-        list = { total: 0, documents: [] };
-      }
-
-      const normalize = (u) => {
-        try { return String(u).replace(/^https?:\/\//, '').replace(/\/$/, '').toLowerCase(); } catch { return String(u); }
-      };
-
-      const target = normalize(decodedUrl);
-      const found = (list?.documents || []).find(d => normalize((d.site_url || d.siteUrl || '')) === target);
-      if (found) {
-        siteId = found.$id;
-        log('Found existing site id by normalized URL: ' + siteId);
-      } else {
-        const createData = Object.assign({}, finalUpdates);
-        if (!createData.site_url) createData.site_url = decodedUrl;
-        const created = await databases.createDocument('platform_db', 'sites', sdk.ID.unique(), createData);
-        log('Created new site: ' + JSON.stringify(created));
-        return ok(res, { success: true, document: created });
-      }
-    }
-  } catch (e) {
-    error(e.message);
-    return fail(res, e.message, 500);
+  if (!finalUpdates || Object.keys(finalUpdates).length === 0) {
+    return fail(res, 'No update fields provided', 400);
   }
 
-  log('Updating site id: ' + siteId + ' with: ' + JSON.stringify(finalUpdates));
-
   try {
-    if (!siteId) return fail(res, 'Missing siteId to update', 400);
-    if (!finalUpdates || Object.keys(finalUpdates).length === 0) {
-      log('No updates provided for siteId: ' + siteId);
-      return fail(res, 'No update fields provided', 400);
+    const existing = await databases.getDocument(databaseId, sitesCollectionId, siteId);
+    if (existing?.user_id !== authUserId) {
+      return fail(res, 'Forbidden: cannot update a site owned by another user.', 403);
     }
-
-    const updated = await databases.updateDocument('platform_db', 'sites', siteId, finalUpdates);
+    const updated = await databases.updateDocument(databaseId, sitesCollectionId, siteId, finalUpdates);
     return ok(res, { success: true, document: updated });
   } catch (e) {
     error(e.message);
@@ -191,9 +167,7 @@ module.exports = async ({ req, res, log, error }) => {
   const env = getEnv(req);
   const { endpoint, projectId, apiKey, missing } = getAppwriteConfig(req);
 
-  if (missing.length > 0) {
-    return fail(res, 'Function environment is not configured.', 500);
-  }
+  if (missing.length > 0) return fail(res, 'Function environment is not configured.', 500);
 
   const client = createClient(sdk, { endpoint, projectId, apiKey });
   const databases = new sdk.Databases(client);
@@ -201,19 +175,15 @@ module.exports = async ({ req, res, log, error }) => {
   let payloadObj = {};
   try {
     payloadObj = parsePayload(req);
-  } catch (parseErr) {
+  } catch (_parseErr) {
     return fail(res, 'Invalid request body. JSON expected.', 400);
   }
-  req._parsedPayload = payloadObj;
 
+  req._parsedPayload = payloadObj;
+  req._authUserId = getAuthenticatedUserId(req, env);
   const action = (req.query?.action || payloadObj.action || '').toLowerCase();
 
-  if (action === 'create') {
-    return handleCreate(req, res, log, error, { env, endpoint, projectId, apiKey, databases });
-  }
-  if (action === 'update') {
-    return handleUpdate(req, res, log, error, { env, endpoint, projectId, apiKey, databases });
-  }
-
+  if (action === 'create') return handleCreate(req, res, error, { env, databases });
+  if (action === 'update') return handleUpdate(req, res, error, { env, databases });
   return fail(res, 'Invalid or missing action. Use action: "create" or "update".', 400);
 };

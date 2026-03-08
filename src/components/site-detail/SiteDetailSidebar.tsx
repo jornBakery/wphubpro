@@ -11,8 +11,8 @@ import Tooltip from '@mui/material/Tooltip';
 
 import SoftBox from 'components/SoftBox';
 import SoftTypography from 'components/SoftTypography';
-import { StatusIcon, HealthBadge } from '../sites/SitesTableCells';
-import { useCheckSiteHealth } from '../../domains/sites';
+import { StatusIcon, HealthBadge, SiteEnabledToggle } from '../sites/SitesTableCells';
+import { useCheckSiteHealth, useUpdateSite } from '../../domains/sites';
 import { useSiteDetails } from '../../hooks/useWordPress';
 import type { Site } from '../../types';
 
@@ -25,13 +25,29 @@ interface SiteDetailSidebarProps {
   onRemove: () => void;
 }
 
+function parseSiteMeta(site: Site): Record<string, unknown> {
+  if (!site.meta_data) return {};
+  try {
+    const parsed = JSON.parse(site.meta_data);
+    return typeof parsed === 'object' && parsed !== null ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
 const SiteDetailSidebar: React.FC<SiteDetailSidebarProps> = ({
   site,
   onEdit,
   onRemove,
 }) => {
   const checkHealth = useCheckSiteHealth(site.$id);
-  const { data: details } = useSiteDetails(site.$id);
+  const updateSite = useUpdateSite();
+  const { data: details } = useSiteDetails(site.$id, { enabled: site.enabled });
+  const handleToggleEnabled = () => {
+    const meta = parseSiteMeta(site);
+    meta.enabled = !(site.enabled !== false);
+    updateSite.mutate({ siteId: site.$id, meta_data: JSON.stringify(meta) });
+  };
   const siteName = (site as any).siteName || (site as any).site_name || 'Naamloze site';
   const siteUrl = (site as any).siteUrl || (site as any).site_url || '';
   const fullUrl = siteUrl && !siteUrl.startsWith('http') ? `https://${siteUrl}` : siteUrl;
@@ -64,11 +80,11 @@ const SiteDetailSidebar: React.FC<SiteDetailSidebarProps> = ({
                   <Icon sx={{ fontSize: 18, color: 'white !important' }}>delete</Icon>
                 </IconButton>
               </Tooltip>
-              <Tooltip title="Verbinding controleren" placement="top">
+              <Tooltip title={site.enabled === false ? 'Zet site aan om te controleren' : 'Verbinding controleren'} placement="top">
                 <IconButton
                   size="small"
                   onClick={() => checkHealth.mutate()}
-                  disabled={checkHealth.isPending}
+                  disabled={checkHealth.isPending || site.enabled === false}
                   sx={{
                     width: 32,
                     height: 32,
@@ -136,6 +152,19 @@ const SiteDetailSidebar: React.FC<SiteDetailSidebarProps> = ({
               }}
             >
               <StatusIcon value={site.status} />
+            </SoftBox>
+            <SoftBox
+              sx={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 36,
+                height: 36,
+                borderRadius: '50%',
+                background: 'white',
+              }}
+            >
+              <SiteEnabledToggle enabled={site.enabled !== false} onToggle={handleToggleEnabled} />
             </SoftBox>
             <HealthBadge value={site.healthStatus} />
           </SoftBox>

@@ -69,6 +69,7 @@ export default function ResponsiveSitesTable({
           <ActionCell
             siteId={site.$id}
             siteUrl={site.siteUrl || '#'}
+            site={site}
             showPinButton={showPinButton}
             isPinned={isPinned(site.$id)}
             onTogglePin={onTogglePin ? () => onTogglePin(site.$id) : undefined}
@@ -149,6 +150,7 @@ export default function ResponsiveSitesTable({
                       <ActionCell
                         siteId={site.$id}
                         siteUrl={site.siteUrl || '#'}
+                        site={site}
                         showPinButton={showPinButton}
                         isPinned={isPinned(site.$id)}
                         onTogglePin={onTogglePin ? () => onTogglePin(site.$id) : undefined}

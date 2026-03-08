@@ -18,8 +18,8 @@ interface SiteDetailsTabProps {
 
 const SiteDetailsTab: React.FC<SiteDetailsTabProps> = ({ siteId, onTabChange }) => {
   const { data: site } = useSite(siteId);
-  const { data: plugins } = usePlugins(siteId);
-  const { data: themes } = useThemes(siteId);
+  const { data: plugins } = usePlugins(siteId, { enabled: site?.enabled });
+  const { data: themes } = useThemes(siteId, { enabled: site?.enabled });
 
   const pluginsNeedingUpdate = plugins?.filter((p) => p.update != null && String(p.update).trim() !== '').length ?? 0;
   const themesNeedingUpdate = themes?.filter((t) => t.update != null && String(t.update ?? '').trim() !== '').length ?? 0;

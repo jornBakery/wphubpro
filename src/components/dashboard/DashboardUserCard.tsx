@@ -11,6 +11,7 @@ import Icon from '@mui/material/Icon';
 import { Link } from 'react-router-dom';
 import { avatars } from '../../services/appwrite';
 import { User } from '../../types';
+import { ROUTE_PATHS } from '../../config/routePaths';
 
 interface DashboardUserCardProps {
   user: User | null;
@@ -70,11 +71,11 @@ const DashboardUserCard: React.FC<DashboardUserCardProps> = ({ user }) => {
           </SoftBox>
         </SoftBox>
         <SoftBox display="flex" gap={1}>
-          <SoftButton variant="gradient" color="info" size="small" component={Link} to="/subscription">
+          <SoftButton variant="gradient" color="info" size="small" component={Link} to={ROUTE_PATHS.ACCOUNT_PROFILE}>
             <Icon sx={{ mr: 0.5, fontSize: 16 }}>person</Icon>
             Profiel
           </SoftButton>
-          <SoftButton variant="outlined" color="info" size="small" component={Link} to="/subscription">
+          <SoftButton variant="outlined" color="info" size="small" component={Link} to={ROUTE_PATHS.ACCOUNT_EDIT}>
             <Icon sx={{ mr: 0.5, fontSize: 16 }}>edit</Icon>
             Bewerken
           </SoftButton>

@@ -1,0 +1,66 @@
+---
+description: Material UI (MUI) v5 best practices and conventions
+globs: "**/*.{tsx,jsx}"
+alwaysApply: false
+---
+
+# Material UI Best Practices
+
+## Imports
+
+```tsx
+// ✅ GOOD - Direct named imports from @mui/material
+import Card from '@mui/material/Card';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import Icon from '@mui/material/Icon';
+
+// ✅ GOOD - Icons from @mui/icons-material when using specific icons
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+
+// ❌ BAD - Barrel imports (hurts tree-shaking)
+import { Card, Table } from '@mui/material';
+```
+
+## Styling
+
+- Prefer `sx` prop for one-off styles; use `styled()` for reusable styled components
+- Use theme values via `sx`: `sx={{ color: 'primary.main', typography: 'body1' }}`
+- For custom theme tokens, reference `theme.palette`, `theme.typography`, `theme.spacing`
+
+```tsx
+// ✅ GOOD - sx for inline styles
+<Card sx={{ p: 2, borderRadius: 2 }}>
+  <Typography variant="body1" color="text.secondary">
+    Content
+  </Typography>
+</Card>
+
+// ✅ GOOD - styled() for reusable components
+import { styled } from '@mui/material/styles';
+const StyledCard = styled(Card)(({ theme }) => ({
+  borderRadius: theme.shape.borderRadius * 2,
+}));
+```
+
+## Project Conventions
+
+- Use **Soft UI** components when available: `SoftBox`, `SoftTypography`, `SoftButton`, `SoftInput`, etc.
+- Use `Icon` from `@mui/material/Icon` with `children` for icon names (e.g. `"edit"`, `"delete"`) when using Material Icons font
+- Use `@mui/icons-material` for SVG icons when you need a specific icon component
+
+## Layout & Spacing
+
+- Use `Box` for layout; prefer `sx` over `style` for consistency with theme
+- Use `theme.spacing()` or numeric shorthand: `sx={{ p: 2, mt: 1 }}` (1 = 8px by default)
+
+## Tables
+
+- Use `TableContainer` > `Table` > `TableHead`/`TableBody` > `TableRow` > `TableCell`
+- Use `Collapse` for expandable rows
+
+## Dialogs
+
+- Use `Dialog`, `DialogTitle`, `DialogContent`, `DialogActions` for modals
+- Provide `aria-labelledby` and `aria-describedby` for accessibility when needed

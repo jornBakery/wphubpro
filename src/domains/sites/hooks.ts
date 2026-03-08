@@ -127,12 +127,11 @@ export const useAddSite = () => {
         site_name: newSiteData.siteName,
         username: newSiteData.username,
         password: newSiteData.password || '',
-        userId: user.$id,
       };
       if (newSiteData.api_key) payload.api_key = newSiteData.api_key;
       if (newSiteData.meta_data !== undefined) payload.meta_data = newSiteData.meta_data;
 
-      const path = `/?userId=${user.$id}`;
+      const path = '/';
       const parsed = await executeFunction<{ document?: Site }>('wphub-sites', payload, { path });
       const rawSite = parsed && parsed.document ? parsed.document : parsed;
       return mapSiteDocumentToSite(rawSite as any);
@@ -211,8 +210,8 @@ export const useUpdateSite = () => {
       }
 
       // Use wphub-sites for sensitive data (password/username)
-      const payload = { action: 'update', siteId, updates, userId: user.$id };
-      const path = `/?userId=${user.$id}`;
+      const payload = { action: 'update', siteId, updates };
+      const path = '/';
       const parsed = await executeFunction<{ document?: any }>('wphub-sites', payload, { path });
       const rawSite = parsed && parsed.document ? parsed.document : parsed;
       return mapSiteDocumentToSite(rawSite as any);
