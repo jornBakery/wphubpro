@@ -1,6 +1,6 @@
 import { functions } from './appwrite';
 
-const STRIPE_PORTAL_FUNCTION_ID = 'stripe-core';
+const STRIPE_PORTAL_FUNCTION_ID = 'stripe-portal-link';
 
 /**
  * Calls an Appwrite function to create a Stripe Billing Portal session
