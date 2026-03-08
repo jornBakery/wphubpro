@@ -134,9 +134,9 @@ interface LogsTabProps {
   siteId: string;
 }
 
-function BridgeLogsPanel({ siteId }: { siteId: string }) {
-  const { data: logs, isLoading, isError, error, refetch } = useSiteLogs(siteId);
+function BridgeLogsPanel({ siteId, siteEnabled }: { siteId: string; siteEnabled?: boolean }) {
   const { data: site } = useSite(siteId);
+  const { data: logs, isLoading, isError, error, refetch } = useSiteLogs(siteId, { enabled: siteEnabled });
 
   if (isLoading) {
     return (
@@ -379,8 +379,8 @@ const ErrorLogRow: React.FC<ErrorLogRowProps> = ({ entry, onRollbackPlugin, roll
   );
 };
 
-function ErrorLogsPanel({ siteId }: { siteId: string }) {
-  const { data, isLoading, isError, error, refetch } = useSiteErrorLog(siteId);
+function ErrorLogsPanel({ siteId, siteEnabled }: { siteId: string; siteEnabled?: boolean }) {
+  const { data, isLoading, isError, error, refetch } = useSiteErrorLog(siteId, { enabled: siteEnabled });
   const [recoveryLoading, setRecoveryLoading] = useState(false);
   const [fatalRecoveryLog, setFatalRecoveryLog] = useState<any>(null);
   const [recoveryError, setRecoveryError] = useState<string | null>(null);
@@ -641,8 +641,8 @@ const ExecutionLogRow: React.FC<ExecutionLogRowProps> = ({ execution }) => {
   );
 };
 
-function ExecutionLogsPanel({ siteId }: { siteId: string }) {
-  const { data: executions, isLoading, isError, error, refetch } = useSiteExecutionLogs(siteId);
+function ExecutionLogsPanel({ siteId, siteEnabled }: { siteId: string; siteEnabled?: boolean }) {
+  const { data: executions, isLoading, isError, error, refetch } = useSiteExecutionLogs(siteId, { enabled: siteEnabled });
 
   if (isLoading) {
     return (
@@ -725,7 +725,9 @@ function ExecutionLogsPanel({ siteId }: { siteId: string }) {
 
 const LogsTab: React.FC<LogsTabProps> = ({ siteId }) => {
   const [subTab, setSubTab] = useState(0);
+  const { data: site } = useSite(siteId);
   const { executeRecovery } = useWordPress();
+  const siteEnabled = site?.enabled !== false;
 
   return (
     <Card>
@@ -770,7 +772,7 @@ const LogsTab: React.FC<LogsTabProps> = ({ siteId }) => {
           '&::-webkit-scrollbar': { display: 'none' },
         }}
       >
-        {subTab === 0 && <BridgeLogsPanel siteId={siteId} />}
+        {subTab === 0 && <BridgeLogsPanel siteId={siteId} siteEnabled={siteEnabled} />}
       </Box>
       <Box
         role="tabpanel"
@@ -785,7 +787,7 @@ const LogsTab: React.FC<LogsTabProps> = ({ siteId }) => {
           '&::-webkit-scrollbar': { display: 'none' },
         }}
       >
-        {subTab === 1 && <ErrorLogsPanel siteId={siteId} />}
+        {subTab === 1 && <ErrorLogsPanel siteId={siteId} siteEnabled={siteEnabled} />}
       </Box>
       <Box
         role="tabpanel"
@@ -800,7 +802,7 @@ const LogsTab: React.FC<LogsTabProps> = ({ siteId }) => {
           '&::-webkit-scrollbar': { display: 'none' },
         }}
       >
-        {subTab === 2 && <ExecutionLogsPanel siteId={siteId} />}
+        {subTab === 2 && <ExecutionLogsPanel siteId={siteId} siteEnabled={siteEnabled} />}
       </Box>
     </Card>
   );

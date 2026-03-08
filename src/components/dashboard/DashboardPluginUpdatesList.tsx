@@ -1,19 +1,14 @@
 /**
- * Dashboard plugin updates list - all available updates across sites (table)
- * Columns: Plugin name, Latest version, Release date, Sites count (expandable)
- * Expanded: site name, installed version, Update button
+ * Dashboard plugin updates list - all available updates across sites
+ * Shows plugin name, latest version, release date, sites count
+ * Clicking sites count expands list of sites with Update button
  */
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Card from '@mui/material/Card';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
 import Collapse from '@mui/material/Collapse';
 import Icon from '@mui/material/Icon';
+import IconButton from '@mui/material/IconButton';
 import SoftBox from 'components/SoftBox';
 import SoftTypography from 'components/SoftTypography';
 import SoftButton from 'components/SoftButton';
@@ -77,148 +72,140 @@ const DashboardPluginUpdatesList: React.FC<DashboardPluginUpdatesListProps> = ({
         {isLoading ? (
           <SoftTypography variant="caption" color="white">Laden...</SoftTypography>
         ) : (
-          <TableContainer sx={{ maxHeight: 400 }}>
-            <Table size="small" stickyHeader>
-              <TableHead>
-                <TableRow>
-                  <TableCell sx={{ color: 'white', fontWeight: 600, fontSize: '0.75rem', borderColor: 'rgba(255,255,255,0.2)', py: 1 }}>Plugin</TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 600, fontSize: '0.75rem', borderColor: 'rgba(255,255,255,0.2)', py: 1 }}>Nieuwste versie</TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 600, fontSize: '0.75rem', borderColor: 'rgba(255,255,255,0.2)', py: 1 }}>Release</TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 600, fontSize: '0.75rem', borderColor: 'rgba(255,255,255,0.2)', py: 1, width: 80 }}>Sites</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {pluginUpdatesList.map((item) => (
-                  <PluginUpdateTableRow
-                    key={item.pluginSlug}
-                    item={item}
-                    expanded={expanded.has(item.pluginSlug)}
-                    onToggle={() => toggleExpanded(item.pluginSlug)}
-                  />
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+          <SoftBox display="flex" flexDirection="column" gap={1} sx={{ maxHeight: 400, overflowY: 'auto' }}>
+            {pluginUpdatesList.map((item) => (
+              <PluginUpdateRow
+                key={item.pluginSlug}
+                item={item}
+                expanded={expanded.has(item.pluginSlug)}
+                onToggle={() => toggleExpanded(item.pluginSlug)}
+              />
+            ))}
+          </SoftBox>
         )}
       </SoftBox>
     </Card>
   );
 };
 
-interface PluginUpdateTableRowProps {
+interface PluginUpdateRowProps {
   item: AggregatedPluginUpdate;
   expanded: boolean;
   onToggle: () => void;
 }
 
-const PluginUpdateTableRow: React.FC<PluginUpdateTableRowProps> = ({ item, expanded, onToggle }) => {
+const PluginUpdateRow: React.FC<PluginUpdateRowProps> = ({ item, expanded, onToggle }) => {
   const updatePlugin = useUpdatePlugin();
 
   return (
-    <>
-      <TableRow
-        sx={{
-          cursor: 'pointer',
-          '&:hover': { backgroundColor: 'rgba(255,255,255,0.08)' },
-          '& > td': { borderColor: 'rgba(255,255,255,0.2)', color: 'white', py: 1.5 },
-        }}
+    <SoftBox
+      sx={{
+        border: '1px solid rgba(255,255,255,0.3)',
+        borderRadius: 1,
+        overflow: 'hidden',
+      }}
+    >
+      <SoftBox
+        display="flex"
+        alignItems="center"
+        justifyContent="space-between"
+        flexWrap="wrap"
+        gap={1}
+        p={1.5}
+        sx={{ cursor: 'pointer' }}
         onClick={onToggle}
       >
-        <TableCell>
+        <SoftBox flex={1} minWidth={0}>
           <SoftTypography variant="button" fontWeight="medium" color="white">
             {item.name}
           </SoftTypography>
-        </TableCell>
-        <TableCell>
-          <SoftTypography variant="caption" color="white" sx={{ opacity: 0.95 }}>
-            v{item.latestVersion}
-          </SoftTypography>
-        </TableCell>
-        <TableCell>
-          <SoftTypography variant="caption" color="white" sx={{ opacity: 0.9 }}>
-            {formatReleaseDate(item.releaseDate)}
-          </SoftTypography>
-        </TableCell>
-        <TableCell onClick={(e) => e.stopPropagation()}>
-          <SoftBox
-            display="inline-flex"
-            alignItems="center"
-            gap={0.5}
-            sx={{
-              px: 1.5,
-              py: 0.5,
-              borderRadius: 1,
-              background: orangeGradient,
-              cursor: 'pointer',
-            }}
-            onClick={onToggle}
-          >
-            <SoftTypography variant="caption" fontWeight="bold" color="white">
-              {item.sites.length}
+          <SoftBox display="flex" alignItems="center" gap={2} mt={0.25}>
+            <SoftTypography variant="caption" color="white" sx={{ opacity: 0.9 }}>
+              v{item.latestVersion}
             </SoftTypography>
-            <Icon sx={{ fontSize: 18, color: 'white', transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)' }}>
-              expand_more
-            </Icon>
+            <SoftTypography variant="caption" color="white" sx={{ opacity: 0.8 }}>
+              {formatReleaseDate(item.releaseDate)}
+            </SoftTypography>
           </SoftBox>
-        </TableCell>
-      </TableRow>
-      <TableRow>
-        <TableCell colSpan={4} sx={{ borderBottom: 'none', py: 0, backgroundColor: 'rgba(0,0,0,0.15)' }}>
-          <Collapse in={expanded} timeout="auto" unmountOnExit>
-            <Table size="small" sx={{ '& .MuiTableCell-root': { borderColor: 'rgba(255,255,255,0.15)', color: 'white' } }}>
-              <TableHead>
-                <TableRow>
-                  <TableCell sx={{ color: 'white', fontWeight: 600, fontSize: '0.7rem', py: 1, pl: 4 }}>Site</TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 600, fontSize: '0.7rem', py: 1 }}>Geïnstalleerd</TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 600, fontSize: '0.7rem', py: 1, width: 90 }}></TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {item.sites.map((s) => (
-                  <TableRow key={s.siteId} sx={{ '& > td': { py: 1 } }}>
-                    <TableCell sx={{ pl: 4 }}>
-                      <Link to={`/sites/${s.siteId}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                        <SoftTypography variant="caption" fontWeight="medium" color="white" sx={{ '&:hover': { textDecoration: 'underline' } }}>
-                          {s.siteName}
-                        </SoftTypography>
-                      </Link>
-                    </TableCell>
-                    <TableCell>
-                      <SoftTypography variant="caption" color="white" sx={{ opacity: 0.9 }}>
-                        v{s.installedVersion}
-                      </SoftTypography>
-                    </TableCell>
-                    <TableCell>
-                      <SoftButton
-                        variant="gradient"
-                        color="info"
-                        size="small"
-                        onClick={() =>
-                          updatePlugin.mutate({
-                            siteId: s.siteId,
-                            pluginFile: s.pluginFile,
-                            pluginName: item.name,
-                          })
-                        }
-                        disabled={updatePlugin.isPending}
-                        sx={{
-                          background: 'white',
-                          color: '#4F5482',
-                          minWidth: 80,
-                          '&:hover': { background: 'rgba(255,255,255,0.9)' },
-                        }}
-                      >
-                        Update
-                      </SoftButton>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </Collapse>
-        </TableCell>
-      </TableRow>
-    </>
+        </SoftBox>
+        <SoftBox
+          display="inline-flex"
+          alignItems="center"
+          gap={0.5}
+          sx={{
+            px: 1.5,
+            py: 0.5,
+            borderRadius: 1,
+            background: orangeGradient,
+            cursor: 'pointer',
+          }}
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggle();
+          }}
+        >
+          <SoftTypography variant="caption" fontWeight="bold" color="white">
+            {item.sites.length} {item.sites.length === 1 ? 'site' : 'sites'}
+          </SoftTypography>
+          <Icon sx={{ fontSize: 18, color: 'white', transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+            expand_more
+          </Icon>
+        </SoftBox>
+      </SoftBox>
+      <Collapse in={expanded}>
+        <SoftBox
+          px={1.5}
+          pb={1.5}
+          pt={0}
+          borderTop="1px solid rgba(255,255,255,0.2)"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {item.sites.map((s) => (
+            <SoftBox
+              key={s.siteId}
+              display="flex"
+              alignItems="center"
+              justifyContent="space-between"
+              py={1}
+              borderBottom="1px solid rgba(255,255,255,0.1)"
+              sx={{ '&:last-child': { borderBottom: 'none' } }}
+            >
+              <SoftBox flex={1} minWidth={0}>
+                <Link to={`/sites/${s.siteId}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                  <SoftTypography variant="caption" fontWeight="medium" color="white" sx={{ '&:hover': { textDecoration: 'underline' } }}>
+                    {s.siteName}
+                  </SoftTypography>
+                </Link>
+                <SoftTypography variant="caption" color="white" display="block" sx={{ opacity: 0.8, fontSize: '0.7rem' }}>
+                  Geïnstalleerd: v{s.installedVersion}
+                </SoftTypography>
+              </SoftBox>
+              <SoftButton
+                variant="gradient"
+                color="info"
+                size="small"
+                onClick={() =>
+                  updatePlugin.mutate({
+                    siteId: s.siteId,
+                    pluginFile: s.pluginFile,
+                    pluginName: item.name,
+                  })
+                }
+                disabled={updatePlugin.isPending}
+                sx={{
+                  background: 'white',
+                  color: '#4F5482',
+                  minWidth: 80,
+                  '&:hover': { background: 'rgba(255,255,255,0.9)' },
+                }}
+              >
+                Update
+              </SoftButton>
+            </SoftBox>
+          ))}
+        </SoftBox>
+      </Collapse>
+    </SoftBox>
   );
 };
 

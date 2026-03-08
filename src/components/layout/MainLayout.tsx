@@ -3,9 +3,27 @@
  */
 import React, { useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
+import { Theme } from '@mui/material/styles';
 import SoftBox from 'components/SoftBox';
 
-import Sidenav from 'examples/Sidenav';
+type SoftUITheme = Theme & {
+  functions: {
+    pxToRem: (value: number) => string;
+    [key: string]: unknown;
+  };
+};
+
+import SidenavJS from 'examples/Sidenav';
+
+const Sidenav = SidenavJS as React.ComponentType<{
+  color?: string;
+  brand?: string;
+  brandName: string;
+  userRoutes?: object[];
+  adminRoutes?: object[];
+  isAdmin?: boolean;
+  routes?: object[];
+}>;
 import { useSoftUIController, setLayout } from 'context';
 
 import WPHubNavbar from './WPHubNavbar';
@@ -18,7 +36,10 @@ import Toaster from '../ui/Toaster';
 import brand from 'assets/images/logo-ct.png';
 
 const MainLayout: React.FC = () => {
-  const [controller, dispatch] = useSoftUIController();
+  const [controller, dispatch] = useSoftUIController() as [
+    { miniSidenav: boolean },
+    React.Dispatch<{ type: string; value: unknown }>,
+  ];
   const location = useLocation();
   const isSiteDetailPage = /^\/sites\/[^/]+$/.test(location.pathname);
   const { miniSidenav } = controller;
@@ -43,7 +64,7 @@ const MainLayout: React.FC = () => {
       />
       <PageBreadcrumbProvider>
         <SoftBox
-          sx={({ breakpoints, transitions, functions: { pxToRem } }) => ({
+          sx={({ breakpoints, transitions, functions: { pxToRem } }: SoftUITheme) => ({
             display: 'flex',
             flexDirection: 'column',
             minHeight: '100vh',
@@ -69,7 +90,7 @@ const MainLayout: React.FC = () => {
             pt={1}
             pb={3}
             px={3}
-            sx={({ breakpoints }) => ({
+            sx={({ breakpoints }: SoftUITheme) => ({
               flex: 1,
               display: 'flex',
               flexDirection: 'column',
