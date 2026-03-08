@@ -208,6 +208,8 @@
             "timeout": 15,
             "commands": "npm install",
             "scopes": [
+                "databases.read",
+                "documents.read",
                 "documents.write",
                 "users.read"
             ],
@@ -464,6 +466,8 @@
             "timeout": 15,
             "commands": "npm install",
             "scopes": [
+                "databases.read",
+                "documents.read",
                 "documents.write",
                 "users.read"
             ],
