@@ -70,6 +70,7 @@ import checkbox from "assets/theme/components/form/checkbox";
 import radio from "assets/theme/components/form/radio";
 import autocomplete from "assets/theme/components/form/autocomplete";
 import input from "assets/theme/components/form/input";
+import inputStandard from "assets/theme/components/form/inputStandard";
 import flatpickr from "assets/theme/components/flatpickr";
 import swal from "assets/theme/components/swal";
 import container from "assets/theme/components/container";
@@ -144,7 +145,7 @@ export default createTheme({
     MuiCheckbox: { ...checkbox },
     MuiRadio: { ...radio },
     MuiAutocomplete: { ...autocomplete },
-    MuiInput: { ...input },
+    MuiInput: { ...inputStandard },
     MuiOutlinedInput: { ...input },
     MuiFilledInput: { ...input },
     MuiPopover: { ...popover },
@@ -157,5 +158,20 @@ export default createTheme({
     MuiDialogContent: { ...dialogContent },
     MuiDialogContentText: { ...dialogContentText },
     MuiDialogActions: { ...dialogActions },
+    MuiFormControl: {
+      styleOverrides: {
+        root: {
+          display: 'flex',
+          flexDirection: 'column',
+          gap: pxToRem(8),
+        },
+      },
+    },
+    MuiTextField: {
+      defaultProps: {
+        variant: 'standard',
+        InputLabelProps: { shrink: true },
+      },
+    },
   },
 });

@@ -46,18 +46,23 @@ Query.limit(0)  // Appwrite rejects
 
 ## Cloud Functions (node-appwrite)
 
-- Use `createClient(sdk, { endpoint, projectId, apiKey })` from `_shared/appwrite.js`
-- Use `getAppwriteConfig(req)` from `_shared/env.js` for endpoint, projectId, apiKey
+- Appwrite cannot use `_shared` imports – inline helpers in each function: `parsePayload`, `createClient`, `ok`, `fail`
+- Use global env vars: `process.env.APPWRITE_ENDPOINT`, `process.env.APPWRITE_PROJECT_ID`, `process.env.APPWRITE_API_KEY` (Appwrite also injects `APPWRITE_FUNCTION_*` variants)
 - User ID: `process.env.APPWRITE_FUNCTION_USER_ID` or `req.headers["x-appwrite-user-id"]`
 - Parse payload: `req.payload` (string or object) or `req.body` / `req.bodyRaw` depending on Appwrite version
 - Return `res.json({ success, ... }, statusCode)`
 
 ```js
-// ✅ GOOD
-const { createClient } = require('./_shared/appwrite');
-const { getAppwriteConfig } = require('./_shared/env');
-const { endpoint, projectId, apiKey, missing } = getAppwriteConfig(req);
-if (missing.length) return res.json({ success: false, message: 'Appwrite config missing' }, 500);
+// ✅ GOOD – inline helpers (no _shared)
+function createClient(sdkLib, { endpoint, projectId, apiKey }) {
+  const client = new sdkLib.Client().setEndpoint(endpoint).setProject(projectId);
+  if (apiKey) client.setKey(apiKey);
+  return client;
+}
+const endpoint = process.env.APPWRITE_ENDPOINT || process.env.APPWRITE_FUNCTION_ENDPOINT;
+const projectId = process.env.APPWRITE_PROJECT_ID || process.env.APPWRITE_FUNCTION_PROJECT_ID;
+const apiKey = process.env.APPWRITE_API_KEY || process.env.APPWRITE_FUNCTION_API_KEY || process.env.APPWRITE_KEY;
+if (!endpoint || !projectId || !apiKey) return res.json({ success: false, message: 'Appwrite config missing' }, 500);
 const client = createClient(sdk, { endpoint, projectId, apiKey });
 const databases = new sdk.Databases(client);
 ```

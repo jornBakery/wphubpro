@@ -1,7 +1,7 @@
 import { defineConfig, transformWithEsbuild } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
-import path from 'path'
+import * as path from 'path'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -27,6 +27,8 @@ export default defineConfig({
   resolve: {
     dedupe: ['react', 'react-dom', 'react/jsx-runtime', 'react/jsx-dev-runtime'],
     alias: {
+      react: path.resolve(__dirname, './node_modules/react'),
+      'react-dom': path.resolve(__dirname, './node_modules/react-dom'),
       assets: path.resolve(__dirname, './src/assets'),
       components: path.resolve(__dirname, './src/components'),
       examples: path.resolve(__dirname, './src/examples'),
@@ -37,9 +39,11 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     emptyOutDir: true,
+    sourcemap: false, // Avoid 500s: browser tries to fetch raw .tsx from prod URL, which aren't deployed
   },
   optimizeDeps: {
     include: ['react', 'react-dom', 'react/jsx-runtime', 'react/jsx-dev-runtime'],
+    force: true,
     esbuildOptions: {
       loader: { '.js': 'jsx' },
     },

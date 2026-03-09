@@ -3,10 +3,10 @@
  * 4 cards displayed above the sites table
  */
 import React from 'react';
-import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Grid from '@mui/material/Grid';
-import Typography from '@mui/material/Typography';
+import SoftBox from 'components/SoftBox';
+import SoftTypography from 'components/SoftTypography';
 
 import { Site } from '../../types';
 
@@ -59,10 +59,6 @@ const numberCircleCard4Sx = {
 const DashboardHealthCards: React.FC<DashboardHealthCardsProps> = ({
   sites,
   sitesNeedingUpdatesCount = 0,
-  pluginUpdatesCount = 0,
-  pluginTotalCount = 0,
-  themeUpdatesCount = 0,
-  themeTotalCount = 0,
 }) => {
   const total = sites.length;
   const connectedCount = sites.filter((s) => s.status === 'connected').length;
@@ -83,76 +79,76 @@ const DashboardHealthCards: React.FC<DashboardHealthCardsProps> = ({
       {/* Card 1: Updates */}
       <Grid item xs={12} sm={6} lg={3}>
         <Card sx={{ minHeight: 145, background: blueGradient, position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', '& .MuiTypography-root': { color: 'white !important' } }}>
-          <Box p={2} flex={1} display="flex" flexDirection="column" alignItems="center" gap={1.5} color="white" position="relative" textAlign="center">
-            <Typography variant="button" fontWeight="bold" color="white" sx={{ fontSize: '0.7rem', textTransform: 'uppercase' }}>
+          <SoftBox p={2} flex={1} display="flex" flexDirection="column" alignItems="center" gap={1.5} color="white" position="relative" textAlign="center">
+            <SoftTypography variant="button" fontWeight="bold" color="white" sx={{ fontSize: '0.7rem', textTransform: 'uppercase' }}>
               Updates
-            </Typography>
-            <Box sx={numberCircleSx}>
-              <Typography variant="h6" fontWeight="bold" color="#ea580c" sx={{ fontFamily: '"Inter", sans-serif', fontVariantNumeric: 'tabular-nums' }}>
+            </SoftTypography>
+            <SoftBox sx={numberCircleSx}>
+              <SoftTypography variant="h6" fontWeight="bold" color="#ea580c" sx={{ fontFamily: '"Inter", sans-serif', fontVariantNumeric: 'tabular-nums' }}>
                 {sitesNeedingUpdatesCount}/{connectedCount}
-              </Typography>
-            </Box>
-            <Typography variant="caption" color="white" sx={{ opacity: 0.95, fontSize: '0.7rem' }}>
+              </SoftTypography>
+            </SoftBox>
+            <SoftTypography variant="caption" color="white" sx={{ opacity: 0.95, fontSize: '0.7rem' }}>
               connected sites need an update.
-            </Typography>
-          </Box>
+            </SoftTypography>
+          </SoftBox>
         </Card>
       </Grid>
 
       {/* Card 2: Healthy sites */}
       <Grid item xs={12} sm={6} lg={3}>
         <Card sx={{ minHeight: 145, background: blueGradient, position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', '& .MuiTypography-root': { color: 'white !important' } }}>
-          <Box p={2} flex={1} display="flex" flexDirection="column" alignItems="center" gap={1.5} color="white" position="relative" textAlign="center">
-            <Typography variant="button" fontWeight="bold" color="white" sx={{ fontSize: '0.7rem', textTransform: 'uppercase' }}>
+          <SoftBox p={2} flex={1} display="flex" flexDirection="column" alignItems="center" gap={1.5} color="white" position="relative" textAlign="center">
+            <SoftTypography variant="button" fontWeight="bold" color="white" sx={{ fontSize: '0.7rem', textTransform: 'uppercase' }}>
               Healthy Sites
-            </Typography>
-            <Box sx={numberCircleSx}>
-              <Typography variant="h6" fontWeight="bold" color="#ea580c" sx={{ fontFamily: '"Inter", sans-serif', fontVariantNumeric: 'tabular-nums' }}>
+            </SoftTypography>
+            <SoftBox sx={numberCircleSx}>
+              <SoftTypography variant="h6" fontWeight="bold" color="#ea580c" sx={{ fontFamily: '"Inter", sans-serif', fontVariantNumeric: 'tabular-nums' }}>
                 {healthyCount}/{total}
-              </Typography>
-            </Box>
-            <Typography variant="caption" color="white" sx={{ opacity: 0.95, fontSize: '0.7rem' }}>
+              </SoftTypography>
+            </SoftBox>
+            <SoftTypography variant="caption" color="white" sx={{ opacity: 0.95, fontSize: '0.7rem' }}>
               sites are healthy
-            </Typography>
-          </Box>
+            </SoftTypography>
+          </SoftBox>
         </Card>
       </Grid>
 
       {/* Card 3: Connected */}
       <Grid item xs={12} sm={6} lg={3}>
         <Card sx={{ minHeight: 145, background: blueGradient, position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', '& .MuiTypography-root': { color: 'white !important' } }}>
-          <Box p={2} flex={1} display="flex" flexDirection="column" alignItems="center" gap={1.5} color="white" position="relative" textAlign="center">
-            <Typography variant="button" fontWeight="bold" color="white" sx={{ fontSize: '0.7rem', textTransform: 'uppercase' }}>
+          <SoftBox p={2} flex={1} display="flex" flexDirection="column" alignItems="center" gap={1.5} color="white" position="relative" textAlign="center">
+            <SoftTypography variant="button" fontWeight="bold" color="white" sx={{ fontSize: '0.7rem', textTransform: 'uppercase' }}>
               Connection
-            </Typography>
-            <Box sx={numberCircleSx}>
-              <Typography variant="h6" fontWeight="bold" color="#ea580c" sx={{ fontFamily: '"Inter", sans-serif', fontVariantNumeric: 'tabular-nums' }}>
+            </SoftTypography>
+            <SoftBox sx={numberCircleSx}>
+              <SoftTypography variant="h6" fontWeight="bold" color="#ea580c" sx={{ fontFamily: '"Inter", sans-serif', fontVariantNumeric: 'tabular-nums' }}>
                 {total - disconnectedCount}/{total}
-              </Typography>
-            </Box>
-            <Typography variant="caption" color="white" sx={{ opacity: 0.95, fontSize: '0.7rem' }}>
+              </SoftTypography>
+            </SoftBox>
+            <SoftTypography variant="caption" color="white" sx={{ opacity: 0.95, fontSize: '0.7rem' }}>
               sites are connected
-            </Typography>
-          </Box>
+            </SoftTypography>
+          </SoftBox>
         </Card>
       </Grid>
 
       {/* Card 4: Total Health Score */}
       <Grid item xs={12} sm={6} lg={3}>
         <Card sx={{ minHeight: 145, background: 'linear-gradient(310deg, #ea580c, #fb923c)', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', '& .MuiTypography-root': { color: 'white !important' } }}>
-          <Box p={2} flex={1} display="flex" flexDirection="column" alignItems="center" gap={1.5} color="white" position="relative" textAlign="center">
-            <Typography variant="button" fontWeight="bold" color="white" sx={{ fontSize: '0.7rem', textTransform: 'uppercase' }}>
+          <SoftBox p={2} flex={1} display="flex" flexDirection="column" alignItems="center" gap={1.5} color="white" position="relative" textAlign="center">
+            <SoftTypography variant="button" fontWeight="bold" color="white" sx={{ fontSize: '0.7rem', textTransform: 'uppercase' }}>
               Health Score
-            </Typography>
-            <Box sx={numberCircleCard4Sx}>
-              <Typography variant="h6" fontWeight="bold" color="#292F4D" sx={{ fontFamily: '"Inter", sans-serif', fontVariantNumeric: 'tabular-nums' }}>
+            </SoftTypography>
+            <SoftBox sx={numberCircleCard4Sx}>
+              <SoftTypography variant="h6" fontWeight="bold" color="#292F4D" sx={{ fontFamily: '"Inter", sans-serif', fontVariantNumeric: 'tabular-nums' }}>
                 {totalHealthScore}%
-              </Typography>
-            </Box>
-            <Typography variant="caption" fontWeight="regular" color="white" sx={{ opacity: 0.95, fontSize: '0.7rem' }}>
+              </SoftTypography>
+            </SoftBox>
+            <SoftTypography variant="caption" fontWeight="regular" color="white" sx={{ opacity: 0.95, fontSize: '0.7rem' }}>
               Your Health Score
-            </Typography>
-          </Box>
+            </SoftTypography>
+          </SoftBox>
         </Card>
       </Grid>
     </Grid>

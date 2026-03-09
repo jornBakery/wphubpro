@@ -2,10 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Card from '@mui/material/Card';
 import Grid from '@mui/material/Grid';
 import Divider from '@mui/material/Divider';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
-import Box from '@mui/material/Box';
-import TextField from '@mui/material/TextField';
+import SoftInput from 'components/SoftInput';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import Table from '@mui/material/Table';
@@ -14,7 +11,6 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import Icon from '@mui/material/Icon';
 import LinearProgress from '@mui/material/LinearProgress';
 import SoftBox from 'components/SoftBox';
 import SoftTypography from 'components/SoftTypography';
@@ -30,6 +26,7 @@ import {
   useManageSubscription,
 } from '../../domains/billing';
 import { useToast } from '../../contexts/ToastContext';
+import TabNavList, { TabNavPanel } from '../../components/ui/TabNavList';
 
 const formatMoney = (amountCents: number, currency = 'eur') =>
   (amountCents / 100).toLocaleString('nl-NL', {
@@ -37,18 +34,6 @@ const formatMoney = (amountCents: number, currency = 'eur') =>
     currency: currency.toUpperCase(),
     minimumFractionDigits: 2,
   });
-
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
-}
-
-const TabPanel: React.FC<TabPanelProps> = ({ children, value, index }) => (
-  <Box hidden={value !== index} role="tabpanel" pt={2}>
-    {value === index && children}
-  </Box>
-);
 
 const DetailRow: React.FC<{ label: string; value: React.ReactNode }> = ({ label, value }) => (
   <SoftBox display="flex" justifyContent="space-between" alignItems="center" mb={0.75}>
@@ -303,81 +288,40 @@ const AccountProfilePage: React.FC = () => {
 
           {/* Right: Tabs content */}
           <Grid item xs={12} md={8} lg={9}>
+            <TabNavList
+              items={[
+                { value: 0, label: 'Account', icon: 'person_outline' },
+                { value: 1, label: 'Security', icon: 'lock_outline' },
+                { value: 2, label: 'Billing & Plans', icon: 'credit_card' },
+                { value: 3, label: 'Notifications', icon: 'notifications_none' },
+              ]}
+              value={activeTab}
+              onChange={(_, v: number) => setActiveTab(v)}
+              sx={{ px: 0, pt: 0, mb: 2 }}
+            />
+
             <Card>
-              <SoftBox px={3} pt={1.5}>
-                <Tabs
-                  value={activeTab}
-                  onChange={(_, v: number) => setActiveTab(v)}
-                  variant="scrollable"
-                  scrollButtons="auto"
-                  sx={{
-                    '& .MuiTab-root': {
-                      textTransform: 'none',
-                      fontWeight: 600,
-                      fontSize: '0.8rem',
-                      minHeight: 46,
-                      px: 2,
-                      gap: 0.5,
-                    },
-                    '& .Mui-selected': { color: 'info.main !important' },
-                    '& .MuiTabs-indicator': { bgcolor: 'info.main' },
-                  }}
-                >
-                  <Tab
-                    icon={<Icon sx={{ fontSize: '1rem !important' }}>person_outline</Icon>}
-                    iconPosition="start"
-                    label="Account"
-                  />
-                  <Tab
-                    icon={<Icon sx={{ fontSize: '1rem !important' }}>lock_outline</Icon>}
-                    iconPosition="start"
-                    label="Security"
-                  />
-                  <Tab
-                    icon={<Icon sx={{ fontSize: '1rem !important' }}>credit_card</Icon>}
-                    iconPosition="start"
-                    label="Billing & Plans"
-                  />
-                  <Tab
-                    icon={<Icon sx={{ fontSize: '1rem !important' }}>notifications_none</Icon>}
-                    iconPosition="start"
-                    label="Notifications"
-                  />
-                </Tabs>
-              </SoftBox>
-
-              <Divider sx={{ m: 0 }} />
-
-              <SoftBox px={3} pb={3}>
+              <SoftBox px={3} pb={3} pt={1}>
                 {/* Account Tab */}
-                <TabPanel value={activeTab} index={0}>
+                <TabNavPanel value={activeTab} index={0}>
                   <Grid container spacing={3}>
                     <Grid item xs={12} sm={6}>
                       <SoftTypography variant="h6" fontWeight="bold" mb={2}>
                         Profielgegevens
                       </SoftTypography>
                       <SoftBox display="flex" flexDirection="column" gap={2}>
-                        <TextField
-                          label="Naam"
-                          value={name}
-                          onChange={(e) => setName(e.target.value)}
-                          fullWidth
-                          size="small"
-                        />
-                        <TextField
-                          label="Display name"
-                          value={displayName}
-                          onChange={(e) => setDisplayName(e.target.value)}
-                          fullWidth
-                          size="small"
-                        />
-                        <TextField
-                          label="E-mail"
-                          value={user?.email || ''}
-                          fullWidth
-                          size="small"
-                          disabled
-                        />
+                        <SoftBox>
+                          <SoftTypography variant="caption" fontWeight="medium" color="text" display="block" mb={0.5}>Naam</SoftTypography>
+                          <SoftInput value={name} onChange={(e) => setName(e.target.value)} fullWidth size="small" />
+                        </SoftBox>
+                        <SoftBox>
+                          <SoftTypography variant="caption" fontWeight="medium" color="text" display="block" mb={0.5}>Display name</SoftTypography>
+                          <SoftInput value={displayName} onChange={(e) => setDisplayName(e.target.value)} fullWidth size="small" />
+                        </SoftBox>
+                        <SoftBox>
+                          <SoftTypography variant="caption" fontWeight="medium" color="text" display="block" mb={0.5}>E-mail</SoftTypography>
+                          <SoftInput value={user?.email || ''} fullWidth size="small" disabled />
+                        </SoftBox>
                         <SoftButton
                           variant="gradient"
                           color="info"
@@ -389,40 +333,28 @@ const AccountProfilePage: React.FC = () => {
                       </SoftBox>
                     </Grid>
                   </Grid>
-                </TabPanel>
+                </TabNavPanel>
 
                 {/* Security Tab */}
-                <TabPanel value={activeTab} index={1}>
+                <TabNavPanel value={activeTab} index={1}>
                   <Grid container spacing={3}>
                     <Grid item xs={12} sm={6}>
                       <SoftTypography variant="h6" fontWeight="bold" mb={2}>
                         Wachtwoord wijzigen
                       </SoftTypography>
                       <SoftBox display="flex" flexDirection="column" gap={2}>
-                        <TextField
-                          label="Huidig wachtwoord"
-                          type="password"
-                          value={currentPassword}
-                          onChange={(e) => setCurrentPassword(e.target.value)}
-                          fullWidth
-                          size="small"
-                        />
-                        <TextField
-                          label="Nieuw wachtwoord"
-                          type="password"
-                          value={newPassword}
-                          onChange={(e) => setNewPassword(e.target.value)}
-                          fullWidth
-                          size="small"
-                        />
-                        <TextField
-                          label="Bevestig nieuw wachtwoord"
-                          type="password"
-                          value={confirmPassword}
-                          onChange={(e) => setConfirmPassword(e.target.value)}
-                          fullWidth
-                          size="small"
-                        />
+                        <SoftBox>
+                          <SoftTypography variant="caption" fontWeight="medium" color="text" display="block" mb={0.5}>Huidig wachtwoord</SoftTypography>
+                          <SoftInput type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} fullWidth size="small" />
+                        </SoftBox>
+                        <SoftBox>
+                          <SoftTypography variant="caption" fontWeight="medium" color="text" display="block" mb={0.5}>Nieuw wachtwoord</SoftTypography>
+                          <SoftInput type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} fullWidth size="small" />
+                        </SoftBox>
+                        <SoftBox>
+                          <SoftTypography variant="caption" fontWeight="medium" color="text" display="block" mb={0.5}>Bevestig nieuw wachtwoord</SoftTypography>
+                          <SoftInput type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} fullWidth size="small" />
+                        </SoftBox>
                         <SoftButton
                           variant="outlined"
                           color="info"
@@ -434,10 +366,10 @@ const AccountProfilePage: React.FC = () => {
                       </SoftBox>
                     </Grid>
                   </Grid>
-                </TabPanel>
+                </TabNavPanel>
 
                 {/* Billing & Plans Tab */}
-                <TabPanel value={activeTab} index={2}>
+                <TabNavPanel value={activeTab} index={2}>
                   {/* Plan header */}
                   <SoftBox
                     display="flex"
@@ -606,10 +538,10 @@ const AccountProfilePage: React.FC = () => {
                       </Table>
                     </TableContainer>
                   )}
-                </TabPanel>
+                </TabNavPanel>
 
                 {/* Notifications Tab */}
-                <TabPanel value={activeTab} index={3}>
+                <TabNavPanel value={activeTab} index={3}>
                   <SoftTypography variant="h6" fontWeight="bold" mb={2}>
                     Notificatievoorkeuren
                   </SoftTypography>
@@ -652,7 +584,7 @@ const AccountProfilePage: React.FC = () => {
                       </SoftButton>
                     </SoftBox>
                   </SoftBox>
-                </TabPanel>
+                </TabNavPanel>
               </SoftBox>
             </Card>
           </Grid>

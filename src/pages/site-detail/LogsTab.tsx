@@ -15,9 +15,6 @@ import DataTableBodyCell from 'examples/Tables/DataTable/DataTableBodyCell';
 import Card from '@mui/material/Card';
 import Icon from '@mui/material/Icon';
 import Collapse from '@mui/material/Collapse';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
 import IconButton from '@mui/material/IconButton';
@@ -31,6 +28,7 @@ import {
   type AppwriteExecution 
 } from '../../hooks/useWordPress';
 import { useSite } from '../../domains/sites';
+import SoftBox from 'components/SoftBox';
 import SoftTypography from 'components/SoftTypography';
 import SoftButton from 'components/SoftButton';
 import { functions } from '../../services/appwrite';
@@ -76,53 +74,53 @@ const LogRow: React.FC<LogRowProps> = ({ entry }) => {
         }}
       >
         <DataTableBodyCell>
-          <Typography component="span" sx={{ whiteSpace: 'nowrap', fontSize: '0.75rem' }}>{formatTime(entry.time)}</Typography>
+          <SoftTypography component="span" sx={{ whiteSpace: 'nowrap', fontSize: '0.75rem' }}>{formatTime(entry.time)}</SoftTypography>
         </DataTableBodyCell>
         <DataTableBodyCell>
-          <Typography component="span" sx={{ fontFamily: 'monospace', fontSize: '0.75rem', wordBreak: 'break-word' }}>{entry.endpoint}</Typography>
+          <SoftTypography component="span" sx={{ fontFamily: 'monospace', fontSize: '0.75rem', wordBreak: 'break-word' }}>{entry.endpoint}</SoftTypography>
         </DataTableBodyCell>
         <DataTableBodyCell>{entry.type}</DataTableBodyCell>
         <DataTableBodyCell>
-          <Typography component="span" sx={{ fontWeight: 600, color: codeOk ? 'success.main' : codeErr ? 'error.main' : 'text.primary' }}>{entry.code}</Typography>
+          <SoftTypography component="span" sx={{ fontWeight: 600, color: codeOk ? 'success.main' : codeErr ? 'error.main' : 'text.primary' }}>{entry.code}</SoftTypography>
         </DataTableBodyCell>
         <DataTableBodyCell>
-          <Typography
+          <SoftTypography
             component="span"
             variant="caption"
             onClick={(e: React.MouseEvent) => { e.stopPropagation(); setRequestOpen((o) => !o); setResponseOpen(false); }}
             sx={{ cursor: 'pointer', textDecoration: 'underline', fontFamily: 'monospace' }}
           >
             {requestOpen ? 'Hide' : 'Request'}
-          </Typography>
+          </SoftTypography>
         </DataTableBodyCell>
         <DataTableBodyCell>
-          <Typography
+          <SoftTypography
             component="span"
             variant="caption"
             onClick={(e: React.MouseEvent) => { e.stopPropagation(); setResponseOpen((o) => !o); setRequestOpen(false); }}
             sx={{ cursor: 'pointer', textDecoration: 'underline', fontFamily: 'monospace' }}
           >
             {responseOpen ? 'Hide' : 'Response'}
-          </Typography>
+          </SoftTypography>
         </DataTableBodyCell>
       </TableRow>
       <TableRow>
         <TableCell colSpan={6} sx={{ py: 0, borderBottom: requestOpen || responseOpen ? '1px solid' : 0, borderColor: 'divider' }}>
           <Collapse in={requestOpen} timeout="auto" unmountOnExit>
-            <Box sx={{ py: 1.5, px: 2, bgcolor: 'grey.50' }}>
-              <Typography variant="caption" fontWeight="bold" color="textSecondary" display="block" sx={{ mb: 0.5 }}>Request</Typography>
-              <Box component="pre" sx={{ m: 0, p: 1.5, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, fontSize: '0.75rem', overflow: 'auto', maxHeight: 280, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+            <SoftBox sx={{ py: 1.5, px: 2, bgcolor: 'grey.50' }}>
+              <SoftTypography variant="caption" fontWeight="bold" color="textSecondary" display="block" sx={{ mb: 0.5 }}>Request</SoftTypography>
+              <SoftBox component="pre" sx={{ m: 0, p: 1.5, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, fontSize: '0.75rem', overflow: 'auto', maxHeight: 280, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
                 {requestStr || '—'}
-              </Box>
-            </Box>
+              </SoftBox>
+            </SoftBox>
           </Collapse>
           <Collapse in={responseOpen} timeout="auto" unmountOnExit>
-            <Box sx={{ py: 1.5, px: 2, bgcolor: 'grey.50' }}>
-              <Typography variant="caption" fontWeight="bold" color="textSecondary" display="block" sx={{ mb: 0.5 }}>Response</Typography>
-              <Box component="pre" sx={{ m: 0, p: 1.5, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, fontSize: '0.75rem', overflow: 'auto', maxHeight: 280, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+            <SoftBox sx={{ py: 1.5, px: 2, bgcolor: 'grey.50' }}>
+              <SoftTypography variant="caption" fontWeight="bold" color="textSecondary" display="block" sx={{ mb: 0.5 }}>Response</SoftTypography>
+              <SoftBox component="pre" sx={{ m: 0, p: 1.5, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, fontSize: '0.75rem', overflow: 'auto', maxHeight: 280, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
                 {responseStr || '—'}
-              </Box>
-            </Box>
+              </SoftBox>
+            </SoftBox>
           </Collapse>
         </TableCell>
       </TableRow>
@@ -140,37 +138,37 @@ function BridgeLogsPanel({ siteId, siteEnabled }: { siteId: string; siteEnabled?
 
   if (isLoading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" p={6}>
+      <SoftBox display="flex" justifyContent="center" alignItems="center" p={6}>
         <Icon sx={{ fontSize: 40, color: 'grey.400', mr: 2 }}>sync</Icon>
-        <Typography variant="body2" color="textSecondary">Bridge logs laden...</Typography>
-      </Box>
+        <SoftTypography variant="body2" color="textSecondary">Bridge logs laden...</SoftTypography>
+      </SoftBox>
     );
   }
 
   if (isError) {
     const apiUrl = site ? `${String(site.siteUrl).replace(/\/$/, '')}/wp-json/wphubpro/v1/logs` : 'unknown';
     return (
-      <Box p={3}>
-        <Typography variant="caption" color="textSecondary" display="block" sx={{ mb: 2 }}>API: {apiUrl}</Typography>
-        <Box display="flex" alignItems="flex-start" gap={2}>
+      <SoftBox p={3}>
+        <SoftTypography variant="caption" color="textSecondary" display="block" sx={{ mb: 2 }}>API: {apiUrl}</SoftTypography>
+        <SoftBox display="flex" alignItems="flex-start" gap={2}>
           <Icon color="error" sx={{ mt: 0.5 }}>error</Icon>
-          <Box flex={1}>
-            <Typography variant="h6" fontWeight="medium" color="error" sx={{ mb: 1 }}>Fout bij laden van bridge logs</Typography>
-            <Typography variant="caption" color="textSecondary" sx={{ mb: 2, display: 'block' }}>{error?.message || String(error)}</Typography>
-            <Button variant="outlined" color="info" size="small" onClick={() => refetch()}>Opnieuw proberen</Button>
-          </Box>
-        </Box>
-      </Box>
+          <SoftBox flex={1}>
+            <SoftTypography variant="h6" fontWeight="medium" color="error" sx={{ mb: 1 }}>Fout bij laden van bridge logs</SoftTypography>
+            <SoftTypography variant="caption" color="textSecondary" sx={{ mb: 2, display: 'block' }}>{error?.message || String(error)}</SoftTypography>
+            <SoftButton variant="outlined" color="info" size="small" onClick={() => refetch()}>Opnieuw proberen</SoftButton>
+          </SoftBox>
+        </SoftBox>
+      </SoftBox>
     );
   }
 
   return (
     <>
-      <Box p={2} sx={{ borderBottom: '1px solid', borderColor: 'grey.200' }}>
-        <Typography variant="caption" color="textSecondary">
+      <SoftBox p={2} sx={{ borderBottom: '1px solid', borderColor: 'grey.200' }}>
+        <SoftTypography variant="caption" color="textSecondary">
           Laatste 20 aanroepen naar het Bridge API (option WPHUBPRO_LOG). API: {site ? `${String(site.siteUrl).replace(/\/$/, '')}/wp-json/wphubpro/v1/logs` : '—'}
-        </Typography>
-      </Box>
+        </SoftTypography>
+      </SoftBox>
       <ScrollableTableWrapper maxHeight="55vh">
         <Table
           size="small"
@@ -193,7 +191,7 @@ function BridgeLogsPanel({ siteId, siteEnabled }: { siteId: string; siteEnabled?
             '& tbody td:last-of-type': { paddingRight: (theme) => theme.spacing(4) },
           }}
         >
-          <Box component="thead">
+          <SoftBox component="thead">
             <TableRow>
               <DataTableHeadCell width="15%" pl={5} color="#4F5482">Tijd</DataTableHeadCell>
               <DataTableHeadCell width="30%" pl={undefined} color="#4F5482">Endpoint</DataTableHeadCell>
@@ -202,12 +200,12 @@ function BridgeLogsPanel({ siteId, siteEnabled }: { siteId: string; siteEnabled?
               <DataTableHeadCell width="20%" pl={undefined} color="#4F5482">Request</DataTableHeadCell>
               <DataTableHeadCell width="17%" pl={undefined} color="#4F5482">Response</DataTableHeadCell>
             </TableRow>
-          </Box>
+          </SoftBox>
           <TableBody>
             {(!logs || logs.length === 0) ? (
               <TableRow>
                 <TableCell colSpan={6}>
-                  <Typography variant="caption" color="textSecondary">Geen logs.</Typography>
+                  <SoftTypography variant="caption" color="textSecondary">Geen logs.</SoftTypography>
                 </TableCell>
               </TableRow>
             ) : (
@@ -264,7 +262,7 @@ function parseErrorLogLines(lines: string[]): ParsedErrorLogEntry[] {
     if (parsed) {
       if (current) entries.push(current);
       current = {
-        raw: parsed.raw,
+        raw: parsed.raw ?? '',
         timestamp: parsed.timestamp ?? '',
         logType: parsed.logType ?? '',
         file: parsed.file ?? null,
@@ -319,15 +317,15 @@ const ErrorLogRow: React.FC<ErrorLogRowProps> = ({ entry, onRollbackPlugin, roll
         onClick={() => setOpen((o) => !o)}
       >
         <DataTableBodyCell>
-          <Typography component="span" sx={{ whiteSpace: 'nowrap', fontSize: '0.75rem' }}>{entry.timestamp || '—'}</Typography>
+          <SoftTypography component="span" sx={{ whiteSpace: 'nowrap', fontSize: '0.75rem' }}>{entry.timestamp || '—'}</SoftTypography>
         </DataTableBodyCell>
         <DataTableBodyCell>
-          <Typography component="span" sx={{ fontSize: '0.75rem', fontWeight: 600, color: logTypeColor(entry.logType) }}>
+          <SoftTypography component="span" sx={{ fontSize: '0.75rem', fontWeight: 600, color: logTypeColor(entry.logType) }}>
             {entry.logType || '—'}
-          </Typography>
+          </SoftTypography>
         </DataTableBodyCell>
         <DataTableBodyCell>
-          <Typography
+          <SoftTypography
             component="span"
             sx={{
               fontFamily: 'monospace',
@@ -339,10 +337,10 @@ const ErrorLogRow: React.FC<ErrorLogRowProps> = ({ entry, onRollbackPlugin, roll
             }}
           >
             {fileLine}
-          </Typography>
+          </SoftTypography>
         </DataTableBodyCell>
         <DataTableBodyCell>
-          <Box
+          <SoftBox
             component="span"
             onClick={(e: React.MouseEvent) => e.stopPropagation()}
             sx={{ display: 'inline-flex', width: 56, justifyContent: 'center' }}
@@ -360,18 +358,18 @@ const ErrorLogRow: React.FC<ErrorLogRowProps> = ({ entry, onRollbackPlugin, roll
                 </IconButton>
               </Tooltip>
             )}
-          </Box>
+          </SoftBox>
         </DataTableBodyCell>
       </TableRow>
       <TableRow>
         <TableCell colSpan={4} sx={{ py: 0, borderBottom: open ? '1px solid' : 0, borderColor: 'divider' }}>
           <Collapse in={open} timeout="auto" unmountOnExit>
-            <Box sx={{ py: 1.5, px: 2, bgcolor: 'grey.50' }}>
-              <Typography variant="caption" fontWeight="bold" color="textSecondary" display="block" sx={{ mb: 0.5 }}>Bericht</Typography>
-              <Box component="pre" sx={{ m: 0, p: 1.5, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, fontSize: '0.75rem', overflow: 'auto', maxHeight: 280, whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontFamily: 'monospace' }}>
+            <SoftBox sx={{ py: 1.5, px: 2, bgcolor: 'grey.50' }}>
+              <SoftTypography variant="caption" fontWeight="bold" color="textSecondary" display="block" sx={{ mb: 0.5 }}>Bericht</SoftTypography>
+              <SoftBox component="pre" sx={{ m: 0, p: 1.5, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, fontSize: '0.75rem', overflow: 'auto', maxHeight: 280, whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontFamily: 'monospace' }}>
                 {entry.message || '—'}
-              </Box>
-            </Box>
+              </SoftBox>
+            </SoftBox>
           </Collapse>
         </TableCell>
       </TableRow>
@@ -398,7 +396,7 @@ function ErrorLogsPanel({ siteId, siteEnabled }: { siteId: string; siteEnabled?:
         JSON.stringify({ siteId, action, plugin_slug: pluginSlug }),
         false,
         '/',
-        'POST'
+        'POST' as Parameters<typeof functions.createExecution>[4]
       );
 
       const result = JSON.parse(execution.responseBody);
@@ -420,24 +418,24 @@ function ErrorLogsPanel({ siteId, siteEnabled }: { siteId: string; siteEnabled?:
 
   if (isLoading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" p={6}>
+      <SoftBox display="flex" justifyContent="center" alignItems="center" p={6}>
         <Icon sx={{ fontSize: 40, color: 'grey.400', mr: 2 }}>sync</Icon>
-        <Typography variant="body2" color="textSecondary">Error log laden...</Typography>
-      </Box>
+        <SoftTypography variant="body2" color="textSecondary">Error log laden...</SoftTypography>
+      </SoftBox>
     );
   }
 
   // Als de reguliere API faalt (500 error op WP), toon de Noodherstel optie
   if (isError) {
     return (
-      <Box p={3}>
+      <SoftBox p={3}>
         <Alert severity="warning" sx={{ mb: 3 }}>
-          <Typography variant="body2">
+          <SoftTypography variant="body2">
             <strong>De WordPress site lijkt onbereikbaar (Fatal Error).</strong> <br />
             De standaard error logs kunnen niet worden opgehaald via de Bridge API. 
             Gebruik de Noodherstel-agent om de laatste PHP crash-data op te halen.
-          </Typography>
-          <Box mt={2}>
+          </SoftTypography>
+          <SoftBox mt={2}>
             <SoftButton 
               color="error" 
               variant="contained" 
@@ -448,20 +446,20 @@ function ErrorLogsPanel({ siteId, siteEnabled }: { siteId: string; siteEnabled?:
               {recoveryLoading ? <CircularProgress size={16} color="inherit" sx={{ mr: 1 }} /> : <Icon sx={{ mr: 1 }}>emergency</Icon>}
               Scan op Fatal Errors (JWT)
             </SoftButton>
-          </Box>
+          </SoftBox>
         </Alert>
 
         {fatalRecoveryLog && (
           <Card sx={{ p: 2, bgcolor: 'grey.100', border: '1px solid', borderColor: 'error.light', mb: 2 }}>
             <SoftTypography variant="h6" color="error">Gevonden Fatal Error:</SoftTypography>
-            <Typography variant="caption" component="pre" sx={{ whiteSpace: 'pre-wrap', mt: 1, display: 'block', p: 1, bgcolor: 'white', borderRadius: 1 }}>
+            <SoftTypography variant="caption" component="pre" sx={{ whiteSpace: 'pre-wrap', mt: 1, display: 'block', p: 1, bgcolor: 'white', borderRadius: 1 }}>
               {JSON.stringify(fatalRecoveryLog, null, 2)}
-            </Typography>
+            </SoftTypography>
             
             {/* Slimme detectie van de plugin slug uit het bestandspad */}
             {fatalRecoveryLog.file && fatalRecoveryLog.file.includes('plugins/') && (
-              <Box mt={2}>
-                <Typography variant="body2" sx={{ mb: 1 }}>Mogelijke oorzaak: Plugin gedetecteerd.</Typography>
+              <SoftBox mt={2}>
+                <SoftTypography variant="body2" sx={{ mb: 1 }}>Mogelijke oorzaak: Plugin gedetecteerd.</SoftTypography>
                 <SoftButton 
                   color="warning" 
                   variant="gradient"
@@ -473,22 +471,22 @@ function ErrorLogsPanel({ siteId, siteEnabled }: { siteId: string; siteEnabled?:
                 >
                   Deactiveer Plugin: {fatalRecoveryLog.file.split('plugins/')[1].split('/')[0]}
                 </SoftButton>
-              </Box>
+              </SoftBox>
             )}
           </Card>
         )}
 
-        {recoveryError && <Typography color="error" variant="caption" sx={{ mt: 1, display: 'block' }}>{recoveryError}</Typography>}
+        {recoveryError && <SoftTypography color="error" variant="caption" sx={{ mt: 1, display: 'block' }}>{recoveryError}</SoftTypography>}
 
-        <Box display="flex" alignItems="flex-start" gap={2} mt={3}>
+        <SoftBox display="flex" alignItems="flex-start" gap={2} mt={3}>
           <Icon color="error" sx={{ mt: 0.5 }}>error</Icon>
-          <Box flex={1}>
-            <Typography variant="h6" fontWeight="medium" color="error" sx={{ mb: 1 }}>Fout bij laden van reguliere error log</Typography>
-            <Typography variant="caption" color="textSecondary" sx={{ mb: 2, display: 'block' }}>{error?.message || String(error)}</Typography>
-            <Button variant="outlined" color="info" size="small" onClick={() => refetch()}>Opnieuw proberen</Button>
-          </Box>
-        </Box>
-      </Box>
+          <SoftBox flex={1}>
+            <SoftTypography variant="h6" fontWeight="medium" color="error" sx={{ mb: 1 }}>Fout bij laden van reguliere error log</SoftTypography>
+            <SoftTypography variant="caption" color="textSecondary" sx={{ mb: 2, display: 'block' }}>{error?.message || String(error)}</SoftTypography>
+            <SoftButton variant="outlined" color="info" size="small" onClick={() => refetch()}>Opnieuw proberen</SoftButton>
+          </SoftBox>
+        </SoftBox>
+      </SoftBox>
     );
   }
 
@@ -502,23 +500,23 @@ function ErrorLogsPanel({ siteId, siteEnabled }: { siteId: string; siteEnabled?:
 
   return (
     <>
-      <Box p={2} sx={{ borderBottom: '1px solid', borderColor: 'grey.200' }}>
-        <Typography variant="caption" color="textSecondary" display="block">
+      <SoftBox p={2} sx={{ borderBottom: '1px solid', borderColor: 'grey.200' }}>
+        <SoftTypography variant="caption" color="textSecondary" display="block">
           Laatste 200 regels van de PHP error log (alleen type error). Klik op een rij om het bericht te tonen.
-        </Typography>
+        </SoftTypography>
         {fileInfo && (
-          <Typography variant="caption" color="textSecondary" display="block" sx={{ mt: 0.5, fontFamily: 'monospace' }}>
+          <SoftTypography variant="caption" color="textSecondary" display="block" sx={{ mt: 0.5, fontFamily: 'monospace' }}>
             Bestand: {fileInfo}
-          </Typography>
+          </SoftTypography>
         )}
         {errorMsg && (
-          <Typography variant="caption" color="warning.main" display="block" sx={{ mt: 0.5 }}>{errorMsg}</Typography>
+          <SoftTypography variant="caption" color="warning.main" display="block" sx={{ mt: 0.5 }}>{errorMsg}</SoftTypography>
         )}
-      </Box>
+      </SoftBox>
       {parsed.length === 0 ? (
-        <Box p={3}>
-          <Typography variant="body2" color="textSecondary">Geen regels of log niet leesbaar.</Typography>
-        </Box>
+        <SoftBox p={3}>
+          <SoftTypography variant="body2" color="textSecondary">Geen regels of log niet leesbaar.</SoftTypography>
+        </SoftBox>
       ) : (
         <ScrollableTableWrapper maxHeight="55vh">
           <Table
@@ -542,14 +540,14 @@ function ErrorLogsPanel({ siteId, siteEnabled }: { siteId: string; siteEnabled?:
               '& tbody td:last-of-type': { paddingRight: (theme) => theme.spacing(4) },
             }}
           >
-            <Box component="thead">
+            <SoftBox component="thead">
               <TableRow>
                 <DataTableHeadCell width="20%" pl={5} color="#4F5482">Tijd</DataTableHeadCell>
                 <DataTableHeadCell width="16%" pl={undefined} color="#4F5482">Type</DataTableHeadCell>
                 <DataTableHeadCell width="54%" pl={undefined} color="#4F5482">Bestand:regel</DataTableHeadCell>
                 <DataTableHeadCell width="10%" pl={undefined} color="#4F5482">Actie</DataTableHeadCell>
               </TableRow>
-            </Box>
+            </SoftBox>
             <TableBody>
               {parsed.map((entry, i) => (
                 <ErrorLogRow
@@ -582,58 +580,58 @@ const ExecutionLogRow: React.FC<ExecutionLogRowProps> = ({ execution }) => {
     <>
       <TableRow sx={{ cursor: 'pointer', '&:hover': { bgcolor: 'action.hover' } }} onClick={() => setOpen((o) => !o)}>
         <DataTableBodyCell>
-          <Typography component="span" sx={{ whiteSpace: 'nowrap', fontSize: '0.75rem' }}>{formatTime(execution.$createdAt)}</Typography>
+          <SoftTypography component="span" sx={{ whiteSpace: 'nowrap', fontSize: '0.75rem' }}>{formatTime(execution.$createdAt)}</SoftTypography>
         </DataTableBodyCell>
         <DataTableBodyCell>
-          <Typography component="span" sx={{ fontSize: '0.75rem', fontWeight: 600, color: execution.status === 'completed' ? 'success.main' : execution.status === 'failed' ? 'error.main' : 'text.secondary' }}>
+          <SoftTypography component="span" sx={{ fontSize: '0.75rem', fontWeight: 600, color: execution.status === 'completed' ? 'success.main' : execution.status === 'failed' ? 'error.main' : 'text.secondary' }}>
             {execution.status}
-          </Typography>
+          </SoftTypography>
         </DataTableBodyCell>
         <DataTableBodyCell>
-          <Typography component="span" sx={{ fontSize: '0.75rem' }}>{execution.requestMethod || 'GET'}</Typography>
+          <SoftTypography component="span" sx={{ fontSize: '0.75rem' }}>{execution.requestMethod || 'GET'}</SoftTypography>
         </DataTableBodyCell>
         <DataTableBodyCell>
-          <Typography component="span" sx={{ fontFamily: 'monospace', fontSize: '0.75rem', wordBreak: 'break-all' }}>{endpoint}</Typography>
+          <SoftTypography component="span" sx={{ fontFamily: 'monospace', fontSize: '0.75rem', wordBreak: 'break-all' }}>{endpoint}</SoftTypography>
         </DataTableBodyCell>
         <DataTableBodyCell>
-          <Typography component="span" sx={{ fontWeight: 600, fontSize: '0.75rem', color: statusColor }}>{execution.responseStatusCode ?? '—'}</Typography>
+          <SoftTypography component="span" sx={{ fontWeight: 600, fontSize: '0.75rem', color: statusColor }}>{execution.responseStatusCode ?? '—'}</SoftTypography>
         </DataTableBodyCell>
         <DataTableBodyCell>
-          <Typography component="span" sx={{ fontSize: '0.75rem' }}>{typeof execution.duration === 'number' ? `${execution.duration}s` : '—'}</Typography>
+          <SoftTypography component="span" sx={{ fontSize: '0.75rem' }}>{typeof execution.duration === 'number' ? `${execution.duration}s` : '—'}</SoftTypography>
         </DataTableBodyCell>
       </TableRow>
       <TableRow>
         <TableCell colSpan={6} sx={{ py: 0, borderBottom: open ? '1px solid' : 0, borderColor: 'divider' }}>
           <Collapse in={open} timeout="auto" unmountOnExit>
-            <Box sx={{ py: 1.5, px: 2, bgcolor: 'grey.50', display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            <SoftBox sx={{ py: 1.5, px: 2, bgcolor: 'grey.50', display: 'flex', flexDirection: 'column', gap: 1.5 }}>
               {execution.responseBody && (
                 <>
-                  <Typography variant="caption" fontWeight="bold" color="textSecondary">Response</Typography>
-                  <Box component="pre" sx={{ m: 0, p: 1.5, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, fontSize: '0.75rem', overflow: 'auto', maxHeight: 200, whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontFamily: 'monospace' }}>
+                  <SoftTypography variant="caption" fontWeight="bold" color="textSecondary">Response</SoftTypography>
+                  <SoftBox component="pre" sx={{ m: 0, p: 1.5, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, fontSize: '0.75rem', overflow: 'auto', maxHeight: 200, whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontFamily: 'monospace' }}>
                     {execution.responseBody.length > 2000 ? `${execution.responseBody.slice(0, 2000)}…` : execution.responseBody || '—'}
-                  </Box>
+                  </SoftBox>
                 </>
               )}
               {execution.logs && (
                 <>
-                  <Typography variant="caption" fontWeight="bold" color="textSecondary">Logs</Typography>
-                  <Box component="pre" sx={{ m: 0, p: 1.5, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, fontSize: '0.75rem', overflow: 'auto', maxHeight: 150, whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontFamily: 'monospace' }}>
+                  <SoftTypography variant="caption" fontWeight="bold" color="textSecondary">Logs</SoftTypography>
+                  <SoftBox component="pre" sx={{ m: 0, p: 1.5, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1, fontSize: '0.75rem', overflow: 'auto', maxHeight: 150, whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontFamily: 'monospace' }}>
                     {execution.logs}
-                  </Box>
+                  </SoftBox>
                 </>
               )}
               {execution.errors && (
                 <>
-                  <Typography variant="caption" fontWeight="bold" color="error.main">Errors</Typography>
-                  <Box component="pre" sx={{ m: 0, p: 1.5, bgcolor: 'error.light', color: 'error.contrastText', border: '1px solid', borderColor: 'divider', borderRadius: 1, fontSize: '0.75rem', overflow: 'auto', maxHeight: 150, whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontFamily: 'monospace' }}>
+                  <SoftTypography variant="caption" fontWeight="bold" color="error.main">Errors</SoftTypography>
+                  <SoftBox component="pre" sx={{ m: 0, p: 1.5, bgcolor: 'error.light', color: 'error.contrastText', border: '1px solid', borderColor: 'divider', borderRadius: 1, fontSize: '0.75rem', overflow: 'auto', maxHeight: 150, whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontFamily: 'monospace' }}>
                     {execution.errors}
-                  </Box>
+                  </SoftBox>
                 </>
               )}
               {!execution.responseBody && !execution.logs && !execution.errors && (
-                <Typography variant="caption" color="textSecondary">Geen details beschikbaar (async execution).</Typography>
+                <SoftTypography variant="caption" color="textSecondary">Geen details beschikbaar (async execution).</SoftTypography>
               )}
-            </Box>
+            </SoftBox>
           </Collapse>
         </TableCell>
       </TableRow>
@@ -646,25 +644,25 @@ function ExecutionLogsPanel({ siteId, siteEnabled }: { siteId: string; siteEnabl
 
   if (isLoading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" p={6}>
+      <SoftBox display="flex" justifyContent="center" alignItems="center" p={6}>
         <Icon sx={{ fontSize: 40, color: 'grey.400', mr: 2 }}>sync</Icon>
-        <Typography variant="body2" color="textSecondary">Execution logs laden...</Typography>
-      </Box>
+        <SoftTypography variant="body2" color="textSecondary">Execution logs laden...</SoftTypography>
+      </SoftBox>
     );
   }
 
   if (isError) {
     return (
-      <Box p={3}>
-        <Box display="flex" alignItems="flex-start" gap={2}>
+      <SoftBox p={3}>
+        <SoftBox display="flex" alignItems="flex-start" gap={2}>
           <Icon color="error" sx={{ mt: 0.5 }}>error</Icon>
-          <Box flex={1}>
-            <Typography variant="h6" fontWeight="medium" color="error" sx={{ mb: 1 }}>Fout bij laden van execution logs</Typography>
-            <Typography variant="caption" color="textSecondary" sx={{ mb: 2, display: 'block' }}>{error?.message || String(error)}</Typography>
-            <Button variant="outlined" color="info" size="small" onClick={() => refetch()}>Opnieuw proberen</Button>
-          </Box>
-        </Box>
-      </Box>
+          <SoftBox flex={1}>
+            <SoftTypography variant="h6" fontWeight="medium" color="error" sx={{ mb: 1 }}>Fout bij laden van execution logs</SoftTypography>
+            <SoftTypography variant="caption" color="textSecondary" sx={{ mb: 2, display: 'block' }}>{error?.message || String(error)}</SoftTypography>
+            <SoftButton variant="outlined" color="info" size="small" onClick={() => refetch()}>Opnieuw proberen</SoftButton>
+          </SoftBox>
+        </SoftBox>
+      </SoftBox>
     );
   }
 
@@ -672,15 +670,15 @@ function ExecutionLogsPanel({ siteId, siteEnabled }: { siteId: string; siteEnabl
 
   return (
     <>
-      <Box p={2} sx={{ borderBottom: '1px solid', borderColor: 'grey.200' }}>
-        <Typography variant="caption" color="textSecondary">
+      <SoftBox p={2} sx={{ borderBottom: '1px solid', borderColor: 'grey.200' }}>
+        <SoftTypography variant="caption" color="textSecondary">
           Appwrite wp-proxy executions voor deze site (laatste 50, gefilterd op siteId). Klik op een rij voor details.
-        </Typography>
-      </Box>
+        </SoftTypography>
+      </SoftBox>
       {list.length === 0 ? (
-        <Box p={3}>
-          <Typography variant="body2" color="textSecondary">Geen executions voor deze site.</Typography>
-        </Box>
+        <SoftBox p={3}>
+          <SoftTypography variant="body2" color="textSecondary">Geen executions voor deze site.</SoftTypography>
+        </SoftBox>
       ) : (
         <ScrollableTableWrapper maxHeight="55vh">
           <Table
@@ -701,7 +699,7 @@ function ExecutionLogsPanel({ siteId, siteEnabled }: { siteId: string; siteEnabl
               '& tbody td:last-of-type': { paddingRight: (theme) => theme.spacing(4) },
             }}
           >
-            <Box component="thead">
+            <SoftBox component="thead">
               <TableRow>
                 <DataTableHeadCell width="18%" pl={5} color="#4F5482">Tijd</DataTableHeadCell>
                 <DataTableHeadCell width="12%" pl={undefined} color="#4F5482">Status</DataTableHeadCell>
@@ -710,7 +708,7 @@ function ExecutionLogsPanel({ siteId, siteEnabled }: { siteId: string; siteEnabl
                 <DataTableHeadCell width="10%" pl={undefined} color="#4F5482">Code</DataTableHeadCell>
                 <DataTableHeadCell width="14%" pl={undefined} color="#4F5482">Duur</DataTableHeadCell>
               </TableRow>
-            </Box>
+            </SoftBox>
             <TableBody>
               {list.map((exec) => (
                 <ExecutionLogRow key={exec.$id} execution={exec} />
@@ -726,7 +724,7 @@ function ExecutionLogsPanel({ siteId, siteEnabled }: { siteId: string; siteEnabl
 const LogsTab: React.FC<LogsTabProps> = ({ siteId }) => {
   const [subTab, setSubTab] = useState(0);
   const { data: site } = useSite(siteId);
-  const { executeRecovery } = useWordPress();
+  useWordPress();
   const siteEnabled = site?.enabled !== false;
 
   return (
@@ -759,7 +757,7 @@ const LogsTab: React.FC<LogsTabProps> = ({ siteId }) => {
         <Tab label="Error Logs" id="logs-error" aria-controls="logs-panel-error" />
         <Tab label="Execution Logs" id="logs-execution" aria-controls="logs-panel-execution" />
       </Tabs>
-      <Box
+      <SoftBox
         role="tabpanel"
         id="logs-panel-bridge"
         aria-labelledby="logs-bridge"
@@ -773,8 +771,8 @@ const LogsTab: React.FC<LogsTabProps> = ({ siteId }) => {
         }}
       >
         {subTab === 0 && <BridgeLogsPanel siteId={siteId} siteEnabled={siteEnabled} />}
-      </Box>
-      <Box
+      </SoftBox>
+      <SoftBox
         role="tabpanel"
         id="logs-panel-error"
         aria-labelledby="logs-error"
@@ -788,8 +786,8 @@ const LogsTab: React.FC<LogsTabProps> = ({ siteId }) => {
         }}
       >
         {subTab === 1 && <ErrorLogsPanel siteId={siteId} siteEnabled={siteEnabled} />}
-      </Box>
-      <Box
+      </SoftBox>
+      <SoftBox
         role="tabpanel"
         id="logs-panel-execution"
         aria-labelledby="logs-execution"
@@ -803,7 +801,7 @@ const LogsTab: React.FC<LogsTabProps> = ({ siteId }) => {
         }}
       >
         {subTab === 2 && <ExecutionLogsPanel siteId={siteId} siteEnabled={siteEnabled} />}
-      </Box>
+      </SoftBox>
     </Card>
   );
 };

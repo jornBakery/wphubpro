@@ -37,6 +37,9 @@ import ForumCategoryPage from './pages/ForumCategoryPage';
 import ForumThreadPage from './pages/ForumThreadPage';
 import ForumNewThreadPage from './pages/ForumNewThreadPage';
 import AdminNotificationsPage from './pages/admin/AdminNotificationsPage';
+import AdminPlatformSettingsPage from './pages/admin/AdminPlatformSettingsPage';
+import AdminUsersPage from './pages/admin/AdminUsersPage';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 const PlaceholderPage: React.FC<{ name: string }> = ({ name }) => (
   <div className="p-6 text-lg">Pagina: {name} — wordt per stap gebouwd.</div>
@@ -65,7 +68,7 @@ const AppRoutes: React.FC = () => {
       />
       <Route path={ROUTE_PATHS.CONNECT_SUCCESS} element={<ConnectSuccessPage />} />
 
-      <Route path="/*" element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
+      <Route path="/" element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
         <Route index element={<Navigate to={ROUTE_PATHS.DASHBOARD} replace />} />
         <Route path="dashboard" element={<DashboardPage />} />
         <Route path="sites" element={<SitesPage />} />
@@ -91,14 +94,14 @@ const AppRoutes: React.FC = () => {
         <Route path="admin" element={<AdminRoute><Outlet /></AdminRoute>}>
           <Route index element={<Navigate to={ROUTE_PATHS.ADMIN_DASHBOARD} replace />} />
           <Route path="dashboard" element={<PlaceholderPage name="Admin Dashboard" />} />
-          <Route path="users" element={<PlaceholderPage name="User Manager" />} />
+          <Route path="users" element={<AdminUsersPage />} />
           <Route path="users/:userId" element={<PlaceholderPage name="User Detail" />} />
           <Route path="orders" element={<PlaceholderPage name="Orders" />} />
           <Route path="plans" element={<PlaceholderPage name="Plan Management" />} />
           <Route path="plans/:planId" element={<PlaceholderPage name="Plan Detail" />} />
           <Route path="subscriptions" element={<PlaceholderPage name="Subscriptions" />} />
           <Route path="subscriptions/:subscriptionId" element={<PlaceholderPage name="Subscription Detail" />} />
-          <Route path="settings" element={<PlaceholderPage name="Admin Settings" />} />
+          <Route path="settings" element={<ErrorBoundary><AdminPlatformSettingsPage /></ErrorBoundary>} />
           <Route path="notifications" element={<AdminNotificationsPage />} />
           <Route path="tickets" element={<PlaceholderPage name="Admin Tickets" />} />
           <Route path="tickets/:id" element={<PlaceholderPage name="Ticket Detail" />} />

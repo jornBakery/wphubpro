@@ -2,7 +2,7 @@
  * Sites page - based on soft layouts/ecommerce/products/products-list
  * DataTable with sites list
  */
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import SoftBox from 'components/SoftBox';
 import SoftTypography from 'components/SoftTypography';
 import SoftButton from 'components/SoftButton';
@@ -17,7 +17,6 @@ import { useSitesUpdateStats } from '../hooks/useWordPress';
 import { usePinnedSites } from '../hooks/usePinnedSites';
 import AddSiteModal from '../components/sites/AddSiteModal';
 import ResponsiveSitesTable from '../components/sites/ResponsiveSitesTable';
-import { Site } from '../types';
 
 const SitesPage: React.FC = () => {
   const [addModalOpen, setAddModalOpen] = useState(false);

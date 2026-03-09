@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Card from '@mui/material/Card';
-import TextField from '@mui/material/TextField';
+import SoftInput from 'components/SoftInput';
 import Icon from '@mui/material/Icon';
 import SoftBox from 'components/SoftBox';
 import SoftTypography from 'components/SoftTypography';
@@ -100,16 +100,18 @@ const TicketDetailPage: React.FC = () => {
 
         <Card>
           <SoftBox component="form" onSubmit={handleReply} p={3}>
-            <TextField
-              label="Antwoord"
-              value={body}
-              onChange={(e) => setBody(e.target.value)}
-              multiline
-              rows={3}
-              fullWidth
-              size="small"
-              sx={{ mb: 2 }}
-            />
+            <SoftBox mb={2}>
+              <SoftTypography variant="caption" fontWeight="medium" color="text" display="block" mb={0.5}>Antwoord</SoftTypography>
+              <SoftInput
+                placeholder="Schrijf je antwoord..."
+                value={body}
+                onChange={(e) => setBody(e.target.value)}
+                multiline
+                rows={3}
+                fullWidth
+                size="small"
+              />
+            </SoftBox>
             <SoftButton type="submit" variant="gradient" color="info" disabled={addMessage.isPending || !body.trim()}>
               {addMessage.isPending ? 'Verzenden...' : 'Verstuur'}
             </SoftButton>

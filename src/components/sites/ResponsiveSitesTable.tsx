@@ -1,13 +1,12 @@
 /**
  * Responsive sites table - DataTable on md+, compact expandable rows on small screens
  */
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Icon from '@mui/material/Icon';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
 import Collapse from '@mui/material/Collapse';
-import Box from '@mui/material/Box';
 import SoftBox from 'components/SoftBox';
 import SoftTypography from 'components/SoftTypography';
 import DataTable from 'examples/Tables/DataTable';
@@ -126,7 +125,7 @@ export default function ResponsiveSitesTable({
             {sites.map((site) => {
               const isExpanded = expanded[site.$id];
               return (
-                <Box
+                <SoftBox
                   key={site.$id}
                   onClick={() => toggleExpand(site.$id)}
                   sx={{
@@ -179,7 +178,7 @@ export default function ResponsiveSitesTable({
                       </SoftBox>
                     </SoftBox>
                   </Collapse>
-                </Box>
+                </SoftBox>
               );
             })}
           </SoftBox>

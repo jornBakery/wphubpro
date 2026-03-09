@@ -8,10 +8,9 @@ import { Link } from 'react-router-dom';
 import Card from '@mui/material/Card';
 import Collapse from '@mui/material/Collapse';
 import Icon from '@mui/material/Icon';
-import IconButton from '@mui/material/IconButton';
+import SoftButton from 'components/SoftButton';
 import SoftBox from 'components/SoftBox';
 import SoftTypography from 'components/SoftTypography';
-import SoftButton from 'components/SoftButton';
 import { useUpdatePlugin } from '../../hooks/useWordPress';
 import type { AggregatedPluginUpdate } from '../../hooks/useWordPress';
 
@@ -181,8 +180,7 @@ const PluginUpdateRow: React.FC<PluginUpdateRowProps> = ({ item, expanded, onTog
                 </SoftTypography>
               </SoftBox>
               <SoftButton
-                variant="gradient"
-                color="info"
+                variant="contained"
                 size="small"
                 onClick={() =>
                   updatePlugin.mutate({

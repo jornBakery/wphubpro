@@ -39,6 +39,8 @@ function WPHubNavbar({ absolute = false, light = false, isMini = false }) {
     navigate('/login');
   };
   const { breadcrumbTitle } = usePageBreadcrumb();
+  const { data: notificationsData } = useNotifications({ unreadOnly: true, limit: 99 });
+  const unreadCount = notificationsData?.total ?? 0;
   const route = location.pathname.split('/').filter(Boolean);
   const defaultPageTitle = route[route.length - 1] || 'dashboard';
   const pageTitle = breadcrumbTitle || defaultPageTitle;

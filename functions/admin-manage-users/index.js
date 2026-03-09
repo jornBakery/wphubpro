@@ -1,6 +1,12 @@
 const sdk = require("node-appwrite");
 const stripe = require("stripe");
 const handleList = require("./handlers/list");
+
+function createClient(sdkLib, { endpoint, projectId, apiKey }) {
+  const client = new sdkLib.Client().setEndpoint(endpoint).setProject(projectId);
+  if (apiKey) client.setKey(apiKey);
+  return client;
+}
 const handleUpdate = require("./handlers/update");
 const handleLoginAs = require("./handlers/login-as");
 
@@ -19,11 +25,11 @@ function parsePayload(req) {
 
 module.exports = async ({ req, res, log, error }) => {
   try {
-    const APPWRITE_ENDPOINT = req.variables?.APPWRITE_ENDPOINT || process.env.APPWRITE_ENDPOINT;
-    const APPWRITE_PROJECT_ID = req.variables?.APPWRITE_PROJECT_ID || process.env.APPWRITE_PROJECT_ID;
-    const APPWRITE_API_KEY = req.variables?.APPWRITE_API_KEY || process.env.APPWRITE_API_KEY;
+    const endpoint = process.env.APPWRITE_ENDPOINT || process.env.APPWRITE_FUNCTION_ENDPOINT;
+    const projectId = process.env.APPWRITE_PROJECT_ID || process.env.APPWRITE_FUNCTION_PROJECT_ID;
+    const apiKey = process.env.APPWRITE_API_KEY || process.env.APPWRITE_FUNCTION_API_KEY || process.env.APPWRITE_KEY;
 
-    if (!APPWRITE_ENDPOINT || !APPWRITE_PROJECT_ID || !APPWRITE_API_KEY) {
+    if (!endpoint || !projectId || !apiKey) {
       error("Appwrite configuration missing");
       return res.json({ success: false, message: "Appwrite config missing" }, 500);
     }
@@ -43,8 +49,7 @@ module.exports = async ({ req, res, log, error }) => {
     };
     const action = actionMap[actionRaw] || actionRaw;
 
-    const client = new sdk.Client();
-    client.setEndpoint(APPWRITE_ENDPOINT).setProject(APPWRITE_PROJECT_ID).setKey(APPWRITE_API_KEY);
+    const client = createClient(sdk, { endpoint, projectId, apiKey });
     const databases = new sdk.Databases(client);
     const stripeInstance = process.env.STRIPE_SECRET_KEY ? stripe(process.env.STRIPE_SECRET_KEY) : null;
 
@@ -52,9 +57,9 @@ module.exports = async ({ req, res, log, error }) => {
       client,
       databases,
       stripe: stripeInstance,
-      APPWRITE_ENDPOINT,
-      APPWRITE_PROJECT_ID,
-      APPWRITE_API_KEY,
+      APPWRITE_ENDPOINT: endpoint,
+      APPWRITE_PROJECT_ID: projectId,
+      APPWRITE_API_KEY: apiKey,
     };
 
     if (action === "list") {

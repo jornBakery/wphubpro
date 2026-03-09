@@ -3,15 +3,7 @@
  */
 import React, { useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
-import { Theme } from '@mui/material/styles';
 import SoftBox from 'components/SoftBox';
-
-type SoftUITheme = Theme & {
-  functions: {
-    pxToRem: (value: number) => string;
-    [key: string]: unknown;
-  };
-};
 
 import SidenavJS from 'examples/Sidenav';
 
@@ -28,12 +20,12 @@ import { useSoftUIController, setLayout } from 'context';
 
 import WPHubNavbar from './WPHubNavbar';
 import { PageBreadcrumbProvider } from '../../contexts/PageBreadcrumbContext';
-import { userRoutes, adminRoutes } from '../../config/sidenavRoutes';
 import { useAuth } from '../../domains/auth';
+import { useMenuRoutes } from '../../hooks/useMenuRoutes';
 import { usePlatformSettings } from '../../hooks/usePlatformSettings';
 import Toaster from '../ui/Toaster';
 
-import brand from 'assets/images/logo-ct.png';
+const brand = new URL('../../assets/images/logo-ct.png', import.meta.url).href;
 
 const MainLayout: React.FC = () => {
   const [controller, dispatch] = useSoftUIController() as [
@@ -44,6 +36,7 @@ const MainLayout: React.FC = () => {
   const isSiteDetailPage = /^\/sites\/[^/]+$/.test(location.pathname);
   const { miniSidenav } = controller;
   const { isAdmin } = useAuth();
+  const { userRoutes, adminRoutes } = useMenuRoutes(!!isAdmin);
   const { data: details } = usePlatformSettings('details');
   const brandName = details?.name || 'WPHub.PRO';
   const brandLogo = details?.logoUrl || details?.logoDataUrl || brand;
@@ -64,7 +57,7 @@ const MainLayout: React.FC = () => {
       />
       <PageBreadcrumbProvider>
         <SoftBox
-          sx={({ breakpoints, transitions, functions: { pxToRem } }: SoftUITheme) => ({
+          sx={({ breakpoints, transitions, functions: { pxToRem } }) => ({
             display: 'flex',
             flexDirection: 'column',
             minHeight: '100vh',
@@ -90,7 +83,7 @@ const MainLayout: React.FC = () => {
             pt={1}
             pb={3}
             px={3}
-            sx={({ breakpoints }: SoftUITheme) => ({
+            sx={({ breakpoints }) => ({
               flex: 1,
               display: 'flex',
               flexDirection: 'column',

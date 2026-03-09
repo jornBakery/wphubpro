@@ -6,7 +6,7 @@ import Card from '@mui/material/Card';
 import SoftBox from 'components/SoftBox';
 import SoftTypography from 'components/SoftTypography';
 import SoftButton from 'components/SoftButton';
-import SoftAvatar from 'components/SoftAvatar';
+import Avatar from '@mui/material/Avatar';
 import Icon from '@mui/material/Icon';
 import { Link } from 'react-router-dom';
 import { avatars } from '../../services/appwrite';
@@ -43,12 +43,15 @@ const DashboardUserCard: React.FC<DashboardUserCardProps> = ({ user }) => {
     <Card>
       <SoftBox p={2}>
         <SoftBox display="flex" alignItems="center" gap={1.5} mb={1.5}>
-          <SoftAvatar
+          <Avatar
             src={avatarUrl}
             alt={user?.name || 'avatar'}
-            bgColor="info"
-            size="md"
-            variant="rounded"
+            sx={{
+              bgcolor: 'info.main',
+              width: 48,
+              height: 48,
+              borderRadius: 1,
+            }}
           />
           <SoftBox flex={1} minWidth={0}>
             <SoftTypography variant="button" fontWeight="medium" noWrap>
@@ -71,7 +74,7 @@ const DashboardUserCard: React.FC<DashboardUserCardProps> = ({ user }) => {
           </SoftBox>
         </SoftBox>
         <SoftBox display="flex" gap={1}>
-          <SoftButton variant="gradient" color="info" size="small" component={Link} to={ROUTE_PATHS.ACCOUNT_PROFILE}>
+          <SoftButton variant="contained" color="info" size="small" component={Link} to={ROUTE_PATHS.ACCOUNT_PROFILE}>
             <Icon sx={{ mr: 0.5, fontSize: 16 }}>person</Icon>
             Profiel
           </SoftButton>

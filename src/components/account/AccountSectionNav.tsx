@@ -1,7 +1,7 @@
 import React from 'react';
 import Card from '@mui/material/Card';
-import SoftBox from 'components/SoftBox';
 import SoftButton from 'components/SoftButton';
+import SoftBox from 'components/SoftBox';
 import Icon from '@mui/material/Icon';
 import { Link, useLocation } from 'react-router-dom';
 import { ROUTE_PATHS } from '../../config/routePaths';
@@ -24,11 +24,11 @@ const AccountSectionNav: React.FC = () => { // pragma: allowlist secret
           return (
             <SoftButton
               key={item.to}
-              size="small"
-              color="info"
-              variant={isActive ? 'gradient' : 'outlined'}
               component={Link}
               to={item.to}
+              size="small"
+              color="info"
+              variant={isActive ? 'contained' : 'outlined'}
             >
               <Icon sx={{ mr: 0.75, fontSize: 16 }}>{item.icon}</Icon>
               {item.label}

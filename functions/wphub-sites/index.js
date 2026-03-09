@@ -2,10 +2,33 @@
 const sdk = require('node-appwrite');
 const fetch = require('node-fetch');
 const crypto = require('crypto');
-const { getEnv, getAppwriteConfig } = require('./_shared/env');
-const { parsePayload } = require('./_shared/request');
-const { createClient } = require('./_shared/appwrite');
-const { fail, ok } = require('./_shared/response');
+
+function parsePayload(req) {
+  if (!req) return {};
+  if (req.body && typeof req.body === "object") return req.body;
+  if (req.payload && typeof req.payload === "object") return req.payload;
+  const raw = req.payload || req.bodyRaw || req.body;
+  if (typeof raw === "string") {
+    const trimmed = raw.trim();
+    if (!trimmed) return {};
+    return JSON.parse(trimmed);
+  }
+  return {};
+}
+
+function createClient(sdkLib, { endpoint, projectId, apiKey }) {
+  const client = new sdkLib.Client().setEndpoint(endpoint).setProject(projectId);
+  if (apiKey) client.setKey(apiKey);
+  return client;
+}
+
+function ok(res, payload = {}, statusCode = 200) {
+  return res.json(payload, statusCode);
+}
+
+function fail(res, message, statusCode = 500, extra = {}) {
+  return res.json({ success: false, message, ...extra }, statusCode);
+}
 
 function encrypt(text, key) {
   const iv = crypto.randomBytes(12);
@@ -16,25 +39,25 @@ function encrypt(text, key) {
   return `${iv.toString('hex')}:${encrypted.toString('hex')}:${tag.toString('hex')}`;
 }
 
-function getAuthenticatedUserId(req, env) {
+function getAuthenticatedUserId(req) {
   const headers = req?.headers || {};
   return (
-    env.APPWRITE_FUNCTION_USER_ID ||
-    env.APPWRITE_USER_ID ||
+    process.env.APPWRITE_FUNCTION_USER_ID ||
+    process.env.APPWRITE_USER_ID ||
     headers['x-appwrite-user-id'] ||
     headers['x-appwrite-function-user-id'] ||
     null
   );
 }
 
-function getDataStoreConfig(env) {
-  const databaseId = env.APPWRITE_DATABASE_ID || env.DATABASE_ID;
-  const sitesCollectionId = env.SITES_COLLECTION_ID || 'sites';
+function getDataStoreConfig() {
+  const databaseId = process.env.APPWRITE_DATABASE_ID || process.env.DATABASE_ID;
+  const sitesCollectionId = process.env.SITES_COLLECTION_ID || 'sites';
   return { databaseId, sitesCollectionId };
 }
 
-async function handleCreate(req, res, error, { env, databases }) {
-  const ENCRYPTION_KEY = env.ENCRYPTION_KEY;
+async function handleCreate(req, res, error, { databases }) {
+  const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY;
   if (!ENCRYPTION_KEY) {
     return fail(res, 'Function environment is not configured.', 500);
   }
@@ -44,7 +67,7 @@ async function handleCreate(req, res, error, { env, databases }) {
   const requestedUserId = (req.query?.userId || req.query?.user_id) || (payloadObj.userId || payloadObj.user_id);
   const site_url = (req.query?.site_url || req.query?.siteUrl) || (payloadObj.site_url || payloadObj.siteUrl);
   const site_name = (req.query?.site_name || req.query?.siteName) || (payloadObj.site_name || payloadObj.siteName);
-  const { databaseId, sitesCollectionId } = getDataStoreConfig(env);
+  const { databaseId, sitesCollectionId } = getDataStoreConfig();
 
   if (!databaseId) return fail(res, 'APPWRITE_DATABASE_ID missing in function environment.', 500);
   if (!authUserId) return fail(res, 'Authentication required.', 401);
@@ -94,14 +117,14 @@ async function handleCreate(req, res, error, { env, databases }) {
   }
 }
 
-async function handleUpdate(req, res, error, { env, databases }) {
-  const ENCRYPTION_KEY = env.ENCRYPTION_KEY;
+async function handleUpdate(req, res, error, { databases }) {
+  const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY;
   const payloadObj = req._parsedPayload || {};
   const authUserId = req._authUserId;
   const siteId = (req.query?.siteId || req.query?.site_id) || (payloadObj.siteId || payloadObj.site_id);
   const updates = req.query?.updates || payloadObj.updates || payloadObj;
   const requestedUserId = (req.query?.userId || req.query?.user_id) || payloadObj.userId || payloadObj.user_id || updates?.userId || updates?.user_id;
-  const { databaseId, sitesCollectionId } = getDataStoreConfig(env);
+  const { databaseId, sitesCollectionId } = getDataStoreConfig();
 
   if (!databaseId) return fail(res, 'APPWRITE_DATABASE_ID missing in function environment.', 500);
   if (!authUserId) return fail(res, 'Authentication required.', 401);
@@ -164,10 +187,11 @@ async function handleUpdate(req, res, error, { env, databases }) {
 }
 
 module.exports = async ({ req, res, log, error }) => {
-  const env = getEnv(req);
-  const { endpoint, projectId, apiKey, missing } = getAppwriteConfig(req);
+  const endpoint = process.env.APPWRITE_ENDPOINT || process.env.APPWRITE_FUNCTION_ENDPOINT;
+  const projectId = process.env.APPWRITE_PROJECT_ID || process.env.APPWRITE_FUNCTION_PROJECT_ID;
+  const apiKey = process.env.APPWRITE_API_KEY || process.env.APPWRITE_FUNCTION_API_KEY || process.env.APPWRITE_KEY;
 
-  if (missing.length > 0) return fail(res, 'Function environment is not configured.', 500);
+  if (!endpoint || !projectId || !apiKey) return fail(res, 'Function environment is not configured.', 500);
 
   const client = createClient(sdk, { endpoint, projectId, apiKey });
   const databases = new sdk.Databases(client);
@@ -180,10 +204,10 @@ module.exports = async ({ req, res, log, error }) => {
   }
 
   req._parsedPayload = payloadObj;
-  req._authUserId = getAuthenticatedUserId(req, env);
+  req._authUserId = getAuthenticatedUserId(req);
   const action = (req.query?.action || payloadObj.action || '').toLowerCase();
 
-  if (action === 'create') return handleCreate(req, res, error, { env, databases });
-  if (action === 'update') return handleUpdate(req, res, error, { env, databases });
+  if (action === 'create') return handleCreate(req, res, error, { databases });
+  if (action === 'update') return handleUpdate(req, res, error, { databases });
   return fail(res, 'Invalid or missing action. Use action: "create" or "update".', 400);
 };

@@ -7,7 +7,7 @@ import SoftBox from 'components/SoftBox';
 import SoftTypography from 'components/SoftTypography';
 import SoftButton from 'components/SoftButton';
 import Icon from '@mui/material/Icon';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import type { Subscription, UsageMetrics } from '../../types';
 import { ROUTE_PATHS } from '../../config/routePaths';
 
@@ -125,6 +125,7 @@ const DashboardSubscriptionCard: React.FC<DashboardSubscriptionCardProps> = ({
   usage,
   isLoading,
 }) => {
+  const navigate = useNavigate();
   const sub = subscription;
   const u = usage ?? { sitesUsed: 0, libraryUsed: 0, storageUsed: 0 };
   const sitesLimit = sub?.sitesLimit ?? 1;
@@ -179,7 +180,7 @@ const DashboardSubscriptionCard: React.FC<DashboardSubscriptionCardProps> = ({
               <CircleProgress label="Bibliotheek" used={u.libraryUsed} limit={libraryLimit} valuePct={libraryPct} />
               <CircleProgress label="Opslag" used={u.storageUsed} limit={storageLimit} valuePct={storagePct} />
             </SoftBox>
-            <SoftButton variant="outlined" size="small" component={Link} to={ROUTE_PATHS.ACCOUNT_SUBSCRIPTION} fullWidth sx={{ borderColor: 'white', color: 'white', '&:hover': { borderColor: 'white', color: 'white', backgroundColor: 'rgba(255,255,255,0.15)' } }}>
+            <SoftButton variant="outlined" size="small" fullWidth onClick={() => navigate(ROUTE_PATHS.ACCOUNT_SUBSCRIPTION)} sx={{ borderColor: 'white', color: 'white', '&:hover': { borderColor: 'white', color: 'white', backgroundColor: 'rgba(255,255,255,0.15)' } }}>
               <Icon sx={{ mr: 0.5, fontSize: 16 }}>credit_card</Icon>
               Beheren
             </SoftButton>

@@ -65,6 +65,7 @@ const ForumNewThreadPage: React.FC = () => {
         <Card>
           <SoftBox component="form" onSubmit={handleSubmit} p={3} display="flex" flexDirection="column" gap={2}>
             <TextField
+              variant="standard"
               label="Categorie"
               value={effectiveCategoryId}
               onChange={(e) => setCategoryId(e.target.value)}
@@ -79,8 +80,14 @@ const ForumNewThreadPage: React.FC = () => {
                 </MenuItem>
               ))}
             </TextField>
-            <TextField label="Titel" value={title} onChange={(e) => setTitle(e.target.value)} required fullWidth size="small" />
-            <TextField label="Bericht" value={body} onChange={(e) => setBody(e.target.value)} multiline rows={5} required fullWidth size="small" />
+            <SoftBox>
+              <SoftTypography variant="caption" fontWeight="medium" color="text" display="block" mb={0.5}>Titel</SoftTypography>
+              <SoftInput value={title} onChange={(e) => setTitle(e.target.value)} required fullWidth size="small" />
+            </SoftBox>
+            <SoftBox>
+              <SoftTypography variant="caption" fontWeight="medium" color="text" display="block" mb={0.5}>Bericht</SoftTypography>
+              <SoftInput value={body} onChange={(e) => setBody(e.target.value)} multiline rows={5} required fullWidth size="small" />
+            </SoftBox>
             <SoftBox display="flex" gap={1} mt={1}>
               <SoftButton type="submit" variant="gradient" color="info" disabled={createThread.isPending}>
                 {createThread.isPending ? 'Aanmaken...' : 'Discussie aanmaken'}

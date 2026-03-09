@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Card from '@mui/material/Card';
-import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
+import TextField from '@mui/material/TextField';
 import SoftBox from 'components/SoftBox';
+import SoftInput from 'components/SoftInput';
 import SoftTypography from 'components/SoftTypography';
 import SoftButton from 'components/SoftButton';
 import Footer from 'examples/Footer';
@@ -48,15 +49,12 @@ const CreateTicketPage: React.FC = () => {
 
         <Card>
           <SoftBox component="form" onSubmit={handleSubmit} p={3} display="flex" flexDirection="column" gap={2}>
+            <SoftBox>
+              <SoftTypography variant="caption" fontWeight="medium" color="text" display="block" mb={0.5}>Onderwerp</SoftTypography>
+              <SoftInput value={subject} onChange={(e) => setSubject(e.target.value)} required fullWidth size="small" />
+            </SoftBox>
             <TextField
-              label="Onderwerp"
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              required
-              fullWidth
-              size="small"
-            />
-            <TextField
+              variant="standard"
               label="Prioriteit"
               value={priority}
               onChange={(e) => setPriority(e.target.value as TicketPriority)}
@@ -69,15 +67,10 @@ const CreateTicketPage: React.FC = () => {
               <MenuItem value="high">Hoog</MenuItem>
               <MenuItem value="urgent">Urgent</MenuItem>
             </TextField>
-            <TextField
-              label="Bericht"
-              value={body}
-              onChange={(e) => setBody(e.target.value)}
-              multiline
-              rows={5}
-              fullWidth
-              size="small"
-            />
+            <SoftBox>
+              <SoftTypography variant="caption" fontWeight="medium" color="text" display="block" mb={0.5}>Bericht</SoftTypography>
+              <SoftInput value={body} onChange={(e) => setBody(e.target.value)} multiline rows={5} fullWidth size="small" />
+            </SoftBox>
             <SoftBox display="flex" gap={1} mt={1}>
               <SoftButton type="submit" variant="gradient" color="info" disabled={createTicket.isPending}>
                 {createTicket.isPending ? 'Aanmaken...' : 'Ticket aanmaken'}

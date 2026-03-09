@@ -1861,6 +1861,23 @@
     ],
     "buckets": [
         {
+            "$id": "platform_assets",
+            "$permissions": [
+                "create(\"team:admin\")",
+                "read(\"any\")",
+                "update(\"team:admin\")",
+                "delete(\"team:admin\")"
+            ],
+            "fileSecurity": false,
+            "name": "platform_assets",
+            "enabled": true,
+            "maximumFileSize": 2097152,
+            "allowedFileExtensions": [".png", ".jpg", ".jpeg", ".svg", ".webp"],
+            "compression": "none",
+            "encryption": false,
+            "antivirus": true
+        },
+        {
             "$id": "action_logs",
             "$permissions": [],
             "fileSecurity": false,

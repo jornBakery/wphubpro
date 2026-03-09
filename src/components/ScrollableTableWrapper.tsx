@@ -5,7 +5,7 @@ import React, { useRef } from 'react';
 import TableContainer from '@mui/material/TableContainer';
 import Icon from '@mui/material/Icon';
 import IconButton from '@mui/material/IconButton';
-import Box from '@mui/material/Box';
+import SoftBox from 'components/SoftBox';
 
 const SCROLL_STEP = 80;
 
@@ -23,7 +23,7 @@ const ScrollableTableWrapper: React.FC<ScrollableTableWrapperProps> = ({
   const scrollRef = useRef<HTMLDivElement>(null);
 
   return (
-    <Box sx={{ display: 'flex', alignItems: 'stretch', marginBottom: 3, ...sx }}>
+    <SoftBox sx={{ display: 'flex', alignItems: 'stretch', marginBottom: 3, ...sx }}>
       <TableContainer
         ref={scrollRef}
         sx={{
@@ -44,7 +44,7 @@ const ScrollableTableWrapper: React.FC<ScrollableTableWrapperProps> = ({
       >
         {children}
       </TableContainer>
-      <Box
+      <SoftBox
         sx={{
           display: 'flex',
           flexDirection: 'column',
@@ -70,8 +70,8 @@ const ScrollableTableWrapper: React.FC<ScrollableTableWrapperProps> = ({
         >
           <Icon fontSize="small">keyboard_arrow_down</Icon>
         </IconButton>
-      </Box>
-    </Box>
+      </SoftBox>
+    </SoftBox>
   );
 };
 

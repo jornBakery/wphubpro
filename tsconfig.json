@@ -22,8 +22,9 @@
       "components/*": ["./src/components/*"],
       "examples/*": ["./src/examples/*"],
       "layouts/*": ["./src/layouts/*"],
-      "context": ["./src/context"]
+      "context": ["./src/context"],
+      "rollup/parseAst": ["./node_modules/rollup/dist/parseAst"]
     }
   },
-  "include": ["src"]
+  "include": ["src", "vite.config.ts", "vite-env.d.ts"]
 }

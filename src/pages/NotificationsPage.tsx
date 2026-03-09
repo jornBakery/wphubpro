@@ -3,8 +3,8 @@ import Card from '@mui/material/Card';
 import IconButton from '@mui/material/IconButton';
 import Icon from '@mui/material/Icon';
 import SoftBox from 'components/SoftBox';
-import SoftTypography from 'components/SoftTypography';
 import SoftButton from 'components/SoftButton';
+import SoftTypography from 'components/SoftTypography';
 import Footer from 'examples/Footer';
 import { useNotifications, useMarkNotificationRead, useMarkAllNotificationsRead } from '../domains/notifications';
 import type { Notification, NotificationType } from '../types';
@@ -40,7 +40,7 @@ const NotificationsPage: React.FC = () => {
           <SoftBox display="flex" gap={1}>
             <SoftButton
               size="small"
-              variant={filter === 'all' ? 'gradient' : 'outlined'}
+              variant={filter === 'all' ? 'contained' : 'outlined'}
               color="info"
               onClick={() => setFilter('all')}
             >
@@ -48,7 +48,7 @@ const NotificationsPage: React.FC = () => {
             </SoftButton>
             <SoftButton
               size="small"
-              variant={filter === 'unread' ? 'gradient' : 'outlined'}
+              variant={filter === 'unread' ? 'contained' : 'outlined'}
               color="info"
               onClick={() => setFilter('unread')}
             >

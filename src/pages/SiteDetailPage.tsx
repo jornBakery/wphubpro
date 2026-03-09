@@ -6,9 +6,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Grid from '@mui/material/Grid';
 import Icon from '@mui/material/Icon';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
-import Box from '@mui/material/Box';
+import TabNavList, { TabNavPanel } from 'components/ui/TabNavList';
 import SoftBox from 'components/SoftBox';
 import SoftTypography from 'components/SoftTypography';
 import SoftButton from 'components/SoftButton';
@@ -26,30 +24,13 @@ import LogsTab from './site-detail/LogsTab';
 import SiteDetailSidebar from '../components/site-detail/SiteDetailSidebar';
 import EditSiteModal from '../components/sites/EditSiteModal';
 
-const blueGradient = 'linear-gradient(310deg, #4F5482, #7a8ef0)';
-const orangeGradient = 'linear-gradient(310deg, #ea580c, #fb923c)';
-
 const TAB_ITEMS = [
-  { index: 0, label: 'Overview', icon: 'info' },
-  { index: 1, label: 'Plugins', icon: 'extension' },
-  { index: 2, label: "Thema's", icon: 'palette' },
-  { index: 3, label: 'Health', icon: 'health_and_safety' },
-  { index: 4, label: 'Logs', icon: 'list_alt' },
+  { value: 0, label: 'Overview', icon: 'info' },
+  { value: 1, label: 'Plugins', icon: 'extension' },
+  { value: 2, label: "Thema's", icon: 'palette' },
+  { value: 3, label: 'Health', icon: 'health_and_safety' },
+  { value: 4, label: 'Logs', icon: 'list_alt' },
 ];
-
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
-}
-
-function TabPanel({ children, value, index }: TabPanelProps) {
-  return (
-    <div role="tabpanel" hidden={value !== index}>
-      {value === index && <SoftBox py={3}>{children}</SoftBox>}
-    </div>
-  );
-}
 
 const SiteDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -118,90 +99,9 @@ const SiteDetailPage: React.FC = () => {
         <Grid container spacing={3} alignItems="stretch" sx={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
           {/* Left column - tab menu + main content */}
           <Grid item xs={12} lg={8} sx={{ display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden' }}>
-            <Box sx={{ flex: '1 1 0%', display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden' }}>
-              {/* Horizontal tab navigation - same style as vertical main Sidenav */}
-              <Box sx={{ flexShrink: 0, mb: 2, px: 3, pt: 0, color: '#292F4D', backgroundColor: 'background.default', py: 1 }}>
-                <Tabs
-                  value={tab}
-                  onChange={(_, value: number) => setTab(value)}
-                  variant="scrollable"
-                  scrollButtons="auto"
-                  allowScrollButtonsMobile
-                    sx={{
-                    minHeight: 52,
-                    '& .MuiTabs-indicator': { display: 'none' },
-                    '& .MuiTabs-flexContainer': { overflow: 'visible' },
-                    '& .MuiTab-root': {
-                      minHeight: 52,
-                      minWidth: 90,
-                      padding: '6px 12px 6px 12px',
-                      marginRight: 8,
-                      justifyContent: 'flex-start',
-                      textAlign: 'left',
-                      fontSize: '0.875rem',
-                      fontWeight: 500,
-                      textTransform: 'none',
-                      color: '#292F4D !important',
-                      backgroundColor: 'transparent',
-                      borderRadius: '8px',
-                      transition: 'background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
-                      '&.Mui-selected': {
-                        color: '#ffffff !important',
-                        fontWeight: 600,
-                        background: blueGradient,
-                        boxShadow: '0 20px 27px 0 rgba(0,0,0,0.05)',
-                      },
-                      // Ensure label text is visible (icon + label layout)
-                      '& > *:not(.MuiTab-iconWrapper)': {
-                        color: 'inherit',
-                        opacity: 1,
-                        visibility: 'visible',
-                        whiteSpace: 'nowrap',
-                        overflow: 'visible',
-                      },
-                    },
-                    '& .MuiTab-iconWrapper': {
-                      marginRight: 1,
-                      '& .material-icons-round, & .material-icons, & .MuiIcon-root': {
-                        fontSize: '24px !important',
-                        color: '#ffffff !important',
-                      },
-                      '& > *': {
-                        minWidth: 38,
-                        minHeight: 38,
-                        borderRadius: '8px',
-                        display: 'grid',
-                        placeItems: 'center',
-                        background: orangeGradient,
-                        boxShadow: '0 4px 6px -1px rgba(0,0,0,0.12)',
-                        transition: 'background 0.2s ease-in-out',
-                        color: '#ffffff',
-                        fontSize: '24px !important',
-                      },
-                    },
-                    '& .Mui-selected .MuiTab-iconWrapper > *': {
-                      background: orangeGradient,
-                      boxShadow: '0 4px 6px -1px rgba(0,0,0,0.12)',
-                      color: '#ffffff',
-                    },
-                  }}
-                >
-                  {TAB_ITEMS.map(({ index, label, icon }) => (
-                    <Tab
-                      key={index}
-                      label={label}
-                      icon={
-                        <Box component="span" sx={{ display: 'inherit' }}>
-                          <Icon sx={{ fontSize: '24px !important', color: '#ffffff !important' }}>{icon}</Icon>
-                        </Box>
-                      }
-                      iconPosition="start"
-                      value={index}
-                    />
-                  ))}
-                </Tabs>
-              </Box>
-              <Box
+            <SoftBox sx={{ flex: '1 1 0%', display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden' }}>
+              <TabNavList items={TAB_ITEMS} value={tab} onChange={(_, v) => setTab(v)} />
+              <SoftBox
                 sx={{
                   flex: '1 1 0%',
                   minHeight: 0,
@@ -213,23 +113,23 @@ const SiteDetailPage: React.FC = () => {
                   pb: 3,
                 }}
               >
-                <TabPanel value={tab} index={0}>
+                <TabNavPanel value={tab} index={0}>
                   <SiteDetailsTab siteId={site.$id} onTabChange={setTab} />
-                </TabPanel>
-                <TabPanel value={tab} index={1}>
+                </TabNavPanel>
+                <TabNavPanel value={tab} index={1}>
                   <PluginsTab siteId={site.$id} />
-                </TabPanel>
-                <TabPanel value={tab} index={2}>
+                </TabNavPanel>
+                <TabNavPanel value={tab} index={2}>
                   <ThemesTab siteId={site.$id} />
-                </TabPanel>
-                <TabPanel value={tab} index={3}>
+                </TabNavPanel>
+                <TabNavPanel value={tab} index={3}>
                   <SiteHealthTab siteId={site.$id} />
-                </TabPanel>
-                <TabPanel value={tab} index={4}>
+                </TabNavPanel>
+                <TabNavPanel value={tab} index={4}>
                   <LogsTab siteId={site.$id} />
-                </TabPanel>
-              </Box>
-            </Box>
+                </TabNavPanel>
+              </SoftBox>
+            </SoftBox>
           </Grid>
 
           {/* Right column - site details card only */}

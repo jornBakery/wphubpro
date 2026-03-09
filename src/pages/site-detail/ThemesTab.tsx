@@ -99,7 +99,7 @@ const ThemesTab: React.FC<ThemesTabProps> = ({ siteId }) => {
               <DataTableHeadCell width="50%" pl={5} color="#4F5482">Thema</DataTableHeadCell>
               <DataTableHeadCell width="20%" pl={undefined} color="#4F5482">Status</DataTableHeadCell>
               <DataTableHeadCell width="20%" pl={undefined} color="#4F5482">Versie</DataTableHeadCell>
-              <DataTableHeadCell width="10%" align="right" pl={undefined} color="#4F5482" sorted={false}>Acties</DataTableHeadCell>
+              <DataTableHeadCell width="10%" align="right" pl={undefined} color="#4F5482" sorted="none">Acties</DataTableHeadCell>
             </TableRow>
           </SoftBox>
           <TableBody>

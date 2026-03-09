@@ -2,10 +2,10 @@
  * Dashboard sites monitor - Updates, % healthy, disconnected count
  */
 import React from 'react';
-import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Icon from '@mui/material/Icon';
-import Typography from '@mui/material/Typography';
+import SoftBox from 'components/SoftBox';
+import SoftTypography from 'components/SoftTypography';
 import { Site } from '../../types';
 
 interface DashboardSitesMonitorProps {
@@ -26,28 +26,28 @@ const DashboardSitesMonitor: React.FC<DashboardSitesMonitorProps> = ({
 
   return (
     <Card>
-      <Box p={2}>
-        <Box display="flex" flexDirection="column" gap={0.75}>
-          <Box display="flex" alignItems="center" gap={1}>
+      <SoftBox p={2}>
+        <SoftBox display="flex" flexDirection="column" gap={0.75}>
+          <SoftBox display="flex" alignItems="center" gap={1}>
             <Icon color="info" sx={{ fontSize: 18 }}>system_update</Icon>
-            <Typography variant="caption">
+            <SoftTypography variant="caption">
               {pluginUpdatesCount} plugin{pluginUpdatesCount !== 1 ? 's' : ''} &amp; {themeUpdatesCount} thema{themeUpdatesCount !== 1 ? "'s" : ''} updates
-            </Typography>
-          </Box>
-          <Box display="flex" alignItems="center" gap={1}>
+            </SoftTypography>
+          </SoftBox>
+          <SoftBox display="flex" alignItems="center" gap={1}>
             <Icon color={healthyPct >= 80 ? 'success' : healthyPct >= 50 ? 'warning' : 'error'} sx={{ fontSize: 18 }}>monitor_heart</Icon>
-            <Typography variant="caption">
+            <SoftTypography variant="caption">
               {healthyPct}% sites healthy
-            </Typography>
-          </Box>
-          <Box display="flex" alignItems="center" gap={1}>
+            </SoftTypography>
+          </SoftBox>
+          <SoftBox display="flex" alignItems="center" gap={1}>
             <Icon color={disconnectedCount === 0 ? 'success' : 'error'} sx={{ fontSize: 18 }}>link</Icon>
-            <Typography variant="caption">
+            <SoftTypography variant="caption">
               {disconnectedCount === 0 ? 'Alles verbonden' : `${disconnectedCount} losgekoppeld`}
-            </Typography>
-          </Box>
-        </Box>
-      </Box>
+            </SoftTypography>
+          </SoftBox>
+        </SoftBox>
+      </SoftBox>
     </Card>
   );
 };

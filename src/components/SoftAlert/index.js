@@ -13,7 +13,7 @@ Coded by www.creative-tim.com
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 */
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
 // prop-types is a library for typechecking of props
 import PropTypes from "prop-types";
@@ -30,8 +30,22 @@ import SoftAlertCloseIcon from "components/SoftAlert/SoftAlertCloseIcon";
 
 function SoftAlert({ color = "info", dismissible = false, children, ...rest }) {
   const [alertStatus, setAlertStatus] = useState("mount");
+  const timeoutRef = useRef(null);
 
   const handleAlertStatus = () => setAlertStatus("fadeOut");
+
+  // Schedule unmount only once when entering fadeOut; cleanup on unmount to avoid setState on unmounted component
+  useEffect(() => {
+    if (alertStatus === "fadeOut") {
+      timeoutRef.current = setTimeout(() => setAlertStatus("unmount"), 400);
+    }
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+    };
+  }, [alertStatus]);
 
   // The base template for the alert
   const alertTemplate = (mount = true) => (
@@ -53,14 +67,10 @@ function SoftAlert({ color = "info", dismissible = false, children, ...rest }) {
     case alertStatus === "mount":
       return alertTemplate();
     case alertStatus === "fadeOut":
-      setTimeout(() => setAlertStatus("unmount"), 400);
       return alertTemplate(false);
     default:
-      alertTemplate();
-      break;
+      return null;
   }
-
-  return null;
 }
 
 

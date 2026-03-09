@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Card from '@mui/material/Card';
 import Grid from '@mui/material/Grid';
-import TextField from '@mui/material/TextField';
+import SoftInput from 'components/SoftInput';
 import SoftBox from 'components/SoftBox';
 import SoftTypography from 'components/SoftTypography';
 import SoftButton from 'components/SoftButton';
@@ -111,27 +111,18 @@ const AccountEditPage: React.FC = () => {
                 <SoftTypography variant="h6" fontWeight="bold">
                   Profielgegevens
                 </SoftTypography>
-                <TextField
-                  label="Naam"
-                  value={name}
-                  onChange={(event) => setName(event.target.value)}
-                  fullWidth
-                  size="small"
-                />
-                <TextField
-                  label="Display name"
-                  value={displayName}
-                  onChange={(event) => setDisplayName(event.target.value)}
-                  fullWidth
-                  size="small"
-                />
-                <TextField
-                  label="E-mail"
-                  value={user?.email || ''}
-                  fullWidth
-                  size="small"
-                  disabled
-                />
+                <SoftBox>
+                  <SoftTypography variant="caption" fontWeight="medium" color="text" display="block" mb={0.5}>Naam</SoftTypography>
+                  <SoftInput value={name} onChange={(e) => setName(e.target.value)} fullWidth size="small" />
+                </SoftBox>
+                <SoftBox>
+                  <SoftTypography variant="caption" fontWeight="medium" color="text" display="block" mb={0.5}>Display name</SoftTypography>
+                  <SoftInput value={displayName} onChange={(e) => setDisplayName(e.target.value)} fullWidth size="small" />
+                </SoftBox>
+                <SoftBox>
+                  <SoftTypography variant="caption" fontWeight="medium" color="text" display="block" mb={0.5}>E-mail</SoftTypography>
+                  <SoftInput value={user?.email || ''} fullWidth size="small" disabled />
+                </SoftBox>
                 <SoftButton
                   variant="gradient"
                   color="info"
@@ -150,30 +141,18 @@ const AccountEditPage: React.FC = () => {
                 <SoftTypography variant="h6" fontWeight="bold">
                   Wachtwoord wijzigen
                 </SoftTypography>
-                <TextField
-                  label="Huidig wachtwoord"
-                  value={currentPassword}
-                  onChange={(event) => setCurrentPassword(event.target.value)}
-                  type="password"
-                  fullWidth
-                  size="small"
-                />
-                <TextField
-                  label="Nieuw wachtwoord"
-                  value={newPassword}
-                  onChange={(event) => setNewPassword(event.target.value)}
-                  type="password"
-                  fullWidth
-                  size="small"
-                />
-                <TextField
-                  label="Bevestig nieuw wachtwoord"
-                  value={confirmPassword}
-                  onChange={(event) => setConfirmPassword(event.target.value)}
-                  type="password"
-                  fullWidth
-                  size="small"
-                />
+                <SoftBox>
+                  <SoftTypography variant="caption" fontWeight="medium" color="text" display="block" mb={0.5}>Huidig wachtwoord</SoftTypography>
+                  <SoftInput type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} fullWidth size="small" />
+                </SoftBox>
+                <SoftBox>
+                  <SoftTypography variant="caption" fontWeight="medium" color="text" display="block" mb={0.5}>Nieuw wachtwoord</SoftTypography>
+                  <SoftInput type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} fullWidth size="small" />
+                </SoftBox>
+                <SoftBox>
+                  <SoftTypography variant="caption" fontWeight="medium" color="text" display="block" mb={0.5}>Bevestig nieuw wachtwoord</SoftTypography>
+                  <SoftInput type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} fullWidth size="small" />
+                </SoftBox>
                 <SoftButton
                   variant="outlined"
                   color="info"

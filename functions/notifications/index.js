@@ -3,17 +3,42 @@
  * Actions: list, markRead, markAllRead, send (admin)
  */
 const sdk = require("node-appwrite");
-const { getAppwriteConfig } = require("../_shared/env");
-const { parsePayload } = require("../_shared/request");
-const { createClient } = require("../_shared/appwrite");
-const { fail, ok } = require("../_shared/response");
+
+function parsePayload(req) {
+  if (!req) return {};
+  if (req.body && typeof req.body === "object") return req.body;
+  if (req.payload && typeof req.payload === "object") return req.payload;
+  const raw = req.payload || req.bodyRaw || req.body;
+  if (typeof raw === "string") {
+    const trimmed = raw.trim();
+    if (!trimmed) return {};
+    return JSON.parse(trimmed);
+  }
+  return {};
+}
+
+function createClient(sdkLib, { endpoint, projectId, apiKey }) {
+  const client = new sdkLib.Client().setEndpoint(endpoint).setProject(projectId);
+  if (apiKey) client.setKey(apiKey);
+  return client;
+}
+
+function ok(res, payload = {}, statusCode = 200) {
+  return res.json(payload, statusCode);
+}
+
+function fail(res, message, statusCode = 500, extra = {}) {
+  return res.json({ success: false, message, ...extra }, statusCode);
+}
 
 const DATABASE_ID = "platform_db";
 const COLLECTION_ID = "notifications";
 
 module.exports = async ({ req, res, log, error }) => {
-  const { endpoint, projectId, apiKey, missing } = getAppwriteConfig(req);
-  if (missing.length > 0) {
+  const endpoint = process.env.APPWRITE_ENDPOINT || process.env.APPWRITE_FUNCTION_ENDPOINT;
+  const projectId = process.env.APPWRITE_PROJECT_ID || process.env.APPWRITE_FUNCTION_PROJECT_ID;
+  const apiKey = process.env.APPWRITE_API_KEY || process.env.APPWRITE_FUNCTION_API_KEY || process.env.APPWRITE_KEY;
+  if (!endpoint || !projectId || !apiKey) {
     return fail(res, "Function environment not configured", 500);
   }
 

@@ -32,6 +32,14 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         }
       }
 
+      // --- Handle Gradients (blue-gradient, orange-gradient) ---
+      if (theme.primaryGradientStart && theme.primaryGradientEnd) {
+        root.style.setProperty('--primary-gradient', `linear-gradient(310deg, ${theme.primaryGradientStart}, ${theme.primaryGradientEnd})`);
+      }
+      if (theme.secondaryGradientStart && theme.secondaryGradientEnd) {
+        root.style.setProperty('--secondary-gradient', `linear-gradient(310deg, ${theme.secondaryGradientStart}, ${theme.secondaryGradientEnd})`);
+      }
+
       // --- Handle Fonts ---
       if (theme.bodyFont) {
         document.body.style.fontFamily = theme.bodyFont;

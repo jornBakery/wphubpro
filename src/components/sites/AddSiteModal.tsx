@@ -4,9 +4,9 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import SoftBox from 'components/SoftBox';
-import SoftTypography from 'components/SoftTypography';
 import SoftButton from 'components/SoftButton';
 import SoftInput from 'components/SoftInput';
+import SoftTypography from 'components/SoftTypography';
 import Icon from '@mui/material/Icon';
 import { useAddSite } from '../../domains/sites';
 
@@ -62,16 +62,16 @@ const AddSiteModal: React.FC<AddSiteModalProps> = ({ open, onClose }) => {
           )}
           <SoftBox mb={2}>
             <SoftTypography variant="caption" fontWeight="medium" color="text" mb={0.5} display="block">Site naam</SoftTypography>
-            <SoftInput placeholder="Mijn WordPress Site" value={siteName} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSiteName(e.target.value)} fullWidth />
+            <SoftInput placeholder="Mijn WordPress Site" value={siteName} onChange={(e) => setSiteName(e.target.value)} fullWidth size="small" />
           </SoftBox>
           <SoftBox>
             <SoftTypography variant="caption" fontWeight="medium" color="text" mb={0.5} display="block">Site URL</SoftTypography>
-            <SoftInput type="url" placeholder="https://example.com" value={siteUrl} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSiteUrl(e.target.value)} fullWidth />
+            <SoftInput type="url" placeholder="https://example.com" value={siteUrl} onChange={(e) => setSiteUrl(e.target.value)} fullWidth size="small" />
           </SoftBox>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
           <SoftButton variant="outlined" color="secondary" onClick={handleClose} disabled={addSiteMutation.isPending}>Annuleren</SoftButton>
-          <SoftButton type="submit" variant="gradient" color="info" disabled={addSiteMutation.isPending}>{addSiteMutation.isPending ? 'Bezig...' : 'Site toevoegen'}</SoftButton>
+          <SoftButton type="submit" variant="contained" color="info" disabled={addSiteMutation.isPending}>{addSiteMutation.isPending ? 'Bezig...' : 'Site toevoegen'}</SoftButton>
         </DialogActions>
       </form>
     </Dialog>

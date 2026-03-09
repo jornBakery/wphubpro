@@ -6,9 +6,9 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { useAuth } from '../../domains/auth';
 import { usePlatformSettings } from '../../hooks/usePlatformSettings';
 import SoftBox from 'components/SoftBox';
-import SoftTypography from 'components/SoftTypography';
-import SoftInput from 'components/SoftInput';
 import SoftButton from 'components/SoftButton';
+import SoftInput from 'components/SoftInput';
+import SoftTypography from 'components/SoftTypography';
 import { AlertCircle } from 'lucide-react';
 
 const LoginPage: React.FC = () => {
@@ -87,13 +87,13 @@ const LoginPage: React.FC = () => {
                 <SoftBox
                   mb={2}
                   p={2}
-                  borderRadius={1}
+                  borderRadius="1"
                   display="flex"
                   alignItems="center"
                   gap={1}
-                  sx={{ bgcolor: 'error.main', color: 'white', fontSize: 14 }}
+                  sx={{ bgcolor: 'error.main', color: 'white', fontSize: '14px' }}
                 >
-                  <AlertCircle size={20} style={{ flexShrink: 0 }} />
+                  <AlertCircle size="20" style={{ flexShrink: 0 }} />
                   <span>{error}</span>
                 </SoftBox>
               )}
@@ -129,7 +129,7 @@ const LoginPage: React.FC = () => {
                   type="password"
                   placeholder="••••••••"
                   value={password}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
+                  onChange={(e) => setPassword(e.target.value)}
                   required
                   fullWidth
                 />
@@ -137,8 +137,8 @@ const LoginPage: React.FC = () => {
 
               <SoftButton
                 type="submit"
-                variant="gradient"
-                color="info"
+                variant="contained"
+                color="primary"
                 fullWidth
                 disabled={isLoading}
                 sx={{ py: 1.5, mb: 2 }}

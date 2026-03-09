@@ -58,8 +58,9 @@ function Sidenav({ color = "info", brand = "", brandName, userRoutes = [], admin
           ...(isAdmin && adminRoutes.length ? [{ type: "divider", key: "menu-divider" }, { type: "title", title: "Admin", key: "admin-title" }, ...adminRoutes] : []),
         ]
       : routes;
-  const collapseName = pathname.split("/").slice(1)[0];
-  const itemName = pathname.split("/").slice(1)[1];
+
+  const isRouteActive = (route) =>
+    route && (pathname === route || pathname.startsWith(route + "/"));
 
   useEffect(() => {
     // A function that sets the mini state of the sidenav.
@@ -94,7 +95,7 @@ function Sidenav({ color = "info", brand = "", brandName, userRoutes = [], admin
         </Link>
       ) : (
         <NavLink to={route} key={key} sx={{ textDecoration: "none" }}>
-          <SidenavItem name={name} active={route === pathname} nested submenuColor={submenuColor} />
+          <SidenavItem name={name} active={isRouteActive(route)} nested submenuColor={submenuColor} />
         </NavLink>
       )
     );
@@ -108,11 +109,12 @@ function Sidenav({ color = "info", brand = "", brandName, userRoutes = [], admin
       let returnValue;
 
       if (collapse) {
+        const childActive = collapse.some((c) => isRouteActive(c.route));
         returnValue = (
           <SidenavItem
             key={key}
             name={name}
-            active={key === itemName}
+            active={childActive}
             open={openNestedCollapse === name}
             onClick={() =>
               openNestedCollapse === name
@@ -132,11 +134,11 @@ function Sidenav({ color = "info", brand = "", brandName, userRoutes = [], admin
             rel="noreferrer"
             sx={{ textDecoration: "none" }}
           >
-            <SidenavItem name={name} active={key === itemName} />
+            <SidenavItem name={name} active={false} />
           </Link>
         ) : (
           <NavLink to={route} key={key} sx={{ textDecoration: "none" }}>
-            <SidenavItem name={name} active={key === itemName} />
+            <SidenavItem name={name} active={isRouteActive(route)} />
           </NavLink>
         );
       }
@@ -151,20 +153,20 @@ function Sidenav({ color = "info", brand = "", brandName, userRoutes = [], admin
       if (type === "collapse") {
         if (href) {
           returnValue = (
-            <Link
-              href={href}
-              key={key}
-              target="_blank"
-              rel="noreferrer"
-              sx={{ textDecoration: "none" }}
-            >
-              <SidenavCollapse
-                name={name}
-                icon={icon}
-                active={key === collapseName}
-                noCollapse={noCollapse}
-              />
-            </Link>
+          <Link
+            href={href}
+            key={key}
+            target="_blank"
+            rel="noreferrer"
+            sx={{ textDecoration: "none" }}
+          >
+            <SidenavCollapse
+              name={name}
+              icon={icon}
+              active={false}
+              noCollapse={noCollapse}
+            />
+          </Link>
           );
         } else if (noCollapse && route) {
           returnValue = (
@@ -173,19 +175,20 @@ function Sidenav({ color = "info", brand = "", brandName, userRoutes = [], admin
                 name={name}
                 icon={icon}
                 noCollapse={noCollapse}
-                active={key === collapseName}
+                active={isRouteActive(route)}
               >
                 {collapse ? renderCollapse(collapse, submenuColor) : null}
               </SidenavCollapse>
             </NavLink>
           );
         } else {
+          const childActive = collapse && collapse.some((c) => isRouteActive(c.route));
           returnValue = (
             <SidenavCollapse
               key={key}
               name={name}
               icon={icon}
-              active={key === collapseName}
+              active={childActive}
               open={openCollapse === key}
               onClick={() => (openCollapse === key ? setOpenCollapse(false) : setOpenCollapse(key))}
             >

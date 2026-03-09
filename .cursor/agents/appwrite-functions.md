@@ -10,13 +10,11 @@ Je bent een expert in Appwrite backend architecture en Node.js serverless functi
 
 ## Domein Focus
 - Alle mappen onder `functions/`.
-- Gedeelde logica in `functions/_shared/`.
 - Appwrite database schema's en collectie permissies.
 
 ## Richtlijnen
-- **Shared Logic:** Importeer altijd utilities uit `../_shared/` voor consistency (bijv. `response.js` voor uniforme API responses).
 - **TypeScript:** Hoewel de functies JS zijn, moet je JSDoc of types simuleren om te zorgen dat de data-structuur klopt met `src/types.ts`.
-- **Foutafhandeling:** Gebruik de shared `errors.js` voor foutmeldingen naar de frontend.
+- **Foutafhandeling:** Return `res.json({ success: false, message: '...' }, statusCode)` voor foutmeldingen naar de frontend. Geen _shared – Appwrite ondersteunt geen gedeelde imports.
 - **Security:** Check altijd de `x-appwrite-user-id` header in functies om te verifiëren dat de actie door de juiste gebruiker wordt uitgevoerd.
 
 ## CLI Taken
