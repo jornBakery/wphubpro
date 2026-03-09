@@ -11,13 +11,15 @@ import TableContainer from '@mui/material/TableContainer';
 import TableRow from '@mui/material/TableRow';
 import TextField from '@mui/material/TextField';
 import IconButton from '@mui/material/IconButton';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
-import MenuItem from '@mui/material/MenuItem';
 import Icon from '@mui/material/Icon';
 import SoftButton from 'components/SoftButton';
 import SoftBox from 'components/SoftBox';
@@ -181,6 +183,8 @@ const AdminUsersPage: React.FC = () => {
   const [limit, setLimit] = useState(25);
   const [editUser, setEditUser] = useState<AdminUser | null>(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
+  const [menuUser, setMenuUser] = useState<AdminUser | null>(null);
 
   const { data, isLoading, isError, error, refetch } = useAdminUsersList({
     limit,
@@ -198,14 +202,26 @@ const AdminUsersPage: React.FC = () => {
   const handleEdit = (user: AdminUser) => {
     setEditUser(user);
     setEditModalOpen(true);
+    setMenuAnchor(null);
+    setMenuUser(null);
+  };
+
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, user: AdminUser) => {
+    setMenuAnchor(event.currentTarget);
+    setMenuUser(user);
+  };
+
+  const handleMenuClose = () => {
+    setMenuAnchor(null);
+    setMenuUser(null);
   };
 
   const handleLoginAs = async (userId: string) => {
+    handleMenuClose();
     try {
       const token = await loginAsMutation.mutateAsync(userId);
       if (token) {
         toast({ title: 'Login-as token gegenereerd', variant: 'success' });
-        // Optionally: open in new tab with token, or copy to clipboard
         navigator.clipboard?.writeText(token);
         toast({ title: 'Token gekopieerd naar klembord', variant: 'success' });
       }
@@ -230,6 +246,31 @@ const AdminUsersPage: React.FC = () => {
         onClose={() => { setEditModalOpen(false); setEditUser(null); }}
         onSaved={() => refetch()}
       />
+
+      <Menu
+        id="user-actions-menu"
+        anchorEl={menuAnchor}
+        open={Boolean(menuAnchor)}
+        onClose={handleMenuClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <MenuItem onClick={() => menuUser && handleEdit(menuUser)}>
+          <ListItemIcon>
+            <Icon fontSize="small">edit</Icon>
+          </ListItemIcon>
+          Bewerken
+        </MenuItem>
+        <MenuItem
+          onClick={() => menuUser && handleLoginAs(menuUser.id)}
+          disabled={loginAsMutation.isPending}
+        >
+          <ListItemIcon>
+            <Icon fontSize="small">login</Icon>
+          </ListItemIcon>
+          Inloggen als
+        </MenuItem>
+      </Menu>
 
       <SoftBox my={3}>
         <Card>
@@ -303,7 +344,7 @@ const AdminUsersPage: React.FC = () => {
                     <DataTableHeadCell width="12%" pl={undefined} color="#4F5482">Plan</DataTableHeadCell>
                     <DataTableHeadCell width="10%" pl={undefined} color="#4F5482">Status</DataTableHeadCell>
                     <DataTableHeadCell width="12%" pl={undefined} color="#4F5482">Lid sinds</DataTableHeadCell>
-                    <DataTableHeadCell width="14%" pl={undefined} align="right" color="#4F5482">Acties</DataTableHeadCell>
+                    <DataTableHeadCell width="14%" pl={undefined} align="right" sorted={false} color="#4F5482">Acties</DataTableHeadCell>
                   </TableRow>
                 </SoftBox>
                 <TableBody>
@@ -324,16 +365,15 @@ const AdminUsersPage: React.FC = () => {
                         <DataTableBodyCell noBorder={rowIndex === users.length - 1}>{u.status}</DataTableBodyCell>
                         <DataTableBodyCell noBorder={rowIndex === users.length - 1}>{u.joined}</DataTableBodyCell>
                         <DataTableBodyCell align="right" noBorder={rowIndex === users.length - 1}>
-                          <IconButton size="small" onClick={() => handleEdit(u)} title="Bewerken">
-                            <Icon fontSize="small">edit</Icon>
-                          </IconButton>
                           <IconButton
                             size="small"
-                            onClick={() => handleLoginAs(u.id)}
-                            title="Inloggen als"
-                            disabled={loginAsMutation.isPending}
+                            onClick={(e) => handleMenuOpen(e, u)}
+                            aria-controls={menuAnchor ? 'user-actions-menu' : undefined}
+                            aria-haspopup="true"
+                            aria-expanded={menuAnchor ? 'true' : undefined}
+                            title="Acties"
                           >
-                            <Icon fontSize="small">login</Icon>
+                            <Icon fontSize="small">more_vert</Icon>
                           </IconButton>
                         </DataTableBodyCell>
                       </TableRow>
